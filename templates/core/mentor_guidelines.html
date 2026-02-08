@@ -1,0 +1,499 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Mentor Guidelines - {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="guidelines-page">
+    <!-- Hero Section -->
+    <div class="guidelines-hero">
+        <div class="container">
+            <h1>Mentor Guidelines</h1>
+            <p>Everything you need to know to be an effective mentor on our platform.</p>
+        </div>
+    </div>
+
+    <!-- Content Section -->
+    <div class="guidelines-content">
+        <div class="container">
+            <div class="guidelines-grid">
+                <!-- Sidebar Navigation -->
+                <nav class="guidelines-nav">
+                    <h4>On This Page</h4>
+                    <ul>
+                        <li><a href="#getting-started">Getting Started</a></li>
+                        <li><a href="#responsibilities">Responsibilities</a></li>
+                        <li><a href="#best-practices">Best Practices</a></li>
+                        <li><a href="#communication">Communication</a></li>
+                        <li><a href="#sessions">Session Guidelines</a></li>
+                        <li><a href="#boundaries">Professional Boundaries</a></li>
+                        <li><a href="#support">Support & Resources</a></li>
+                    </ul>
+                </nav>
+
+                <!-- Main Content -->
+                <div class="guidelines-main">
+                    <section id="getting-started" class="guideline-section">
+                        <h2><i data-feather="play-circle"></i> Getting Started</h2>
+                        <p>Welcome to our mentoring community! Here's what you need to do to get started:</p>
+                        <ol>
+                            <li><strong>Complete your profile:</strong> Add a professional photo, detailed bio, and list your areas of expertise</li>
+                            <li><strong>Set your availability:</strong> Use the calendar to show when you're available for sessions</li>
+                            <li><strong>Define your expertise:</strong> Clearly state what topics you can help with</li>
+                            <li><strong>Set expectations:</strong> Specify session duration and any requirements</li>
+                        </ol>
+                    </section>
+
+                    <section id="responsibilities" class="guideline-section">
+                        <h2><i data-feather="clipboard"></i> Mentor Responsibilities</h2>
+                        <div class="responsibility-cards">
+                            <div class="resp-card">
+                                <i data-feather="clock"></i>
+                                <h4>Be Punctual</h4>
+                                <p>Respect your mentee's time by being on time for all scheduled sessions</p>
+                            </div>
+                            <div class="resp-card">
+                                <i data-feather="message-circle"></i>
+                                <h4>Be Responsive</h4>
+                                <p>Respond to messages within 48 hours and keep communication open</p>
+                            </div>
+                            <div class="resp-card">
+                                <i data-feather="book-open"></i>
+                                <h4>Be Prepared</h4>
+                                <p>Review mentee's goals and prepare relevant advice before sessions</p>
+                            </div>
+                            <div class="resp-card">
+                                <i data-feather="heart"></i>
+                                <h4>Be Supportive</h4>
+                                <p>Provide constructive feedback and encouragement</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section id="best-practices" class="guideline-section">
+                        <h2><i data-feather="award"></i> Best Practices</h2>
+                        <ul class="best-practices-list">
+                            <li>
+                                <strong>Listen actively:</strong> Understand your mentee's needs before offering advice
+                            </li>
+                            <li>
+                                <strong>Share experiences:</strong> Use real-world examples from your career
+                            </li>
+                            <li>
+                                <strong>Set goals together:</strong> Help mentees define clear, achievable objectives
+                            </li>
+                            <li>
+                                <strong>Provide actionable advice:</strong> Give specific, practical steps they can take
+                            </li>
+                            <li>
+                                <strong>Follow up:</strong> Check in on their progress between sessions
+                            </li>
+                            <li>
+                                <strong>Be honest:</strong> Give genuine feedback, even when it's difficult
+                            </li>
+                        </ul>
+                    </section>
+
+                    <section id="communication" class="guideline-section">
+                        <h2><i data-feather="message-square"></i> Communication Guidelines</h2>
+                        <div class="comm-guidelines">
+                            <div class="do-dont">
+                                <div class="do-list">
+                                    <h4><i data-feather="check-circle"></i> Do</h4>
+                                    <ul>
+                                        <li>Use professional language</li>
+                                        <li>Be clear and concise</li>
+                                        <li>Ask clarifying questions</li>
+                                        <li>Acknowledge messages promptly</li>
+                                        <li>Provide context for advice</li>
+                                    </ul>
+                                </div>
+                                <div class="dont-list">
+                                    <h4><i data-feather="x-circle"></i> Don't</h4>
+                                    <ul>
+                                        <li>Share personal contact info initially</li>
+                                        <li>Make promises you can't keep</li>
+                                        <li>Discuss confidential information</li>
+                                        <li>Use inappropriate language</li>
+                                        <li>Ignore messages for extended periods</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section id="sessions" class="guideline-section">
+                        <h2><i data-feather="calendar"></i> Session Guidelines</h2>
+                        <p>Make the most of your mentoring sessions:</p>
+                        <div class="session-tips">
+                            <div class="tip">
+                                <span class="tip-number">1</span>
+                                <div>
+                                    <h4>Before the Session</h4>
+                                    <p>Review the mentee's profile, previous notes, and prepare discussion topics</p>
+                                </div>
+                            </div>
+                            <div class="tip">
+                                <span class="tip-number">2</span>
+                                <div>
+                                    <h4>During the Session</h4>
+                                    <p>Start with a check-in, discuss key topics, and leave time for questions</p>
+                                </div>
+                            </div>
+                            <div class="tip">
+                                <span class="tip-number">3</span>
+                                <div>
+                                    <h4>After the Session</h4>
+                                    <p>Summarize key points, assign action items, and schedule the next meeting</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section id="boundaries" class="guideline-section">
+                        <h2><i data-feather="shield"></i> Professional Boundaries</h2>
+                        <p>Maintaining professional boundaries is essential for a healthy mentoring relationship:</p>
+                        <ul>
+                            <li>Keep conversations focused on professional development</li>
+                            <li>Avoid giving advice on personal matters outside your expertise</li>
+                            <li>Maintain confidentiality about mentee's information</li>
+                            <li>Be aware of power dynamics and avoid exploiting them</li>
+                            <li>Know when to refer mentees to other resources or professionals</li>
+                        </ul>
+                    </section>
+
+                    <section id="support" class="guideline-section">
+                        <h2><i data-feather="help-circle"></i> Support & Resources</h2>
+                        <p>We're here to help you succeed as a mentor:</p>
+                        <div class="support-links">
+                            <a href="{% url 'core:resources' %}" class="support-link">
+                                <i data-feather="book"></i>
+                                <span>Resource Library</span>
+                            </a>
+                            <a href="{% url 'core:community' %}" class="support-link">
+                                <i data-feather="users"></i>
+                                <span>Mentor Community</span>
+                            </a>
+                            <a href="{% url 'core:contact' %}" class="support-link">
+                                <i data-feather="mail"></i>
+                                <span>Contact Support</span>
+                            </a>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="guidelines-cta">
+        <div class="container">
+            <h2>Ready to Make a Difference?</h2>
+            <p>Join our community of mentors and help shape the next generation of professionals.</p>
+            <a href="{% url 'accounts:signup_mentor' %}" class="btn btn-primary btn-lg">
+                <i data-feather="user-plus"></i> Become a Mentor
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+.guidelines-page {
+    background: var(--background-color);
+}
+
+/* Hero */
+.guidelines-hero {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    text-align: center;
+    padding: 5rem 1rem;
+}
+
+.guidelines-hero h1 {
+    margin-bottom: 1rem;
+    font-size: 2.5rem;
+    color: white;
+}
+
+.guidelines-hero p {
+    font-size: 1.125rem;
+    opacity: 0.9;
+}
+
+/* Content Grid */
+.guidelines-content {
+    padding: 4rem 1rem;
+}
+
+.guidelines-grid {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 3rem;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+/* Sidebar Nav */
+.guidelines-nav {
+    position: sticky;
+    top: 100px;
+    height: fit-content;
+}
+
+.guidelines-nav h4 {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 1rem;
+}
+
+.guidelines-nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.guidelines-nav li {
+    margin-bottom: 0.5rem;
+}
+
+.guidelines-nav a {
+    display: block;
+    padding: 0.5rem 1rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    border-radius: var(--button-radius);
+    font-size: 0.9375rem;
+    transition: all 0.2s;
+}
+
+.guidelines-nav a:hover {
+    background: var(--primary-light);
+    color: var(--primary-color);
+}
+
+/* Main Content */
+.guideline-section {
+    background: var(--surface-color);
+    padding: 2rem;
+    border-radius: var(--card-radius);
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.guideline-section h2 {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color, #e5e7eb);
+}
+
+.guideline-section h2 i {
+    color: var(--primary-color);
+    width: 24px;
+    height: 24px;
+}
+
+.guideline-section p {
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin-bottom: 1rem;
+}
+
+.guideline-section ol,
+.guideline-section ul {
+    color: var(--text-secondary);
+    padding-left: 1.5rem;
+    line-height: 1.8;
+}
+
+.guideline-section li {
+    margin-bottom: 0.75rem;
+}
+
+/* Responsibility Cards */
+.responsibility-cards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.resp-card {
+    padding: 1.5rem;
+    background: var(--background-color);
+    border-radius: var(--button-radius);
+    text-align: center;
+}
+
+.resp-card i {
+    width: 32px;
+    height: 32px;
+    color: var(--primary-color);
+    margin-bottom: 0.75rem;
+}
+
+.resp-card h4 {
+    margin-bottom: 0.5rem;
+}
+
+.resp-card p {
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+/* Do/Don't Lists */
+.do-dont {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.do-list, .dont-list {
+    padding: 1.5rem;
+    border-radius: var(--button-radius);
+}
+
+.do-list {
+    background: #d1fae5;
+}
+
+.dont-list {
+    background: #fee2e2;
+}
+
+.do-list h4, .dont-list h4 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.do-list h4 {
+    color: #059669;
+}
+
+.dont-list h4 {
+    color: #dc2626;
+}
+
+.do-list ul, .dont-list ul {
+    margin: 0;
+    padding-left: 1.25rem;
+}
+
+.do-list li {
+    color: #065f46;
+}
+
+.dont-list li {
+    color: #991b1b;
+}
+
+/* Session Tips */
+.session-tips {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.tip {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--background-color);
+    border-radius: var(--button-radius);
+}
+
+.tip-number {
+    width: 36px;
+    height: 36px;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.tip h4 {
+    margin: 0 0 0.25rem;
+}
+
+.tip p {
+    margin: 0;
+    font-size: 0.9375rem;
+}
+
+/* Support Links */
+.support-links {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.support-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 1.5rem;
+    background: var(--primary-light);
+    color: var(--primary-color);
+    border-radius: var(--button-radius);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.support-link:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+.support-link i {
+    width: 20px;
+    height: 20px;
+}
+
+/* CTA */
+.guidelines-cta {
+    padding: 5rem 1rem;
+    text-align: center;
+    background: var(--surface-color);
+}
+
+.guidelines-cta h2 {
+    margin-bottom: 0.75rem;
+}
+
+.guidelines-cta p {
+    color: var(--text-muted);
+    margin-bottom: 2rem;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .guidelines-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .guidelines-nav {
+        position: static;
+        display: none;
+    }
+
+    .responsibility-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .do-dont {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}

@@ -1,0 +1,196 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Manage Mentors - Admin Dashboard{% endblock %}
+
+{% block dashboard_content %}
+<div class="dashboard-header">
+    <div>
+        <h1>Mentor Management</h1>
+        <p class="text-muted">View, add, and manage all mentors in the system</p>
+    </div>
+    <a href="{% url 'dashboard:admin_mentor_create' %}" class="btn btn-primary">
+        <i data-feather="user-plus"></i> Add New Mentor
+    </a>
+</div>
+
+<!-- Stats Cards -->
+<div class="dashboard-stats">
+    <div class="stat-card">
+        <div class="stat-card-icon">
+            <i data-feather="award"></i>
+        </div>
+        <div class="stat-card-value">{{ total_mentors }}</div>
+        <div class="stat-card-label">Total Mentors</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon" style="background: #d1fae5; color: #059669;">
+            <i data-feather="check-circle"></i>
+        </div>
+        <div class="stat-card-value">{{ verified_mentors }}</div>
+        <div class="stat-card-label">Verified</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon" style="background: #fef3c7; color: #d97706;">
+            <i data-feather="star"></i>
+        </div>
+        <div class="stat-card-value">{{ featured_mentors }}</div>
+        <div class="stat-card-label">Featured</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon" style="background: #cffafe; color: #0891b2;">
+            <i data-feather="user-check"></i>
+        </div>
+        <div class="stat-card-value">{{ available_mentors }}</div>
+        <div class="stat-card-label">Available</div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="filters-form">
+            <div class="filters-row">
+                <div class="filter-group">
+                    <label>Search</label>
+                    <input type="text" name="search" class="form-control" placeholder="Search by name, email, expertise..." value="{{ request.GET.search }}">
+                </div>
+                <div class="filter-group">
+                    <label>Status</label>
+                    <select name="status" class="form-control">
+                        <option value="">All Status</option>
+                        <option value="verified" {% if request.GET.status == 'verified' %}selected{% endif %}>Verified</option>
+                        <option value="unverified" {% if request.GET.status == 'unverified' %}selected{% endif %}>Unverified</option>
+                        <option value="featured" {% if request.GET.status == 'featured' %}selected{% endif %}>Featured</option>
+                        <option value="available" {% if request.GET.status == 'available' %}selected{% endif %}>Available</option>
+                        <option value="unavailable" {% if request.GET.status == 'unavailable' %}selected{% endif %}>Unavailable</option>
+                    </select>
+                </div>
+                <div class="filter-group filter-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i data-feather="search"></i> Filter
+                    </button>
+                    <a href="{% url 'dashboard:admin_mentors' %}" class="btn btn-outline">Reset</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Mentors Table -->
+<div class="card">
+    <div class="card-body">
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Mentor</th>
+                        <th>Expertise</th>
+                        <th>Rating</th>
+                        <th>Status</th>
+                        <th>Requests</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for mentor in mentors %}
+                    <tr>
+                        <td>
+                            <div class="user-cell">
+                                <img src="{{ mentor.user.get_avatar_url }}" alt="" class="avatar avatar-md">
+                                <div class="user-info">
+                                    <div class="user-name">{{ mentor.user.get_full_name }}</div>
+                                    <div class="user-email">{{ mentor.user.email }}</div>
+                                    {% if mentor.company %}<div class="user-company">{{ mentor.job_title }} at {{ mentor.company }}</div>{% endif %}
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="expertise-tag">{{ mentor.expertise }}</span>
+                            <div class="text-muted text-xs mt-1">{{ mentor.experience_years }} years exp.</div>
+                        </td>
+                        <td>
+                            <div class="rating-display">
+                                <i data-feather="star" class="text-warning"></i>
+                                <span>{{ mentor.rating }}</span>
+                            </div>
+                            <div class="text-muted text-xs">{{ mentor.total_reviews }} reviews</div>
+                        </td>
+                        <td>
+                            <div class="status-badges">
+                                {% if mentor.is_verified %}
+                                <span class="badge badge-success">Verified</span>
+                                {% else %}
+                                <span class="badge badge-muted">Unverified</span>
+                                {% endif %}
+                                {% if mentor.is_featured %}
+                                <span class="badge badge-warning">Featured</span>
+                                {% endif %}
+                                {% if mentor.is_available %}
+                                <span class="badge badge-info">Available</span>
+                                {% else %}
+                                <span class="badge badge-muted">Unavailable</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>
+                            <span class="text-muted">-</span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="{% url 'dashboard:admin_mentor_detail' mentor.pk %}" class="btn btn-sm btn-outline" title="View Details">
+                                    <i data-feather="eye"></i>
+                                </a>
+                                <a href="{% url 'dashboard:toggle_mentor_verified' mentor.pk %}" class="btn btn-sm {% if mentor.is_verified %}btn-success{% else %}btn-outline{% endif %}" title="{% if mentor.is_verified %}Unverify{% else %}Verify{% endif %}">
+                                    <i data-feather="check-circle"></i>
+                                </a>
+                                <a href="{% url 'dashboard:toggle_mentor_featured' mentor.pk %}" class="btn btn-sm {% if mentor.is_featured %}btn-warning{% else %}btn-outline{% endif %}" title="{% if mentor.is_featured %}Unfeature{% else %}Feature{% endif %}">
+                                    <i data-feather="star"></i>
+                                </a>
+                                <a href="{% url 'dashboard:toggle_user' mentor.user.pk %}" class="btn btn-sm {% if mentor.user.is_active %}btn-outline{% else %}btn-danger{% endif %}" title="{% if mentor.user.is_active %}Deactivate{% else %}Activate{% endif %}">
+                                    <i data-feather="{% if mentor.user.is_active %}user-x{% else %}user-check{% endif %}"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">No mentors found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if is_paginated %}
+        <div class="pagination-container">
+            <nav class="pagination">
+                {% if page_obj.has_previous %}
+                <a href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" class="pagination-btn">
+                    <i data-feather="chevrons-left"></i>
+                </a>
+                <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" class="pagination-btn">
+                    <i data-feather="chevron-left"></i>
+                </a>
+                {% endif %}
+
+                <span class="pagination-info">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                </span>
+
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" class="pagination-btn">
+                    <i data-feather="chevron-right"></i>
+                </a>
+                <a href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" class="pagination-btn">
+                    <i data-feather="chevrons-right"></i>
+                </a>
+                {% endif %}
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

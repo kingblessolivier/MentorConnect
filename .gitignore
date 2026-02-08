@@ -1,0 +1,102 @@
+# Python compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Virtual environments
+venv/
+ENV/
+.env/
+.venv/
+venv*/
+
+# If your venv is inside the project (common in this workspace)
+/mentor_platform/venv/
+
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+/mentor_platform/db.sqlite3
+
+# Media and uploaded files
+/media/
+/mentor_platform/media/
+
+# Staticfiles from collectstatic
+/staticfiles/
+
+# Node/npm
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Pytest
+.pytest_cache/
+
+# Coverage
+.coverage
+.coverage.*
+htmlcov/
+
+# mypy
+.mypy_cache/
+
+# IDEs and editors
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# Logs
+*.log
+logs/
+
+# Environment files
+.env
+.env.*
+
+# Misc
+*.swp
+*~
+
+# JetBrains
+.*.iml
+
+# Security: avoid committing secrets
+secrets.json
+credentials.json
+
+# Lock files (optional)
+Pipfile.lock
+poetry.lock
+
+# Coverage reports
+coverage.xml
+
+# Temporary files
+tmp/
+
+# End of .gitignore

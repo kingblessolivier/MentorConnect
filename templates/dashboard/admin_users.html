@@ -1,0 +1,226 @@
+{% extends 'dashboard/base_dashboard.html' %}
+
+{% block title %}Manage Users - Admin - {{ SITE_NAME }}{% endblock %}
+
+{% block dashboard_content %}
+<div class="dashboard-header">
+    <div>
+        <h1><i data-feather="users" class="header-icon"></i> User Management</h1>
+        <p class="text-muted">View and manage all platform users</p>
+    </div>
+    <div class="dashboard-header-actions">
+        <span class="total-count"><strong>{{ users|length }}</strong> users total</span>
+    </div>
+</div>
+
+<!-- Stats Summary -->
+<div class="dashboard-stats">
+    <div class="stat-card">
+        <div class="stat-card-icon">
+            <i data-feather="users"></i>
+        </div>
+        <div class="stat-card-value">{{ users|length }}</div>
+        <div class="stat-card-label">Total Users</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon" style="background: #d1fae5; color: #059669;">
+            <i data-feather="user-check"></i>
+        </div>
+        <div class="stat-card-value">{{ active_count|default:0 }}</div>
+        <div class="stat-card-label">Active Users</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon" style="background: #dbeafe; color: #2563eb;">
+            <i data-feather="book-open"></i>
+        </div>
+        <div class="stat-card-value">{{ student_count|default:0 }}</div>
+        <div class="stat-card-label">Students</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon" style="background: #fef3c7; color: #d97706;">
+            <i data-feather="award"></i>
+        </div>
+        <div class="stat-card-value">{{ mentor_count|default:0 }}</div>
+        <div class="stat-card-label">Mentors</div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="filters-form">
+            <div class="filters-row">
+                <div class="filter-group">
+                    <label>Search</label>
+                    <input type="text" name="search" value="{{ request.GET.search }}" class="form-control" placeholder="Search by name or email...">
+                </div>
+                <div class="filter-group">
+                    <label>Role</label>
+                    <select name="role" class="form-control">
+                        <option value="">All Roles</option>
+                        <option value="student" {% if request.GET.role == 'student' %}selected{% endif %}>Students</option>
+                        <option value="mentor" {% if request.GET.role == 'mentor' %}selected{% endif %}>Mentors</option>
+                        <option value="admin" {% if request.GET.role == 'admin' %}selected{% endif %}>Admins</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Status</label>
+                    <select name="status" class="form-control">
+                        <option value="">All Status</option>
+                        <option value="active" {% if request.GET.status == 'active' %}selected{% endif %}>Active</option>
+                        <option value="inactive" {% if request.GET.status == 'inactive' %}selected{% endif %}>Inactive</option>
+                    </select>
+                </div>
+                <div class="filter-group filter-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i data-feather="search"></i> Filter
+                    </button>
+                    <a href="{% url 'dashboard:admin_users' %}" class="btn btn-outline">Reset</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Users Table -->
+<div class="card">
+    <div class="card-body">
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Joined</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in users %}
+                    <tr>
+                        <td>
+                            <div class="user-cell">
+                                <img src="{{ u.get_avatar_url }}" alt="" class="avatar avatar-md">
+                                <div class="user-info">
+                                    <div class="user-name">{{ u.get_full_name }}</div>
+                                    <div class="user-email">@{{ u.username|default:u.email|truncatechars:15 }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-muted">{{ u.email }}</td>
+                        <td><span class="badge badge-{{ u.role }}">{{ u.get_role_display }}</span></td>
+                        <td class="text-muted text-sm">{{ u.date_joined|date:"M d, Y" }}</td>
+                        <td>
+                            {% if u.is_active %}
+                            <span class="badge badge-success">
+                                <i data-feather="check-circle" style="width: 12px; height: 12px;"></i> Active
+                            </span>
+                            {% else %}
+                            <span class="badge badge-danger">
+                                <i data-feather="x-circle" style="width: 12px; height: 12px;"></i> Inactive
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <form method="post" action="{% url 'dashboard:toggle_user' u.pk %}" style="display:inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm {% if u.is_active %}btn-outline{% else %}btn-success{% endif %}" title="{% if u.is_active %}Deactivate{% else %}Activate{% endif %}">
+                                        {% if u.is_active %}
+                                        <i data-feather="user-x"></i>
+                                        {% else %}
+                                        <i data-feather="user-check"></i>
+                                        {% endif %}
+                                    </button>
+                                </form>
+                                {% if u != request.user %}
+                                <form method="post" action="{% url 'dashboard:delete_user' u.pk %}" style="display:inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete user {{ u.email }}? This action cannot be undone.')" title="Delete User">
+                                        <i data-feather="trash-2"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4">
+                            <div class="empty-state">
+                                <i data-feather="users" class="empty-icon"></i>
+                                <p class="text-muted">No users found matching your criteria</p>
+                                <a href="{% url 'dashboard:admin_users' %}" class="btn btn-outline btn-sm">Clear Filters</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if page_obj.has_other_pages %}
+        <div class="pagination-container">
+            <nav class="pagination">
+                {% if page_obj.has_previous %}
+                <a href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.role %}&role={{ request.GET.role }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" class="pagination-btn" title="First">
+                    <i data-feather="chevrons-left"></i>
+                </a>
+                <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.role %}&role={{ request.GET.role }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" class="pagination-btn" title="Previous">
+                    <i data-feather="chevron-left"></i>
+                </a>
+                {% endif %}
+
+                <span class="pagination-info">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                </span>
+
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.role %}&role={{ request.GET.role }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" class="pagination-btn" title="Next">
+                    <i data-feather="chevron-right"></i>
+                </a>
+                <a href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.role %}&role={{ request.GET.role }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" class="pagination-btn" title="Last">
+                    <i data-feather="chevrons-right"></i>
+                </a>
+                {% endif %}
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.header-icon {
+    width: 28px;
+    height: 28px;
+    vertical-align: middle;
+    margin-right: 0.5rem;
+    color: var(--primary-color, #4f46e5);
+}
+
+.total-count {
+    font-size: 0.9375rem;
+    color: var(--text-secondary, #6b7280);
+    background: var(--background-color, #f3f4f6);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+}
+
+.empty-state {
+    padding: 2rem;
+}
+
+.empty-state .empty-icon {
+    width: 48px;
+    height: 48px;
+    color: var(--text-muted, #9ca3af);
+    margin-bottom: 1rem;
+}
+
+.empty-state p {
+    margin-bottom: 1rem;
+}
+</style>
+{% endblock %}

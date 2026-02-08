@@ -1,0 +1,390 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Success Stories - {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="success-stories-page">
+    <!-- Hero Section -->
+    <div class="stories-hero">
+        <div class="container">
+            <h1>Success Stories</h1>
+            <p>Discover how mentorship has transformed careers and lives. These are real stories from our community.</p>
+        </div>
+    </div>
+
+    <!-- Featured Stories -->
+    <div class="stories-section">
+        <div class="container">
+            <div class="stories-grid">
+                {% if testimonials %}
+                {% for testimonial in testimonials %}
+                <div class="story-card">
+                    <div class="story-quote">
+                        <i data-feather="message-circle"></i>
+                    </div>
+                    <p class="story-text">"{{ testimonial.content }}"</p>
+                    <div class="story-author">
+                        {% if testimonial.image %}
+                        <img src="{{ testimonial.image.url }}" alt="{{ testimonial.author_name }}" class="author-avatar">
+                        {% else %}
+                        <div class="author-avatar-placeholder">
+                            {{ testimonial.author_name|slice:":1" }}
+                        </div>
+                        {% endif %}
+                        <div class="author-info">
+                            <span class="author-name">{{ testimonial.author_name }}</span>
+                            <span class="author-role">{{ testimonial.author_role }}</span>
+                        </div>
+                    </div>
+                    {% if testimonial.rating %}
+                    <div class="story-rating">
+                        {% for i in "12345" %}
+                        <i data-feather="star" {% if forloop.counter <= testimonial.rating %}class="filled"{% endif %}></i>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+                {% else %}
+                <!-- Sample Stories -->
+                <div class="story-card featured">
+                    <div class="story-quote">
+                        <i data-feather="message-circle"></i>
+                    </div>
+                    <p class="story-text">"My mentor helped me land my dream job at a top tech company. The guidance I received on interview preparation and career strategy was invaluable. I went from feeling lost to confident in just 3 months!"</p>
+                    <div class="story-author">
+                        <div class="author-avatar-placeholder">S</div>
+                        <div class="author-info">
+                            <span class="author-name">Sarah Johnson</span>
+                            <span class="author-role">Software Engineer at Google</span>
+                        </div>
+                    </div>
+                    <div class="story-rating">
+                        <i data-feather="star" class="filled"></i>
+                        <i data-feather="star" class="filled"></i>
+                        <i data-feather="star" class="filled"></i>
+                        <i data-feather="star" class="filled"></i>
+                        <i data-feather="star" class="filled"></i>
+                    </div>
+                </div>
+
+                <div class="story-card">
+                    <div class="story-quote">
+                        <i data-feather="message-circle"></i>
+                    </div>
+                    <p class="story-text">"The mentorship I received helped me transition from marketing to product management. My mentor's industry insights and practical advice made all the difference."</p>
+                    <div class="story-author">
+                        <div class="author-avatar-placeholder">M</div>
+                        <div class="author-info">
+                            <span class="author-name">Michael Chen</span>
+                            <span class="author-role">Product Manager at Microsoft</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="story-card">
+                    <div class="story-quote">
+                        <i data-feather="message-circle"></i>
+                    </div>
+                    <p class="story-text">"As a first-generation college student, I didn't have anyone to guide me. MentorConnect matched me with an amazing mentor who helped me navigate my career path."</p>
+                    <div class="story-author">
+                        <div class="author-avatar-placeholder">E</div>
+                        <div class="author-info">
+                            <span class="author-name">Emily Rodriguez</span>
+                            <span class="author-role">Data Scientist at Netflix</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="story-card">
+                    <div class="story-quote">
+                        <i data-feather="message-circle"></i>
+                    </div>
+                    <p class="story-text">"My mentor helped me build confidence and develop leadership skills. I was promoted to team lead within 6 months of starting our mentorship journey."</p>
+                    <div class="story-author">
+                        <div class="author-avatar-placeholder">D</div>
+                        <div class="author-info">
+                            <span class="author-name">David Park</span>
+                            <span class="author-role">Engineering Lead at Amazon</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="story-card">
+                    <div class="story-quote">
+                        <i data-feather="message-circle"></i>
+                    </div>
+                    <p class="story-text">"Starting my own business seemed impossible until I connected with a mentor who had been through the same journey. Their guidance on fundraising and strategy was game-changing."</p>
+                    <div class="story-author">
+                        <div class="author-avatar-placeholder">J</div>
+                        <div class="author-info">
+                            <span class="author-name">Jessica Williams</span>
+                            <span class="author-role">Founder & CEO, TechStart</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="story-card">
+                    <div class="story-quote">
+                        <i data-feather="message-circle"></i>
+                    </div>
+                    <p class="story-text">"The code reviews and technical mentorship helped me grow from a junior developer to a senior engineer in just two years. Best decision I ever made!"</p>
+                    <div class="story-author">
+                        <div class="author-avatar-placeholder">R</div>
+                        <div class="author-info">
+                            <span class="author-name">Robert Kim</span>
+                            <span class="author-role">Senior Developer at Spotify</span>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Section -->
+    <div class="stories-stats">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="stat-number">5,000+</span>
+                    <span class="stat-label">Successful Mentorships</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">95%</span>
+                    <span class="stat-label">Satisfaction Rate</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">500+</span>
+                    <span class="stat-label">Expert Mentors</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">40+</span>
+                    <span class="stat-label">Countries Reached</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CTA Section -->
+    <div class="stories-cta">
+        <div class="container">
+            <h2>Start Your Success Story</h2>
+            <p>Join our community and connect with mentors who can help you achieve your goals.</p>
+            <a href="{% url 'accounts:signup_student' %}" class="btn btn-primary btn-lg">
+                <i data-feather="user-plus"></i> Get Started Today
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+.success-stories-page {
+    background: var(--background-color);
+}
+
+/* Hero */
+.stories-hero {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    color: white;
+    text-align: center;
+    padding: 5rem 1rem;
+}
+
+.stories-hero h1 {
+    margin-bottom: 1rem;
+    font-size: 2.5rem;
+    color: white;
+}
+
+.stories-hero p {
+    max-width: 600px;
+    margin: 0 auto;
+    font-size: 1.125rem;
+    opacity: 0.9;
+}
+
+/* Stories Grid */
+.stories-section {
+    padding: 5rem 1rem;
+}
+
+.stories-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+}
+
+.story-card {
+    background: var(--surface-color);
+    padding: 2rem;
+    border-radius: var(--card-radius);
+    box-shadow: var(--shadow-sm);
+    position: relative;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.story-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+}
+
+.story-card.featured {
+    grid-column: span 2;
+    background: linear-gradient(135deg, var(--primary-light), white);
+}
+
+.story-quote {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    color: var(--primary-color);
+    opacity: 0.3;
+}
+
+.story-quote i {
+    width: 32px;
+    height: 32px;
+}
+
+.story-text {
+    font-size: 1rem;
+    line-height: 1.7;
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+    font-style: italic;
+}
+
+.story-author {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.author-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.author-avatar-placeholder {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 1.125rem;
+}
+
+.author-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.author-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.author-role {
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+}
+
+.story-rating {
+    margin-top: 1rem;
+    display: flex;
+    gap: 0.25rem;
+}
+
+.story-rating i {
+    width: 16px;
+    height: 16px;
+    color: #d1d5db;
+}
+
+.story-rating i.filled {
+    color: #fbbf24;
+    fill: #fbbf24;
+}
+
+/* Stats */
+.stories-stats {
+    padding: 4rem 1rem;
+    background: var(--surface-color);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2rem;
+    text-align: center;
+}
+
+.stat-number {
+    display: block;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    color: var(--text-muted);
+}
+
+/* CTA */
+.stories-cta {
+    padding: 5rem 1rem;
+    text-align: center;
+}
+
+.stories-cta h2 {
+    margin-bottom: 0.75rem;
+}
+
+.stories-cta p {
+    color: var(--text-muted);
+    margin-bottom: 2rem;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .stories-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .story-card.featured {
+        grid-column: span 2;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    .stories-hero h1 {
+        font-size: 1.75rem;
+    }
+
+    .stories-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .story-card.featured {
+        grid-column: span 1;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+</style>
+{% endblock %}

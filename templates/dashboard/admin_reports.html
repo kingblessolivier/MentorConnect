@@ -1,0 +1,297 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Reports & Analytics - Admin{% endblock %}
+
+{% block dashboard_content %}
+<div class="dashboard-header">
+    <div>
+        <h1>Reports & Analytics</h1>
+        <p class="text-muted">System performance and insights</p>
+    </div>
+    <div class="dashboard-header-actions">
+        <a href="{% url 'dashboard:admin_export' %}?type=users&format=csv" class="btn btn-outline">
+            <i data-feather="download"></i> Export Users
+        </a>
+        <a href="{% url 'dashboard:admin_export' %}?type=mentors&format=csv" class="btn btn-outline">
+            <i data-feather="download"></i> Export Mentors
+        </a>
+        <a href="{% url 'dashboard:admin_export' %}?type=requests&format=csv" class="btn btn-outline">
+            <i data-feather="download"></i> Export Requests
+        </a>
+    </div>
+</div>
+
+<!-- Key Metrics -->
+<div class="dashboard-stats">
+    <div class="stat-card">
+        <div class="stat-card-icon"><i data-feather="users"></i></div>
+        <div class="stat-card-value">{{ total_users }}</div>
+        <div class="stat-card-label">Total Users</div>
+        <div class="stat-card-change positive">+{{ new_users_week }} this week</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon" style="background:#d1fae5;color:#059669"><i data-feather="user-plus"></i></div>
+        <div class="stat-card-value">{{ new_users_month }}</div>
+        <div class="stat-card-label">New This Month</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon" style="background:#fef3c7;color:#d97706"><i data-feather="percent"></i></div>
+        <div class="stat-card-value">{{ completion_rate }}%</div>
+        <div class="stat-card-label">Completion Rate</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon" style="background:#ede9fe;color:#7c3aed"><i data-feather="heart"></i></div>
+        <div class="stat-card-value">{{ avg_likes_per_post }}</div>
+        <div class="stat-card-label">Avg Likes/Post</div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+    <div class="card">
+        <div class="card-body">
+            <h3>User Growth (Weekly)</h3>
+            <div class="chart-container">
+                <canvas id="userGrowthChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-body">
+            <h3>Monthly Registrations</h3>
+            <div class="chart-container">
+                <canvas id="monthlyGrowthChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+    <div class="card">
+        <div class="card-body">
+            <h3>Mentorship Requests (Weekly)</h3>
+            <div class="chart-container">
+                <canvas id="requestGrowthChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-body">
+            <h3>Rating Distribution</h3>
+            <div class="chart-container chart-container-sm">
+                <canvas id="ratingChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+    <div class="card">
+        <div class="card-body">
+            <h3>Post Activity (Weekly)</h3>
+            <div class="chart-container">
+                <canvas id="postGrowthChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-body">
+            <h3>Top Performing Mentors</h3>
+            <div class="top-mentors-list">
+                {% for mentor in top_mentors %}
+                <div class="top-mentor-item">
+                    <span class="rank">#{{ forloop.counter }}</span>
+                    <img src="{{ mentor.user.get_avatar_url }}" class="avatar avatar-sm">
+                    <div class="top-mentor-info">
+                        <div class="top-mentor-name">{{ mentor.user.get_full_name }}</div>
+                        <div class="top-mentor-expertise">{{ mentor.expertise }}</div>
+                    </div>
+                    <div class="top-mentor-stats">
+                        <div class="top-mentor-rating">
+                            <i data-feather="star"></i>
+                            {{ mentor.rating }} ({{ mentor.total_reviews }})
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-muted text-center py-4">No mentors yet</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Activity Summary -->
+<div class="card">
+    <div class="card-body">
+        <h3>Activity Summary</h3>
+        <div class="table-container">
+            <table class="table">
+                <thead><tr><th>Action Type</th><th>Count</th></tr></thead>
+                <tbody>
+                    {% for item in activity_summary %}
+                    <tr>
+                        <td>{{ item.action }}</td>
+                        <td><span class="badge badge-primary">{{ item.count }}</span></td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="2" class="text-center text-muted py-4">No activity data</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Common chart options
+    const commonOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { display: false }
+        },
+        scales: {
+            x: {
+                grid: { display: false },
+                ticks: { font: { size: 11 }, color: '#6b7280' }
+            },
+            y: {
+                beginAtZero: true,
+                grid: { color: '#f3f4f6' },
+                ticks: { font: { size: 11 }, color: '#6b7280' }
+            }
+        }
+    };
+
+    // User Growth Chart
+    const userGrowthCtx = document.getElementById('userGrowthChart');
+    if (userGrowthCtx) {
+        new Chart(userGrowthCtx, {
+            type: 'line',
+            data: {
+                labels: {{ user_growth_weekly_labels|safe }},
+                datasets: [{
+                    label: 'New Users',
+                    data: {{ user_growth_weekly_data|safe }},
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    borderWidth: 2,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#3b82f6'
+                }]
+            },
+            options: commonOptions
+        });
+    }
+
+    // Monthly Growth Chart
+    const monthlyGrowthCtx = document.getElementById('monthlyGrowthChart');
+    if (monthlyGrowthCtx) {
+        new Chart(monthlyGrowthCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ user_growth_monthly_labels|safe }},
+                datasets: [{
+                    label: 'Users',
+                    data: {{ user_growth_monthly_data|safe }},
+                    backgroundColor: '#10b981',
+                    borderRadius: 6,
+                    borderSkipped: false
+                }]
+            },
+            options: commonOptions
+        });
+    }
+
+    // Request Growth Chart
+    const requestGrowthCtx = document.getElementById('requestGrowthChart');
+    if (requestGrowthCtx) {
+        new Chart(requestGrowthCtx, {
+            type: 'line',
+            data: {
+                labels: {{ request_growth_labels|safe }},
+                datasets: [{
+                    label: 'Requests',
+                    data: {{ request_growth_data|safe }},
+                    borderColor: '#8b5cf6',
+                    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    borderWidth: 2,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#8b5cf6'
+                }]
+            },
+            options: commonOptions
+        });
+    }
+
+    // Rating Distribution Chart
+    const ratingCtx = document.getElementById('ratingChart');
+    if (ratingCtx) {
+        new Chart(ratingCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['5 Stars', '4 Stars', '3 Stars', '2 Stars', '1 Star'],
+                datasets: [{
+                    data: {{ rating_distribution|safe }},
+                    backgroundColor: ['#22c55e', '#84cc16', '#eab308', '#f97316', '#ef4444'],
+                    borderWidth: 0,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            usePointStyle: true,
+                            pointStyle: 'circle',
+                            font: { size: 12 }
+                        }
+                    }
+                },
+                cutout: '60%'
+            }
+        });
+    }
+
+    // Post Growth Chart
+    const postGrowthCtx = document.getElementById('postGrowthChart');
+    if (postGrowthCtx) {
+        new Chart(postGrowthCtx, {
+            type: 'line',
+            data: {
+                labels: {{ post_growth_labels|safe }},
+                datasets: [{
+                    label: 'Posts',
+                    data: {{ post_growth_data|safe }},
+                    borderColor: '#ec4899',
+                    backgroundColor: 'rgba(236, 72, 153, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    borderWidth: 2,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#ec4899'
+                }]
+            },
+            options: commonOptions
+        });
+    }
+
+    // Re-init feather icons
+    if (typeof feather !== 'undefined') {
+        feather.replace();
+    }
+});
+</script>
+{% endblock %}

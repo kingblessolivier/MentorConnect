@@ -1,0 +1,360 @@
+{% extends 'dashboard/base_dashboard.html' %}
+
+{% block title %}Theme Settings - Admin - {{ SITE_NAME }}{% endblock %}
+
+{% block dashboard_content %}
+<div class="dashboard-header">
+    <div>
+        <h1><i data-feather="palette" class="header-icon"></i> Theme Settings</h1>
+        <p class="text-muted">Customize the look and feel of your platform</p>
+    </div>
+</div>
+
+<form method="post">
+    {% csrf_token %}
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <!-- Primary Colors -->
+        <div class="card">
+            <div class="card-body">
+                <h3 class="mb-4"><i data-feather="droplet" class="card-icon"></i> Primary Colors</h3>
+
+                <div class="color-group">
+                    <label class="form-label">Primary Color</label>
+                    <div class="color-picker">
+                        <input type="color" name="primary_color" value="{{ object.primary_color }}" class="color-input">
+                        <input type="text" value="{{ object.primary_color }}" class="color-text form-control" readonly>
+                        <div class="color-preview" style="background: {{ object.primary_color }};"></div>
+                    </div>
+                    <p class="form-help">Main brand color used for buttons, links, and accents</p>
+                </div>
+
+                <div class="color-group">
+                    <label class="form-label">Primary Hover</label>
+                    <div class="color-picker">
+                        <input type="color" name="primary_hover" value="{{ object.primary_hover }}" class="color-input">
+                        <input type="text" value="{{ object.primary_hover }}" class="color-text form-control" readonly>
+                        <div class="color-preview" style="background: {{ object.primary_hover }};"></div>
+                    </div>
+                    <p class="form-help">Color when hovering over primary elements</p>
+                </div>
+
+                <div class="color-group">
+                    <label class="form-label">Primary Light</label>
+                    <div class="color-picker">
+                        <input type="color" name="primary_light" value="{{ object.primary_light }}" class="color-input">
+                        <input type="text" value="{{ object.primary_light }}" class="color-text form-control" readonly>
+                        <div class="color-preview" style="background: {{ object.primary_light }};"></div>
+                    </div>
+                    <p class="form-help">Light variant for backgrounds and highlights</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Secondary Colors -->
+        <div class="card">
+            <div class="card-body">
+                <h3 class="mb-4"><i data-feather="layers" class="card-icon"></i> Secondary Colors</h3>
+
+                <div class="color-group">
+                    <label class="form-label">Secondary Color</label>
+                    <div class="color-picker">
+                        <input type="color" name="secondary_color" value="{{ object.secondary_color }}" class="color-input">
+                        <input type="text" value="{{ object.secondary_color }}" class="color-text form-control" readonly>
+                        <div class="color-preview" style="background: {{ object.secondary_color }};"></div>
+                    </div>
+                </div>
+
+                <div class="color-group">
+                    <label class="form-label">Background Color</label>
+                    <div class="color-picker">
+                        <input type="color" name="background_color" value="{{ object.background_color }}" class="color-input">
+                        <input type="text" value="{{ object.background_color }}" class="color-text form-control" readonly>
+                        <div class="color-preview" style="background: {{ object.background_color }}; border: 1px solid #e5e7eb;"></div>
+                    </div>
+                    <p class="form-help">Main page background color</p>
+                </div>
+
+                <div class="color-group">
+                    <label class="form-label">Surface Color</label>
+                    <div class="color-picker">
+                        <input type="color" name="surface_color" value="{{ object.surface_color }}" class="color-input">
+                        <input type="text" value="{{ object.surface_color }}" class="color-text form-control" readonly>
+                        <div class="color-preview" style="background: {{ object.surface_color }}; border: 1px solid #e5e7eb;"></div>
+                    </div>
+                    <p class="form-help">Color for cards and elevated surfaces</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navbar & Footer -->
+        <div class="card">
+            <div class="card-body">
+                <h3 class="mb-4"><i data-feather="layout" class="card-icon"></i> Navbar & Footer</h3>
+
+                <div class="color-group">
+                    <label class="form-label">Navbar Background</label>
+                    <div class="color-picker">
+                        <input type="color" name="navbar_bg" value="{{ object.navbar_bg }}" class="color-input">
+                        <input type="text" value="{{ object.navbar_bg }}" class="color-text form-control" readonly>
+                        <div class="color-preview" style="background: {{ object.navbar_bg }};"></div>
+                    </div>
+                </div>
+
+                <div class="color-group">
+                    <label class="form-label">Footer Background</label>
+                    <div class="color-picker">
+                        <input type="color" name="footer_bg" value="{{ object.footer_bg }}" class="color-input">
+                        <input type="text" value="{{ object.footer_bg }}" class="color-text form-control" readonly>
+                        <div class="color-preview" style="background: {{ object.footer_bg }};"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Colors -->
+        <div class="card">
+            <div class="card-body">
+                <h3 class="mb-4"><i data-feather="flag" class="card-icon"></i> Status Colors</h3>
+
+                <div class="color-group">
+                    <label class="form-label">Success Color</label>
+                    <div class="color-picker">
+                        <input type="color" name="success_color" value="{{ object.success_color }}" class="color-input">
+                        <input type="text" value="{{ object.success_color }}" class="color-text form-control" readonly>
+                        <div class="color-preview" style="background: {{ object.success_color }};"></div>
+                    </div>
+                    <p class="form-help">For positive actions and success states</p>
+                </div>
+
+                <div class="color-group">
+                    <label class="form-label">Warning Color</label>
+                    <div class="color-picker">
+                        <input type="color" name="warning_color" value="{{ object.warning_color }}" class="color-input">
+                        <input type="text" value="{{ object.warning_color }}" class="color-text form-control" readonly>
+                        <div class="color-preview" style="background: {{ object.warning_color }};"></div>
+                    </div>
+                    <p class="form-help">For warnings and pending states</p>
+                </div>
+
+                <div class="color-group">
+                    <label class="form-label">Error Color</label>
+                    <div class="color-picker">
+                        <input type="color" name="error_color" value="{{ object.error_color }}" class="color-input">
+                        <input type="text" value="{{ object.error_color }}" class="color-text form-control" readonly>
+                        <div class="color-preview" style="background: {{ object.error_color }};"></div>
+                    </div>
+                    <p class="form-help">For errors and danger states</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Preview Section -->
+    <div class="card mt-4">
+        <div class="card-body">
+            <h3 class="mb-4"><i data-feather="eye" class="card-icon"></i> Live Preview</h3>
+            <div class="preview-container">
+                <div class="preview-box">
+                    <button type="button" class="preview-btn preview-primary">Primary Button</button>
+                    <button type="button" class="preview-btn preview-success">Success</button>
+                    <button type="button" class="preview-btn preview-warning">Warning</button>
+                    <button type="button" class="preview-btn preview-error">Error</button>
+                </div>
+                <div class="preview-badges">
+                    <span class="preview-badge preview-badge-primary">Badge</span>
+                    <span class="preview-badge preview-badge-success">Success</span>
+                    <span class="preview-badge preview-badge-warning">Warning</span>
+                    <span class="preview-badge preview-badge-error">Error</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-actions-sticky">
+        <div class="form-actions-inner">
+            <button type="submit" class="btn btn-primary btn-lg">
+                <i data-feather="save"></i> Save Theme Settings
+            </button>
+            <a href="{% url 'dashboard:admin_dashboard' %}" class="btn btn-outline btn-lg">Cancel</a>
+        </div>
+    </div>
+</form>
+
+<style>
+.header-icon {
+    width: 28px;
+    height: 28px;
+    vertical-align: middle;
+    margin-right: 0.5rem;
+    color: var(--primary-color, #4f46e5);
+}
+
+.card-icon {
+    width: 20px;
+    height: 20px;
+    vertical-align: middle;
+    margin-right: 0.5rem;
+    color: var(--primary-color, #4f46e5);
+}
+
+.color-group {
+    margin-bottom: 1.5rem;
+}
+
+.color-group:last-child {
+    margin-bottom: 0;
+}
+
+.color-picker {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.color-input {
+    width: 50px;
+    height: 42px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    padding: 0;
+    overflow: hidden;
+}
+
+.color-input::-webkit-color-swatch-wrapper {
+    padding: 2px;
+}
+
+.color-input::-webkit-color-swatch {
+    border: none;
+    border-radius: 6px;
+}
+
+.color-text {
+    flex: 1;
+    font-family: monospace;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+}
+
+.color-preview {
+    width: 42px;
+    height: 42px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Preview Section */
+.preview-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    background: var(--background-color, #f9fafb);
+    border-radius: 12px;
+}
+
+.preview-box {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.preview-btn {
+    padding: 0.625rem 1.25rem;
+    border-radius: 8px;
+    border: none;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.preview-btn:hover {
+    opacity: 0.9;
+}
+
+.preview-primary {
+    background: var(--primary-color, #4f46e5);
+    color: white;
+}
+
+.preview-success {
+    background: var(--success-color, #10b981);
+    color: white;
+}
+
+.preview-warning {
+    background: var(--warning-color, #f59e0b);
+    color: white;
+}
+
+.preview-error {
+    background: var(--error-color, #ef4444);
+    color: white;
+}
+
+.preview-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.preview-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.preview-badge-primary {
+    background: var(--primary-light, #eef2ff);
+    color: var(--primary-color, #4f46e5);
+}
+
+.preview-badge-success {
+    background: #d1fae5;
+    color: #059669;
+}
+
+.preview-badge-warning {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.preview-badge-error {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.form-actions-sticky {
+    position: sticky;
+    bottom: 0;
+    background: var(--background-color, #f3f4f6);
+    padding: 1rem 0;
+    margin-top: 1.5rem;
+    border-top: 1px solid var(--border-color, #e5e7eb);
+    z-index: 10;
+}
+
+.form-actions-inner {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+}
+</style>
+
+<script>
+// Sync color input with text display
+document.querySelectorAll('input[type="color"]').forEach(input => {
+    input.addEventListener('input', function() {
+        const textInput = this.nextElementSibling;
+        const preview = textInput.nextElementSibling;
+        textInput.value = this.value.toUpperCase();
+        if (preview) {
+            preview.style.background = this.value;
+        }
+    });
+});
+</script>
+{% endblock %}

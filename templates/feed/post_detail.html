@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Post Detail{% endblock %}
+{% block content %}
+<div class="post-detail-container">
+    <div class="post-detail-layout">
+        <a href="{% url 'feed:home' %}" class="back-link"><i data-feather="arrow-left"></i> Back to Feed</a>
+        <article class="post-card card">
+            <div class="post-header">
+                <a href="{% url 'profiles:detail' post.author.id %}">
+                    <img src="{{ post.author.get_avatar_url }}" alt="" class="avatar avatar-lg">
+                </a>
+                <div class="post-author-info">
+                    <a href="{% url 'profiles:detail' post.author.id %}" class="post-author-name">{{ post.author.get_full_name }}</a>
+                    <div class="post-meta">{{ post.author.get_role_display }} - {{ post.created_at|date:"M d, Y" }}</div>
+                </div>
+            </div>
+            <div class="post-content-full">{{ post.content|linebreaks }}</div>
+            {% if post.image %}<div class="post-image-container"><img src="{{ post.image.url }}" class="post-image-full"></div>{% endif %}
+            <div class="post-stats-detail">
+                <span>{{ post.likes_count }} Likes</span>
+                <span>{{ post.comments_count }} Comments</span>
+            </div>
+            <div class="post-actions-detail">
+                {% if user.is_authenticated %}
+                <button class="action-btn" onclick="toggleLike({{ post.id }}, this)"><i data-feather="heart"></i> Like</button>
+                {% else %}
+                <a href="{% url 'accounts:login' %}" class="action-btn"><i data-feather="heart"></i> Like</a>
+                {% endif %}
+            </div>
+        </article>
+        <div class="comments-section card">
+            <h3 class="p-4">Comments ({{ comments|length }})</h3>
+            {% if user.is_authenticated %}
+            <form method="post" action="{% url 'feed:add_comment' post.id %}" class="p-4">
+                {% csrf_token %}
+                <div class="flex gap-3">
+                    <img src="{{ user.get_avatar_url }}" class="avatar">
+                    <textarea name="content" placeholder="Write a comment..." required class="form-textarea flex-1"></textarea>
+                    <button type="submit" class="btn btn-primary">Post</button>
+                </div>
+            </form>
+            {% else %}
+            <div class="p-4 text-center"><a href="{% url 'accounts:login' %}" class="btn btn-primary">Sign in to comment</a></div>
+            {% endif %}
+            <div class="comments-list p-4">
+                {% for comment in comments %}
+                <div class="comment flex gap-3 mb-4">
+                    <img src="{{ comment.author.get_avatar_url }}" class="avatar">
+                    <div class="comment-body">
+                        <div class="comment-bubble bg-gray-100 p-3 rounded-lg">
+                            <strong>{{ comment.author.get_full_name }}</strong>
+                            <p>{{ comment.content }}</p>
+                        </div>
+                        <small class="text-muted">{{ comment.created_at|timesince }} ago</small>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-muted text-center">No comments yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_css %}
+<style>
+.post-detail-container{max-width:800px;margin:0 auto;padding:2rem 1rem}
+.back-link{display:inline-flex;align-items:center;gap:.5rem;color:var(--text-secondary);margin-bottom:1rem}
+.post-card,.comments-section{margin-bottom:1rem}
+.post-header{display:flex;gap:.75rem;padding:1.25rem}
+.post-author-info{flex:1}
+.post-author-name{font-weight:600;color:var(--text-primary)}
+.post-meta{font-size:.8rem;color:var(--text-muted)}
+.post-content-full{padding:0 1.25rem 1rem;font-size:1rem;line-height:1.7}
+.post-image-full{width:100%;max-height:500px;object-fit:contain}
+.post-stats-detail{display:flex;gap:2rem;padding:1rem 1.25rem;border-top:1px solid #eee}
+.post-actions-detail{display:flex;border-top:1px solid #eee}
+.action-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:.5rem;padding:.75rem;border:none;background:transparent;cursor:pointer;text-decoration:none;color:var(--text-secondary)}
+.action-btn:hover{background:var(--background-color);color:var(--primary-color)}
+.comment-bubble{background:var(--background-color,#f3f4f6);border-radius:0 12px 12px 12px;padding:.75rem 1rem}
+</style>
+{% endblock %}
+{% block extra_js %}
+<script>
+function toggleLike(id,btn){fetch('/feed/post/'+id+'/like/',{method:'POST',headers:{'X-CSRFToken':document.querySelector('[name=csrfmiddlewaretoken]')?.value||'','X-Requested-With':'XMLHttpRequest'}}).then(r=>r.json()).then(d=>{btn.classList.toggle('liked',d.liked)})}
+</script>
+{% endblock %}

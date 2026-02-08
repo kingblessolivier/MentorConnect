@@ -1,0 +1,199 @@
+{% extends 'dashboard/base_dashboard.html' %}
+
+{% block title %}Broadcast - Admin - {{ SITE_NAME }}{% endblock %}
+
+{% block dashboard_content %}
+<div class="dashboard-header">
+    <div>
+        <h1><i data-feather="send" class="header-icon"></i> Send Broadcast</h1>
+        <p class="text-muted">Send notifications to all users on the platform</p>
+    </div>
+    <a href="{% url 'dashboard:admin_notifications' %}" class="btn btn-outline">
+        <i data-feather="arrow-left"></i> Back to Notifications
+    </a>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <!-- Broadcast Form -->
+    <div class="lg-col-span-2">
+        <div class="card">
+            <div class="card-body">
+                <h3 class="mb-4"><i data-feather="edit-3" class="card-icon"></i> Compose Message</h3>
+
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="form-group">
+                        <label class="form-label">Target Audience *</label>
+                        <select name="target" class="form-control" required>
+                            <option value="all">📢 All Users</option>
+                            <option value="students">🎓 Students Only</option>
+                            <option value="mentors">👨‍🏫 Mentors Only</option>
+                        </select>
+                        <p class="form-help">Select who should receive this notification</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Title</label>
+                        <input type="text" name="title" class="form-control" placeholder="Enter a catchy title (optional)">
+                        <p class="form-help">A brief headline for your notification</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Message *</label>
+                        <textarea name="message" class="form-control form-textarea" rows="6" placeholder="Write your message here..." required></textarea>
+                        <p class="form-help">Be clear and concise. Markdown is not supported.</p>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i data-feather="send"></i> Send Broadcast
+                        </button>
+                        <a href="{% url 'dashboard:admin_notifications' %}" class="btn btn-outline btn-lg">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tips Sidebar -->
+    <div>
+        <div class="card mb-4">
+            <div class="card-body">
+                <h3 class="mb-4"><i data-feather="info" class="card-icon"></i> Tips</h3>
+                <div class="tips-list">
+                    <div class="tip-item">
+                        <div class="tip-icon">
+                            <i data-feather="check-circle"></i>
+                        </div>
+                        <div class="tip-content">
+                            <h4>Keep it brief</h4>
+                            <p>Short messages are more likely to be read</p>
+                        </div>
+                    </div>
+                    <div class="tip-item">
+                        <div class="tip-icon">
+                            <i data-feather="target"></i>
+                        </div>
+                        <div class="tip-content">
+                            <h4>Target wisely</h4>
+                            <p>Only notify relevant user groups</p>
+                        </div>
+                    </div>
+                    <div class="tip-item">
+                        <div class="tip-icon">
+                            <i data-feather="clock"></i>
+                        </div>
+                        <div class="tip-content">
+                            <h4>Timing matters</h4>
+                            <p>Consider when your users are most active</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <h3 class="mb-4"><i data-feather="alert-triangle" class="card-icon warning"></i> Caution</h3>
+                <p class="text-muted">Broadcasts are sent immediately and cannot be undone. All selected users will receive this notification.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.header-icon {
+    width: 28px;
+    height: 28px;
+    vertical-align: middle;
+    margin-right: 0.5rem;
+    color: var(--primary-color, #4f46e5);
+}
+
+.card-icon {
+    width: 20px;
+    height: 20px;
+    vertical-align: middle;
+    margin-right: 0.5rem;
+    color: var(--primary-color, #4f46e5);
+}
+
+.card-icon.warning {
+    color: #f59e0b;
+}
+
+.lg-col-span-2 {
+    grid-column: span 2;
+}
+
+@media (max-width: 1024px) {
+    .lg-col-span-2 {
+        grid-column: span 1;
+    }
+}
+
+.form-textarea {
+    resize: vertical;
+    min-height: 150px;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color, #e5e7eb);
+}
+
+.tips-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.tip-item {
+    display: flex;
+    gap: 0.875rem;
+    padding: 0.75rem;
+    background: var(--background-color, #f9fafb);
+    border-radius: 10px;
+    transition: background 0.2s;
+}
+
+.tip-item:hover {
+    background: #f3f4f6;
+}
+
+.tip-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: var(--primary-light, #eef2ff);
+    color: var(--primary-color, #4f46e5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.tip-icon svg {
+    width: 18px;
+    height: 18px;
+}
+
+.tip-content h4 {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary, #111827);
+    margin: 0 0 0.25rem;
+}
+
+.tip-content p {
+    font-size: 0.8125rem;
+    color: var(--text-muted, #9ca3af);
+    margin: 0;
+    line-height: 1.4;
+}
+</style>
+{% endblock %}

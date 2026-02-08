@@ -1,0 +1,444 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Community Feed - {{ SITE_NAME }}{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Premium Public Feed Page */
+.feed-page-premium {
+    min-height: 100vh;
+    background: #f8fafc;
+}
+
+.feed-hero {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%);
+    padding: 3rem 0 4rem;
+    margin-bottom: -2rem;
+}
+
+.feed-hero-content {
+    max-width: 700px;
+    margin: 0 auto;
+    text-align: center;
+    color: white;
+}
+
+.feed-hero h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.feed-hero p {
+    font-size: 1.0625rem;
+    opacity: 0.9;
+}
+
+/* Feed Container */
+.feed-container-premium {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 1.5rem 3rem;
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 2rem;
+}
+
+@media (max-width: 968px) {
+    .feed-container-premium {
+        grid-template-columns: 1fr;
+    }
+    .feed-public-sidebar {
+        display: none;
+    }
+}
+
+/* Create Post Card */
+.create-post-card-premium {
+    background: white;
+    border-radius: 20px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+
+.create-post-card-premium .create-post-header {
+    display: flex;
+    gap: 1rem;
+}
+
+.create-post-card-premium .avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 2px solid #e2e8f0;
+}
+
+.create-post-card-premium textarea {
+    width: 100%;
+    min-height: 80px;
+    padding: 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 16px;
+    font-size: 1rem;
+    font-family: inherit;
+    background: #f8fafc;
+    resize: none;
+    transition: all 0.2s;
+}
+
+.create-post-card-premium textarea:focus {
+    outline: none;
+    border-color: #3b82f6;
+    background: white;
+}
+
+/* Public Post Card */
+.post-card-public {
+    background: white;
+    border-radius: 20px;
+    margin-bottom: 1.5rem;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+    transition: all 0.3s;
+}
+
+.post-card-public:hover {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+}
+
+/* Sidebar Cards */
+.sidebar-card-public {
+    background: white;
+    border-radius: 20px;
+    padding: 1.5rem;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 1.5rem;
+}
+
+.sidebar-card-public h4 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.sidebar-card-public h4 svg {
+    width: 18px;
+    height: 18px;
+    color: #3b82f6;
+}
+
+/* Login CTA */
+.login-cta-premium {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%);
+    border-radius: 20px;
+    padding: 2rem;
+    text-align: center;
+    color: white;
+    margin-bottom: 1.5rem;
+}
+
+.login-cta-premium h3 {
+    font-size: 1.25rem;
+    margin-bottom: 0.75rem;
+}
+
+.login-cta-premium p {
+    font-size: 0.9375rem;
+    opacity: 0.9;
+    margin-bottom: 1.5rem;
+}
+
+.login-cta-premium .btn-login {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: white;
+    color: #1e3a5f;
+    font-weight: 600;
+    border-radius: 12px;
+    text-decoration: none;
+    transition: all 0.2s;
+    margin-right: 0.75rem;
+}
+
+.login-cta-premium .btn-login:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.login-cta-premium .btn-signup {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: transparent;
+    color: white;
+    font-weight: 600;
+    border-radius: 12px;
+    border: 2px solid rgba(255,255,255,0.3);
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.login-cta-premium .btn-signup:hover {
+    background: rgba(255,255,255,0.1);
+    border-color: rgba(255,255,255,0.5);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="feed-page-premium">
+    <!-- Hero -->
+    <div class="feed-hero">
+        <div class="feed-hero-content">
+            <h1>Community Feed</h1>
+            <p>Insights, experiences, and stories from professionals and students</p>
+        </div>
+    </div>
+
+    <!-- Feed Container -->
+    <div class="feed-container-premium">
+        <!-- Main Feed -->
+        <div class="feed-main-public">
+            {% if user.is_authenticated %}
+            <!-- Create Post Card -->
+            <div class="create-post-card-premium">
+                <form method="post" action="{% url 'feed:create_post' %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="create-post-header">
+                        <img src="{{ user.get_avatar_url }}" alt="{{ user.get_full_name }}" class="avatar">
+                        <div style="flex: 1;">
+                            <textarea name="content" placeholder="Share your thoughts, experiences, or insights..." rows="3" required></textarea>
+                        </div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #f1f5f9;">
+                        <div style="display: flex; gap: 0.5rem;">
+                            <label style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 10px; color: #64748b; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
+                                <i data-feather="image" style="width: 20px; height: 20px;"></i>
+                                <span>Photo</span>
+                                <input type="file" name="image" accept="image/*" hidden>
+                            </label>
+                        </div>
+                        <button type="submit" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; background: linear-gradient(135deg, #1e3a5f, #2d5a87); color: white; font-weight: 600; border: none; border-radius: 12px; cursor: pointer;">
+                            <i data-feather="send" style="width: 18px; height: 18px;"></i>
+                            Post
+                        </button>
+                    </div>
+                </form>
+            </div>
+            {% endif %}
+
+            <!-- Posts -->
+            {% for post in posts %}
+            <article class="post-card-public">
+                <div style="display: flex; align-items: flex-start; gap: 1rem; padding: 1.25rem 1.5rem;">
+                    <a href="{% url 'profiles:detail' post.author.id %}" style="position: relative; flex-shrink: 0;">
+                        <img src="{{ post.author.get_avatar_url }}" alt="{{ post.author.get_full_name }}" style="width: 48px; height: 48px; border-radius: 50%; border: 2px solid #e2e8f0;">
+                        {% if post.author.role == 'mentor' %}
+                        <div style="position: absolute; bottom: -2px; right: -2px; width: 18px; height: 18px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center;">
+                            <i data-feather="check" style="width: 10px; height: 10px; color: white;"></i>
+                        </div>
+                        {% endif %}
+                    </a>
+                    <div style="flex: 1; min-width: 0;">
+                        <a href="{% url 'profiles:detail' post.author.id %}" style="font-weight: 600; color: #1e293b; text-decoration: none;">
+                            {{ post.author.get_full_name }}
+                        </a>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.25rem; font-size: 0.8125rem; color: #94a3b8;">
+                            <span style="padding: 0.125rem 0.5rem; background: {% if post.author.role == 'mentor' %}linear-gradient(135deg, #dcfce7, #bbf7d0){% else %}linear-gradient(135deg, #eff6ff, #dbeafe){% endif %}; border-radius: 6px; font-size: 0.75rem; font-weight: 600; color: {% if post.author.role == 'mentor' %}#166534{% else %}#1e3a5f{% endif %};">
+                                {{ post.author.get_role_display }}
+                            </span>
+                            <span>•</span>
+                            <span>{{ post.created_at|timesince }} ago</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="padding: 0 1.5rem 1rem;">
+                    <p style="color: #374151; line-height: 1.7; margin: 0;">{{ post.content|linebreaks }}</p>
+                </div>
+
+                {% if post.image %}
+                <div style="background: #f8fafc;">
+                    <img src="{{ post.image.url }}" alt="Post image" style="width: 100%; max-height: 500px; object-fit: cover;">
+                </div>
+                {% endif %}
+
+                {% if post.likes_count > 0 or post.comments_count > 0 %}
+                <div style="display: flex; justify-content: space-between; padding: 0.75rem 1.5rem; font-size: 0.875rem; color: #64748b;">
+                    <div>
+                        {% if post.likes_count > 0 %}❤️ {{ post.likes_count }}{% endif %}
+                    </div>
+                    <div>
+                        {% if post.comments_count > 0 %}{{ post.comments_count }} comment{{ post.comments_count|pluralize }}{% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <div style="display: flex; padding: 0.5rem 0.75rem; border-top: 1px solid #f1f5f9;">
+                    {% if user.is_authenticated %}
+                    <button onclick="toggleLike({{ post.id }}, this)" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.75rem; border-radius: 12px; font-weight: 500; color: {% if post.id in liked_posts %}#ef4444{% else %}#64748b{% endif %}; background: transparent; border: none; cursor: pointer;">
+                        <i data-feather="heart" {% if post.id in liked_posts %}fill="currentColor"{% endif %}></i>
+                        <span>{% if post.id in liked_posts %}Liked{% else %}Like{% endif %}</span>
+                    </button>
+                    {% else %}
+                    <a href="{% url 'accounts:login' %}?next={{ request.path }}" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.75rem; border-radius: 12px; font-weight: 500; color: #64748b; text-decoration: none;">
+                        <i data-feather="heart"></i>
+                        <span>Like</span>
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'feed:post_detail' post.id %}" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.75rem; border-radius: 12px; font-weight: 500; color: #64748b; text-decoration: none;">
+                        <i data-feather="message-circle"></i>
+                        <span>Comment</span>
+                    </a>
+                    <button onclick="copyPostLink({{ post.id }})" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.75rem; border-radius: 12px; font-weight: 500; color: #64748b; background: transparent; border: none; cursor: pointer;">
+                        <i data-feather="link"></i>
+                        <span>Copy</span>
+                    </button>
+                </div>
+            </article>
+            {% empty %}
+            <div style="text-align: center; padding: 4rem 2rem; background: white; border-radius: 20px; border: 1px solid #e2e8f0;">
+                <div style="width: 100px; height: 100px; margin: 0 auto 1.5rem; background: linear-gradient(135deg, #f0f9ff, #e0f2fe); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                    <i data-feather="edit-3" style="width: 40px; height: 40px; color: #3b82f6;"></i>
+                </div>
+                <h3 style="font-size: 1.25rem; color: #1e293b; margin-bottom: 0.5rem;">No posts yet</h3>
+                <p style="color: #64748b;">Be the first to share something with the community!</p>
+            </div>
+            {% endfor %}
+
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+            <div style="display: flex; justify-content: center; gap: 1rem; margin-top: 2rem;">
+                {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.25rem; background: white; border: 1px solid #e2e8f0; border-radius: 12px; color: #1e293b; text-decoration: none; font-weight: 500;">
+                    <i data-feather="chevron-left" style="width: 18px; height: 18px;"></i> Previous
+                </a>
+                {% endif %}
+                <span style="padding: 0.75rem 1.25rem; background: linear-gradient(135deg, #1e3a5f, #2d5a87); color: white; border-radius: 12px; font-weight: 600;">
+                    Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+                </span>
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.25rem; background: white; border: 1px solid #e2e8f0; border-radius: 12px; color: #1e293b; text-decoration: none; font-weight: 500;">
+                    Next <i data-feather="chevron-right" style="width: 18px; height: 18px;"></i>
+                </a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar -->
+        <aside class="feed-public-sidebar">
+            {% if not user.is_authenticated %}
+            <!-- Login CTA -->
+            <div class="login-cta-premium">
+                <h3>Join the Community</h3>
+                <p>Sign in to like, comment, and share your own experiences</p>
+                <a href="{% url 'accounts:login' %}" class="btn-login">
+                    <i data-feather="log-in" style="width: 18px; height: 18px;"></i>
+                    Sign In
+                </a>
+                <a href="{% url 'accounts:signup' %}" class="btn-signup">
+                    Sign Up
+                </a>
+            </div>
+            {% endif %}
+
+            <!-- Trending Topics -->
+            <div class="sidebar-card-public">
+                <h4><i data-feather="trending-up"></i> Trending Topics</h4>
+                <div>
+                    <a href="#" style="display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid #f8fafc; text-decoration: none;">
+                        <span style="font-weight: 600; color: #1e293b;">#shadowing</span>
+                        <span style="font-size: 0.8125rem; color: #94a3b8;">245 posts</span>
+                    </a>
+                    <a href="#" style="display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid #f8fafc; text-decoration: none;">
+                        <span style="font-weight: 600; color: #1e293b;">#careerinsights</span>
+                        <span style="font-size: 0.8125rem; color: #94a3b8;">189 posts</span>
+                    </a>
+                    <a href="#" style="display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid #f8fafc; text-decoration: none;">
+                        <span style="font-weight: 600; color: #1e293b;">#mentorship</span>
+                        <span style="font-size: 0.8125rem; color: #94a3b8;">156 posts</span>
+                    </a>
+                    <a href="#" style="display: flex; justify-content: space-between; padding: 0.75rem 0; text-decoration: none;">
+                        <span style="font-weight: 600; color: #1e293b;">#healthcare</span>
+                        <span style="font-size: 0.8125rem; color: #94a3b8;">134 posts</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Featured Professionals -->
+            <div class="sidebar-card-public">
+                <h4><i data-feather="star"></i> Featured Professionals</h4>
+                <div>
+                    {% for mentor in featured_mentors|slice:":3" %}
+                    <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 0; border-bottom: 1px solid #f8fafc;">
+                        <img src="{{ mentor.user.get_avatar_url }}" alt="" style="width: 44px; height: 44px; border-radius: 50%; border: 2px solid #e2e8f0;">
+                        <div style="flex: 1; min-width: 0;">
+                            <a href="{% url 'profiles:mentor_detail' mentor.user.id %}" style="font-weight: 600; color: #1e293b; font-size: 0.9375rem; text-decoration: none; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                {{ mentor.user.get_full_name }}
+                            </a>
+                            <span style="font-size: 0.8125rem; color: #94a3b8;">{{ mentor.job_title|default:mentor.expertise|truncatewords:3 }}</span>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p style="color: #94a3b8; font-size: 0.875rem; text-align: center; padding: 1rem 0;">No featured professionals</p>
+                    {% endfor %}
+                </div>
+                <a href="{% url 'core:mentors' %}" style="display: block; text-align: center; padding: 0.75rem; margin-top: 1rem; background: #f1f5f9; border-radius: 10px; color: #1e293b; font-weight: 500; text-decoration: none;">
+                    Browse All Professionals
+                </a>
+            </div>
+
+            <!-- About Mirror -->
+            <div class="sidebar-card-public" style="background: linear-gradient(135deg, #0f172a, #1e293b); border: none;">
+                <h4 style="color: white; border-color: rgba(255,255,255,0.1);"><i data-feather="info" style="color: #60a5fa;"></i> About Mirror</h4>
+                <p style="color: rgba(255,255,255,0.8); font-size: 0.875rem; line-height: 1.6; margin-bottom: 1rem;">
+                    Mirror connects students with professionals through observation internships of 1-5 days.
+                </p>
+                <a href="{% url 'core:about' %}" style="display: inline-flex; align-items: center; gap: 0.5rem; color: #60a5fa; font-size: 0.875rem; font-weight: 600; text-decoration: none;">
+                    Learn more <i data-feather="arrow-right" style="width: 16px; height: 16px;"></i>
+                </a>
+            </div>
+        </aside>
+    </div>
+</div>
+
+<script>
+function copyPostLink(postId) {
+    const url = `${window.location.origin}/feed/post/${postId}/`;
+    navigator.clipboard.writeText(url).then(() => {
+        alert('Link copied to clipboard!');
+    });
+}
+
+async function toggleLike(postId, button) {
+    try {
+        const response = await fetch(`/feed/post/${postId}/like/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json'
+            }
+        });
+        if (response.ok) {
+            location.reload();
+        }
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+</script>
+{% endblock %}

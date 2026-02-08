@@ -1,0 +1,555 @@
+{% extends 'dashboard/base_dashboard.html' %}
+
+{% block title %}Messages - {{ SITE_NAME }}{% endblock %}
+
+{% block dashboard_content %}
+<div class="dashboard-header">
+    <div>
+        <h1>Messages</h1>
+        <p class="text-muted">Your conversations</p>
+    </div>
+    <button class="btn btn-primary" onclick="openNewChatModal()">
+        <i data-feather="edit"></i> New Message
+    </button>
+</div>
+
+<div class="messages-layout">
+    <!-- Conversations List -->
+    <div class="conversations-panel card">
+        <div class="conversations-header">
+            <div class="search-box">
+                <i data-feather="search"></i>
+                <input type="text" id="searchConversations" placeholder="Search conversations..." class="form-input">
+            </div>
+        </div>
+
+        <div class="conversation-list" id="conversationList">
+            {% for conv in conversations %}
+            <a href="{% url 'chat:conversation' conv.id %}" class="conversation-item" data-name="{{ conv.other_participant.get_full_name|lower }}">
+                <div class="conversation-avatar">
+                    <img src="{{ conv.other_participant.get_avatar_url }}" alt="{{ conv.other_participant.get_full_name }}" class="avatar">
+                </div>
+                <div class="conversation-info">
+                    <div class="conversation-top">
+                        <span class="conversation-name">{{ conv.other_participant.get_full_name }}</span>
+                        {% with last=conv.get_last_message %}
+                        {% if last %}
+                        <span class="conversation-time">{{ last.created_at|timesince }} ago</span>
+                        {% endif %}
+                        {% endwith %}
+                    </div>
+                    <div class="conversation-preview">
+                        {% with last=conv.get_last_message %}
+                        {% if last %}
+                        {% if last.sender == request.user %}<span class="you-prefix">You: </span>{% endif %}
+                        {{ last.content|truncatewords:8 }}
+                        {% else %}
+                        <span class="text-muted">No messages yet</span>
+                        {% endif %}
+                        {% endwith %}
+                    </div>
+                </div>
+                {% if conv.unread_count %}
+                <span class="unread-badge">{{ conv.unread_count }}</span>
+                {% endif %}
+            </a>
+            {% empty %}
+            <div class="empty-conversations">
+                <i data-feather="message-circle"></i>
+                <p>No conversations yet</p>
+                <button class="btn btn-primary btn-sm" onclick="openNewChatModal()">Start a conversation</button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Welcome/Empty State -->
+    <div class="chat-welcome card">
+        <div class="welcome-content">
+            <div class="welcome-icon">
+                <i data-feather="message-circle"></i>
+            </div>
+            <h2>Welcome to Messages</h2>
+            <p class="text-muted">Select a conversation from the left or start a new one</p>
+            <button class="btn btn-primary" onclick="openNewChatModal()">
+                <i data-feather="edit"></i> Start New Conversation
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- New Chat Modal -->
+<div class="modal-overlay" id="newChatModal">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h3>New Message</h3>
+            <button class="modal-close" onclick="closeNewChatModal()">
+                <i data-feather="x"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="search-recipient">
+                <label>To:</label>
+                <input type="text" id="userSearchInput" placeholder="Search for a {% if user.is_student %}mentor{% elif user.is_mentor %}student or mentor{% else %}user{% endif %}..." class="form-input" autocomplete="off">
+                <div class="search-results" id="userSearchResults"></div>
+            </div>
+
+            {% if suggested_users %}
+            <div class="suggested-users">
+                <h4>{% if user.is_student %}Suggested Mentors{% elif user.is_mentor %}Your Connections{% else %}Suggested Users{% endif %}</h4>
+                <div class="user-suggestions-list">
+                    {% for u in suggested_users %}
+                    <a href="{% url 'chat:start' u.id %}" class="user-suggestion-item">
+                        <img src="{{ u.get_avatar_url }}" alt="" class="avatar avatar-md">
+                        <div class="user-suggestion-info">
+                            <span class="user-name">{{ u.get_full_name }}</span>
+                            <span class="user-role">{{ u.get_role_display }}</span>
+                        </div>
+                        <i data-feather="message-circle" class="start-chat-icon"></i>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Mobile Toggle Button -->
+<button class="sidebar-toggle-mobile">
+    <i data-feather="menu"></i>
+</button>
+<div class="sidebar-overlay"></div>
+{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+/* Messages Layout */
+.messages-layout {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: 1.5rem;
+    height: calc(100vh - 200px);
+    min-height: 500px;
+}
+
+/* Conversations Panel */
+.conversations-panel {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.conversations-header {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color, #e5e7eb);
+}
+
+.search-box {
+    position: relative;
+}
+
+.search-box i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 18px;
+    height: 18px;
+    color: var(--text-muted);
+}
+
+.search-box input {
+    padding-left: 40px;
+    width: 100%;
+}
+
+/* Conversation List */
+.conversation-list {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.conversation-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    text-decoration: none;
+    color: inherit;
+    border-bottom: 1px solid var(--border-color, #e5e7eb);
+    transition: background 0.2s;
+}
+
+.conversation-item:hover {
+    background: var(--primary-light);
+}
+
+.conversation-item.active {
+    background: var(--primary-light);
+    border-left: 3px solid var(--primary-color);
+}
+
+.conversation-avatar {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.conversation-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.conversation-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 0.25rem;
+}
+
+.conversation-name {
+    font-weight: 600;
+    font-size: 0.9375rem;
+    color: var(--text-primary);
+}
+
+.conversation-time {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    flex-shrink: 0;
+}
+
+.conversation-preview {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.you-prefix {
+    color: var(--text-muted);
+}
+
+.unread-badge {
+    background: var(--primary-color);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.125rem 0.5rem;
+    border-radius: 9999px;
+    min-width: 20px;
+    text-align: center;
+}
+
+.empty-conversations {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1rem;
+    text-align: center;
+    color: var(--text-muted);
+}
+
+.empty-conversations i {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 1rem;
+}
+
+/* Chat Welcome */
+.chat-welcome {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.welcome-content {
+    text-align: center;
+    padding: 2rem;
+}
+
+.welcome-icon {
+    width: 80px;
+    height: 80px;
+    background: var(--primary-light);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+}
+
+.welcome-icon i {
+    width: 40px;
+    height: 40px;
+    color: var(--primary-color);
+}
+
+.welcome-content h2 {
+    margin-bottom: 0.5rem;
+}
+
+.welcome-content p {
+    margin-bottom: 1.5rem;
+}
+
+/* Modal Styles */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-container {
+    background: var(--surface-color);
+    border-radius: var(--card-radius);
+    width: 100%;
+    max-width: 500px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    transform: translateY(-20px);
+    transition: transform 0.3s;
+}
+
+.modal-overlay.active .modal-container {
+    transform: translateY(0);
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border-color, #e5e7eb);
+}
+
+.modal-header h3 {
+    margin: 0;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    padding: 0.5rem;
+    cursor: pointer;
+    color: var(--text-secondary);
+    border-radius: var(--button-radius);
+    transition: all 0.2s;
+}
+
+.modal-close:hover {
+    background: var(--background-color);
+    color: var(--text-primary);
+}
+
+.modal-body {
+    padding: 1.5rem;
+    overflow-y: auto;
+}
+
+.search-recipient {
+    margin-bottom: 1.5rem;
+}
+
+.search-recipient label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.search-results {
+    margin-top: 0.5rem;
+    border-radius: var(--button-radius);
+    overflow: hidden;
+    display: none;
+}
+
+.search-results.active {
+    display: block;
+    border: 1px solid var(--border-color, #e5e7eb);
+}
+
+.search-result-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    text-decoration: none;
+    color: inherit;
+    transition: background 0.2s;
+}
+
+.search-result-item:hover {
+    background: var(--background-color);
+}
+
+/* Suggested Users */
+.suggested-users h4 {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.user-suggestions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.user-suggestion-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    text-decoration: none;
+    color: inherit;
+    border-radius: var(--button-radius);
+    border: 1px solid var(--border-color, #e5e7eb);
+    transition: all 0.2s;
+}
+
+.user-suggestion-item:hover {
+    background: var(--primary-light);
+    border-color: var(--primary-color);
+}
+
+.user-suggestion-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.user-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.user-role {
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+}
+
+.start-chat-icon {
+    width: 20px;
+    height: 20px;
+    color: var(--text-muted);
+}
+
+.user-suggestion-item:hover .start-chat-icon {
+    color: var(--primary-color);
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .messages-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .chat-welcome {
+        display: none;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Modal functions
+function openNewChatModal() {
+    document.getElementById('newChatModal').classList.add('active');
+    document.getElementById('userSearchInput').focus();
+}
+
+function closeNewChatModal() {
+    document.getElementById('newChatModal').classList.remove('active');
+}
+
+// Close modal on overlay click
+document.getElementById('newChatModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeNewChatModal();
+    }
+});
+
+// Close modal on Escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeNewChatModal();
+    }
+});
+
+// Search conversations
+document.getElementById('searchConversations').addEventListener('input', function(e) {
+    const query = e.target.value.toLowerCase();
+    const items = document.querySelectorAll('.conversation-item');
+
+    items.forEach(item => {
+        const name = item.dataset.name || '';
+        if (name.includes(query)) {
+            item.style.display = 'flex';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+});
+
+// Search users for new conversation
+let searchTimeout;
+document.getElementById('userSearchInput').addEventListener('input', function(e) {
+    clearTimeout(searchTimeout);
+    const query = e.target.value.trim();
+    const resultsContainer = document.getElementById('userSearchResults');
+
+    if (query.length < 2) {
+        resultsContainer.classList.remove('active');
+        resultsContainer.innerHTML = '';
+        return;
+    }
+
+    searchTimeout = setTimeout(() => {
+        fetch(`{% url 'chat:search_users' %}?q=${encodeURIComponent(query)}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.users && data.users.length > 0) {
+                    resultsContainer.innerHTML = data.users.map(user => `
+                        <a href="/chat/start/${user.id}/" class="search-result-item">
+                            <img src="${user.avatar}" alt="" class="avatar avatar-sm">
+                            <div>
+                                <div class="font-medium">${user.name}</div>
+                                <div class="text-sm text-muted">${user.role}</div>
+                            </div>
+                        </a>
+                    `).join('');
+                    resultsContainer.classList.add('active');
+                } else {
+                    resultsContainer.innerHTML = '<div class="p-3 text-center text-muted">No users found</div>';
+                    resultsContainer.classList.add('active');
+                }
+            });
+    }, 300);
+});
+
+// Initialize feather icons
+if (typeof feather !== 'undefined') {
+    feather.replace();
+}
+</script>
+{% endblock %}

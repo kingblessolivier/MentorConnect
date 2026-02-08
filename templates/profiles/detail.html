@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ profile_user.get_full_name }} - {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 800px;">
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <img src="{{ profile_user.get_avatar_url }}" alt="" class="avatar avatar-xl mb-3" style="width: 120px; height: 120px;">
+            <h1>{{ profile_user.get_full_name }}</h1>
+            <p class="text-muted text-lg">{{ profile_user.get_role_display }}</p>
+
+            <div class="flex justify-center gap-4 my-4">
+                <div class="text-center">
+                    <div class="text-2xl font-bold">{{ followers_count }}</div>
+                    <div class="text-muted text-sm">Followers</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold">{{ following_count }}</div>
+                    <div class="text-muted text-sm">Following</div>
+                </div>
+            </div>
+
+            {% if request.user != profile_user %}
+            <div class="flex justify-center gap-3">
+                {% if is_following %}
+                <a href="{% url 'profiles:unfollow' profile_user.id %}" class="btn btn-outline">
+                    <i data-feather="user-check"></i> Following
+                </a>
+                {% else %}
+                <a href="{% url 'profiles:follow' profile_user.id %}" class="btn btn-primary">
+                    <i data-feather="user-plus"></i> Follow
+                </a>
+                {% endif %}
+                <a href="{% url 'chat:start' profile_user.id %}" class="btn btn-outline">
+                    <i data-feather="message-circle"></i> Message
+                </a>
+            </div>
+            {% else %}
+            <a href="{% url 'profiles:edit' %}" class="btn btn-primary">
+                <i data-feather="edit"></i> Edit Profile
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

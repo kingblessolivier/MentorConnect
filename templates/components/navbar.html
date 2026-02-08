@@ -1,0 +1,192 @@
+{% load static %}
+<!-- Navbar Component -->
+<nav class="navbar" role="navigation" aria-label="Main navigation">
+    <div class="container navbar-container">
+        <!-- Logo -->
+        <a href="{% url 'core:home' %}" class="navbar-brand" aria-label="{{ SITE_NAME }} Home">
+            {% if site_settings.site_logo %}
+            <img src="{{ site_settings.site_logo.url }}" alt="{{ SITE_NAME }}" class="navbar-logo">
+            {% else %}
+            <span style="font-size: 1.5rem; font-weight: 800; background: linear-gradient(135deg, #1e3a5f 0%, #3b7fb8 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Mirror</span>
+            {% endif %}
+        </a>
+
+        <!-- Right side buttons that are always visible -->
+        <div class="navbar-right-always">
+
+            <!-- Mobile Menu Toggle -->
+            <button class="navbar-toggle" id="navbarToggle" aria-label="Toggle navigation" aria-expanded="false" type="button">
+                <i data-feather="menu"></i>
+            </button>
+        </div>
+
+        <!-- Navigation Links -->
+        <div class="navbar-menu" id="navbarMenu">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a href="{% url 'core:home' %}" class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+                        <i data-feather="home"></i>
+                        <span>{{ t.home }}</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'core:about' %}" class="nav-link {% if request.resolver_match.url_name == 'about' %}active{% endif %}">
+                        <i data-feather="info"></i>
+                        <span>{{ t.about }}</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'core:mentors' %}" class="nav-link {% if request.resolver_match.url_name == 'mentors' %}active{% endif %}">
+                        <i data-feather="users"></i>
+                        <span>{{ t.mentors }}</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'feed:home' %}" class="nav-link {% if request.resolver_match.app_name == 'feed' %}active{% endif %}">
+                        <i data-feather="rss"></i>
+                        <span>{{ t.feed|default:"Feed" }}</span>
+                    </a>
+                </li>
+
+                {% if user.is_authenticated %}
+                <li class="nav-item">
+                    <a href="{% url 'chat:list' %}" class="nav-link">
+                        <i data-feather="message-circle"></i>
+                        <span>{{ t.chat }}</span>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+
+            <!-- Right Side Items -->
+            <div class="navbar-actions">
+                {% if user.is_authenticated %}
+                <!-- Notifications -->
+                <div class="dropdown">
+                    <button class="btn btn-ghost btn-icon notification-btn" aria-label="Notifications" type="button">
+                        <i data-feather="bell"></i>
+                        <span class="notification-badge" id="notificationBadge">0</span>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-right notification-dropdown">
+                        <div class="dropdown-header">
+                            <span>{{ t.notifications }}</span>
+                            <a href="{% url 'notifications:mark_all_read' %}" class="text-sm">Mark all as read</a>
+                        </div>
+                        <div id="notificationList" class="notification-list">
+                            <div class="dropdown-empty">No new notifications</div>
+                        </div>
+                        <a href="{% url 'notifications:list' %}" class="dropdown-footer">View all</a>
+                    </div>
+                </div>
+
+                <!-- User Menu -->
+                <div class="dropdown">
+                    <button class="user-menu-btn dropdown-toggle" aria-label="User menu" type="button">
+                        <img src="{{ user.get_avatar_url }}" alt="{{ user.get_full_name }}" class="avatar avatar-sm">
+                        <span class="user-name">{{ user.first_name }}</span>
+                        <i data-feather="chevron-down"></i>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-right">
+                        <div class="dropdown-user-info">
+                            <img src="{{ user.get_avatar_url }}" alt="" class="avatar">
+                            <div>
+                                <div class="user-name">{{ user.get_full_name }}</div>
+                                <div class="user-role">{{ user.get_role_display }}</div>
+                            </div>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <a href="{% url 'dashboard:home' %}" class="dropdown-item">
+                            <i data-feather="grid"></i> {{ t.dashboard }}
+                        </a>
+                        <a href="{% url 'profiles:edit' %}" class="dropdown-item">
+                            <i data-feather="user"></i> {{ t.profile }}
+                        </a>
+                        <a href="{% url 'accounts:settings' %}" class="dropdown-item">
+                            <i data-feather="settings"></i> {{ t.settings }}
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <form method="post" action="{% url 'accounts:logout' %}" style="margin: 0;">
+                            {% csrf_token %}
+                            <button type="submit" class="dropdown-item text-danger" style="width: 100%; text-align: left; background: none; border: none; cursor: pointer;">
+                                <i data-feather="log-out"></i> {{ t.logout|default:"Logout" }}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% else %}
+                <!-- Login/Signup Buttons -->
+                <a href="{% url 'accounts:login' %}" class="btn-nav-login">{{ t.login }}</a>
+                <a href="{% url 'accounts:signup' %}" class="btn-nav-signup">{{ t.signup }}</a>
+                {% endif %}
+
+                <!-- Language Toggle -->
+                <div class="dropdown language-dropdown">
+                    <button class="btn btn-ghost btn-icon dropdown-toggle" id="languageToggle" aria-label="Change Language" title="Change Language" type="button">
+                        <i data-feather="globe"></i>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-right language-menu">
+                        <button class="dropdown-item {% if current_language == 'en' %}active{% endif %}" onclick="changeLanguage('en')" type="button">
+                            <span class="lang-flag">🇬🇧</span> English
+                        </button>
+                        <button class="dropdown-item {% if current_language == 'rw' %}active{% endif %}" onclick="changeLanguage('rw')" type="button">
+                            <span class="lang-flag">🇷🇼</span> Kinyarwanda
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Accessibility Toggle -->
+                <button class="btn btn-ghost btn-icon accessibility-toggle-btn" id="accessibilityToggle" aria-label="Accessibility options" title="Accessibility Options" type="button">
+                    <i data-feather="settings"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Accessibility Panel -->
+<div class="accessibility-panel" id="accessibilityPanel" role="dialog" aria-label="Accessibility Options">
+    <div class="accessibility-panel-header">
+        <h3><i data-feather="settings"></i> Accessibility</h3>
+        <button class="accessibility-close" id="accessibilityClose" aria-label="Close accessibility panel" type="button">
+            <i data-feather="x"></i>
+        </button>
+    </div>
+    <div class="accessibility-panel-content">
+        <label class="toggle-option">
+            <span class="toggle-label">
+                <i data-feather="moon"></i>
+                <span>High Contrast</span>
+            </span>
+            <div class="toggle-switch">
+                <input type="checkbox" id="highContrastToggle" {% if high_contrast %}checked{% endif %}>
+                <span class="toggle-slider"></span>
+            </div>
+        </label>
+        <label class="toggle-option">
+            <span class="toggle-label">
+                <i data-feather="type"></i>
+                <span>Large Text</span>
+            </span>
+            <div class="toggle-switch">
+                <input type="checkbox" id="largeFontToggle" {% if large_text %}checked{% endif %}>
+                <span class="toggle-slider"></span>
+            </div>
+        </label>
+        <label class="toggle-option">
+            <span class="toggle-label">
+                <i data-feather="volume-2"></i>
+                <span>Text-to-Speech</span>
+            </span>
+            <div class="toggle-switch">
+                <input type="checkbox" id="ttsToggle" {% if text_to_speech_enabled %}checked{% endif %}>
+                <span class="toggle-slider"></span>
+            </div>
+        </label>
+    </div>
+    <div class="accessibility-panel-footer">
+        <p><i data-feather="info"></i> Changes apply immediately</p>
+    </div>
+</div>
+
+<!-- Accessibility Panel Overlay -->
+<div class="accessibility-overlay" id="accessibilityOverlay"></div>

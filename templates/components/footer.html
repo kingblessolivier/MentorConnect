@@ -1,0 +1,86 @@
+{% load static %}
+<!-- Premium Footer Component -->
+<footer class="footer-premium" role="contentinfo">
+    <div class="container">
+        <div class="footer-grid-premium">
+            <!-- Brand Column -->
+            <div class="footer-brand-premium">
+                <div class="footer-logo-premium">Mirror</div>
+                <p style="color: #94a3b8; line-height: 1.7; margin-bottom: 1.5rem;">
+                    Connecting students with professionals through observation internships.
+                    One experience, big insights.
+                </p>
+                <div class="footer-social-premium">
+                    {% if site_settings.facebook_url %}
+                    <a href="{{ site_settings.facebook_url }}" target="_blank" class="footer-social-link" aria-label="Facebook">
+                        <i data-feather="facebook"></i>
+                    </a>
+                    {% endif %}
+                    {% if site_settings.twitter_url %}
+                    <a href="{{ site_settings.twitter_url }}" target="_blank" class="footer-social-link" aria-label="Twitter">
+                        <i data-feather="twitter"></i>
+                    </a>
+                    {% endif %}
+                    {% if site_settings.linkedin_url %}
+                    <a href="{{ site_settings.linkedin_url }}" target="_blank" class="footer-social-link" aria-label="LinkedIn">
+                        <i data-feather="linkedin"></i>
+                    </a>
+                    {% endif %}
+                    {% if site_settings.instagram_url %}
+                    <a href="{{ site_settings.instagram_url }}" target="_blank" class="footer-social-link" aria-label="Instagram">
+                        <i data-feather="instagram"></i>
+                    </a>
+                    {% endif %}
+                    {% if not site_settings.facebook_url and not site_settings.twitter_url and not site_settings.linkedin_url and not site_settings.instagram_url %}
+                    <a href="#" class="footer-social-link" aria-label="Twitter"><i data-feather="twitter"></i></a>
+                    <a href="#" class="footer-social-link" aria-label="LinkedIn"><i data-feather="linkedin"></i></a>
+                    <a href="#" class="footer-social-link" aria-label="Instagram"><i data-feather="instagram"></i></a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Quick Links -->
+            <div class="footer-column-premium">
+                <h4>Platform</h4>
+                <ul class="footer-links-premium">
+                    <li><a href="{% url 'core:home' %}">Home</a></li>
+                    <li><a href="{% url 'core:about' %}">About Us</a></li>
+                    <li><a href="{% url 'core:mentors' %}">Find Professionals</a></li>
+                    <li><a href="{% url 'core:contact' %}">Contact</a></li>
+                </ul>
+            </div>
+
+            <!-- For Students -->
+            <div class="footer-column-premium">
+                <h4>For Students</h4>
+                <ul class="footer-links-premium">
+                    <li><a href="{% url 'accounts:signup_student' %}">Sign Up</a></li>
+                    <li><a href="{% url 'core:mentors' %}">Browse Professionals</a></li>
+                    <li><a href="{% url 'core:about' %}">How It Works</a></li>
+                    <li><a href="{% url 'core:about' %}#faq">FAQ</a></li>
+                </ul>
+            </div>
+
+            <!-- For Mentors -->
+            <div class="footer-column-premium">
+                <h4>For Professionals</h4>
+                <ul class="footer-links-premium">
+                    <li><a href="{% url 'accounts:signup_mentor' %}">Become a Mentor</a></li>
+                    <li><a href="{% url 'core:about' %}">Why Mentor?</a></li>
+                    <li><a href="{% url 'core:contact' %}">Partner With Us</a></li>
+                    <li><a href="{% url 'core:contact' %}">Support</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom-premium">
+            <p class="footer-copyright">
+                &copy; {{ current_year|default:"2026" }} Mirror. All rights reserved.
+            </p>
+            <div class="footer-bottom-links">
+                <a href="{% url 'core:privacy' %}">Privacy Policy</a>
+                <a href="{% url 'core:terms' %}">Terms of Service</a>
+            </div>
+        </div>
+    </div>
+</footer>

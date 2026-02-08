@@ -1,0 +1,513 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Schedule Observation Internship - {{ SITE_NAME }}{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Premium Schedule Page */
+.schedule-page-premium {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 1.5rem;
+}
+
+.back-link-premium {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #64748b;
+    text-decoration: none;
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+    transition: color 0.2s;
+}
+
+.back-link-premium:hover {
+    color: #1e3a5f;
+}
+
+.schedule-header-premium {
+    margin-bottom: 2rem;
+}
+
+.schedule-header-premium h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+}
+
+.schedule-header-premium p {
+    color: #64748b;
+}
+
+/* Mentor Mini Card */
+.mentor-mini-card-premium {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem;
+    background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%);
+    border-radius: 16px;
+    margin-bottom: 2rem;
+}
+
+.mentor-mini-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: 3px solid white;
+    object-fit: cover;
+}
+
+.mentor-mini-info {
+    flex: 1;
+}
+
+.mentor-mini-name {
+    font-weight: 600;
+    color: white;
+    font-size: 1.0625rem;
+}
+
+.mentor-mini-topic {
+    color: rgba(255,255,255,0.8);
+    font-size: 0.9375rem;
+}
+
+/* Slots Section */
+.slots-section-premium {
+    background: white;
+    border-radius: 20px;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+}
+
+.slots-section-header {
+    padding: 1.25rem 1.5rem;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.slots-section-header h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1e293b;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.slots-section-header h3 svg {
+    width: 20px;
+    height: 20px;
+    color: #3b82f6;
+}
+
+.slots-grid-premium {
+    padding: 1.5rem;
+    display: grid;
+    gap: 1rem;
+}
+
+/* Slot Option */
+.slot-option-premium {
+    position: relative;
+    cursor: pointer;
+}
+
+.slot-option-premium input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.slot-content-premium {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    padding: 1.25rem;
+    background: #f8fafc;
+    border: 2px solid #e2e8f0;
+    border-radius: 16px;
+    transition: all 0.2s;
+}
+
+.slot-option-premium:hover .slot-content-premium {
+    border-color: #94a3b8;
+}
+
+.slot-option-premium input:checked + .slot-content-premium {
+    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+    border-color: #10b981;
+}
+
+.slot-date-box {
+    background: white;
+    border-radius: 12px;
+    padding: 1rem;
+    text-align: center;
+    min-width: 80px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.slot-date-box .day {
+    display: block;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #1e293b;
+    line-height: 1;
+}
+
+.slot-date-box .month {
+    display: block;
+    font-size: 0.8125rem;
+    color: #3b82f6;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.slot-date-box .weekday {
+    display: block;
+    font-size: 0.75rem;
+    color: #94a3b8;
+    margin-top: 0.25rem;
+}
+
+.slot-details-premium {
+    flex: 1;
+}
+
+.slot-details-premium h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+}
+
+.slot-time-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #64748b;
+    font-size: 0.9375rem;
+    margin-bottom: 0.5rem;
+}
+
+.slot-time-row svg {
+    width: 18px;
+    height: 18px;
+}
+
+.slot-desc {
+    font-size: 0.875rem;
+    color: #64748b;
+    margin-bottom: 0.5rem;
+}
+
+.slot-badges {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.slot-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.625rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.slot-badge.spots {
+    background: #dbeafe;
+    color: #2563eb;
+}
+
+.slot-badge.location {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.slot-badge svg {
+    width: 14px;
+    height: 14px;
+}
+
+.slot-check-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.slot-option-premium input:checked + .slot-content-premium .slot-check-icon {
+    background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.slot-check-icon svg {
+    width: 18px;
+    height: 18px;
+    color: #94a3b8;
+}
+
+.slot-option-premium input:checked + .slot-content-premium .slot-check-icon svg {
+    color: white;
+}
+
+/* Meeting Link Section */
+.meeting-section-premium {
+    background: white;
+    border-radius: 20px;
+    border: 1px solid #e2e8f0;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.meeting-section-premium h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+}
+
+.meeting-section-premium p {
+    font-size: 0.875rem;
+    color: #64748b;
+    margin-bottom: 1rem;
+}
+
+.meeting-input-premium {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    font-size: 1rem;
+    background: #f8fafc;
+    transition: all 0.2s;
+}
+
+.meeting-input-premium:focus {
+    outline: none;
+    border-color: #3b82f6;
+    background: white;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+/* Form Actions */
+.form-actions-premium {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.btn-cancel-premium {
+    padding: 0.875rem 1.5rem;
+    background: #f1f5f9;
+    color: #64748b;
+    font-weight: 500;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.btn-cancel-premium:hover {
+    background: #e2e8f0;
+    color: #475569;
+}
+
+.btn-confirm-premium {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.875rem 2rem;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-confirm-premium:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+}
+
+.btn-confirm-premium svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* No Slots State */
+.no-slots-premium {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: white;
+    border-radius: 20px;
+    border: 1px solid #e2e8f0;
+}
+
+.no-slots-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 1.5rem;
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.no-slots-icon svg {
+    width: 32px;
+    height: 32px;
+    color: #d97706;
+}
+
+.no-slots-premium h3 {
+    font-size: 1.25rem;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+}
+
+.no-slots-premium p {
+    color: #64748b;
+    margin-bottom: 1.5rem;
+}
+
+.btn-message-premium {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.875rem 1.5rem;
+    background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%);
+    color: white;
+    font-weight: 600;
+    border-radius: 12px;
+    text-decoration: none;
+    transition: all 0.3s;
+}
+
+.btn-message-premium:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(30, 58, 95, 0.3);
+    color: white;
+}
+</style>
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="schedule-page-premium">
+    <a href="{% url 'mentorship:request_detail' mentorship.id %}" class="back-link-premium">
+        <i data-feather="arrow-left"></i> Back to Request
+    </a>
+
+    <div class="schedule-header-premium">
+        <h1>Schedule Your Observation Internship</h1>
+        <p>Select an available time slot with {{ mentorship.mentor.get_full_name }}</p>
+    </div>
+
+    <div class="mentor-mini-card-premium">
+        <img src="{{ mentorship.mentor.get_avatar_url }}" alt="" class="mentor-mini-avatar">
+        <div class="mentor-mini-info">
+            <span class="mentor-mini-name">{{ mentorship.mentor.get_full_name }}</span>
+            <span class="mentor-mini-topic">{{ mentorship.subject }} • {{ mentorship.requested_days|default:1 }} day{% if mentorship.requested_days != 1 %}s{% endif %}</span>
+        </div>
+    </div>
+
+    {% if available_slots %}
+    <form method="post">
+        {% csrf_token %}
+        <div class="slots-section-premium">
+            <div class="slots-section-header">
+                <h3><i data-feather="calendar"></i> Available Time Slots</h3>
+            </div>
+            <div class="slots-grid-premium">
+                {% for slot in available_slots %}
+                <label class="slot-option-premium">
+                    <input type="radio" name="slot_id" value="{{ slot.id }}" required>
+                    <div class="slot-content-premium">
+                        <div class="slot-date-box">
+                            <span class="day">{{ slot.date|date:"d" }}</span>
+                            <span class="month">{{ slot.date|date:"M" }}</span>
+                            <span class="weekday">{{ slot.date|date:"D" }}</span>
+                        </div>
+                        <div class="slot-details-premium">
+                            <h4>{{ slot.title }}</h4>
+                            <div class="slot-time-row">
+                                <i data-feather="clock"></i>
+                                {{ slot.start_time|time:"H:i" }} - {{ slot.end_time|time:"H:i" }}
+                                {% if slot.end_date and slot.end_date != slot.date %}
+                                ({{ slot.duration_days }} days)
+                                {% endif %}
+                            </div>
+                            {% if slot.description %}
+                            <p class="slot-desc">{{ slot.description }}</p>
+                            {% endif %}
+                            <div class="slot-badges">
+                                <span class="slot-badge spots">
+                                    <i data-feather="users"></i> {{ slot.spots_left }} spot{{ slot.spots_left|pluralize }} left
+                                </span>
+                                {% if slot.is_in_person %}
+                                <span class="slot-badge location">
+                                    <i data-feather="map-pin"></i> In-Person
+                                </span>
+                                {% else %}
+                                <span class="slot-badge location" style="background: #dbeafe; color: #2563eb;">
+                                    <i data-feather="video"></i> Virtual
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="slot-check-icon">
+                            <i data-feather="check"></i>
+                        </div>
+                    </div>
+                </label>
+                {% endfor %}
+            </div>
+        </div>
+
+        {% if mentorship.request_type == 'virtual' %}
+        <div class="meeting-section-premium">
+            <h3>Meeting Link (Optional)</h3>
+            <p>Add a Zoom, Google Meet, or other video call link</p>
+            <input type="url" name="meeting_link" class="meeting-input-premium" placeholder="https://zoom.us/j/...">
+        </div>
+        {% endif %}
+
+        <div class="form-actions-premium">
+            <a href="{% url 'mentorship:request_detail' mentorship.id %}" class="btn-cancel-premium">Cancel</a>
+            <button type="submit" class="btn-confirm-premium">
+                <i data-feather="check-circle"></i>
+                Confirm Schedule
+            </button>
+        </div>
+    </form>
+    {% else %}
+    <div class="no-slots-premium">
+        <div class="no-slots-icon">
+            <i data-feather="calendar"></i>
+        </div>
+        <h3>No Available Slots</h3>
+        <p>{{ mentorship.mentor.get_full_name }} hasn't set any available time slots yet.<br>Please check back later or contact the mentor directly.</p>
+        <a href="{% url 'chat:start' mentorship.mentor.id %}" class="btn-message-premium">
+            <i data-feather="message-circle"></i>
+            Message {{ mentorship.mentor.first_name }}
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

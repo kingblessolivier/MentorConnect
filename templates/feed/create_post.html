@@ -1,0 +1,248 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Create Post - {{ SITE_NAME }}{% endblock %}
+
+{% block dashboard_content %}
+<div class="create-post-page">
+    <a href="{% url 'feed:home' %}" class="back-link">
+        <i data-feather="arrow-left"></i>
+        <span>Back to Feed</span>
+    </a>
+
+    <div class="card create-post-form-card">
+        <div class="card-body">
+            <h2 class="mb-4">Create a Post</h2>
+
+            <form method="post" enctype="multipart/form-data" id="createPostForm">
+                {% csrf_token %}
+
+                <div class="form-author">
+                    <img src="{{ user.get_avatar_url }}" alt="{{ user.get_full_name }}" class="avatar avatar-lg">
+                    <div>
+                        <div class="font-semibold">{{ user.get_full_name }}</div>
+                        <div class="text-sm text-muted">{{ user.get_role_display }}</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <textarea name="content" class="form-textarea post-textarea"
+                              placeholder="What would you like to share?" rows="5" required></textarea>
+                </div>
+
+                <!-- Image Preview -->
+                <div class="image-preview-container" id="imagePreviewContainer" style="display: none;">
+                    <img id="imagePreview" src="" alt="Preview">
+                    <button type="button" class="remove-image-btn" onclick="removeImage()">
+                        <i data-feather="x"></i>
+                    </button>
+                </div>
+
+                <div class="form-attachments">
+                    <span class="attachments-label">Add to your post:</span>
+                    <div class="attachment-options">
+                        <label class="attachment-option" title="Add Photo">
+                            <i data-feather="image" class="text-success"></i>
+                            <span>Photo</span>
+                            <input type="file" name="image" accept="image/*" id="postImage" hidden onchange="previewImage(this)">
+                        </label>
+                        <label class="attachment-option" title="Add Video">
+                            <i data-feather="video" class="text-primary"></i>
+                            <span>Video</span>
+                        </label>
+                        <label class="attachment-option" title="Tag People">
+                            <i data-feather="user-plus" class="text-info"></i>
+                            <span>Tag</span>
+                        </label>
+                        <label class="attachment-option" title="Add Location">
+                            <i data-feather="map-pin" class="text-danger"></i>
+                            <span>Location</span>
+                        </label>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-lg btn-block">
+                    <i data-feather="send"></i> Publish Post
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+.create-post-page {
+    max-width: 600px;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+    padding: 0.5rem 0;
+}
+
+.back-link:hover {
+    color: var(--primary-color);
+}
+
+.create-post-form-card {
+    padding: 0;
+}
+
+.create-post-form-card .card-body {
+    padding: 1.5rem;
+}
+
+.form-author {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.post-textarea {
+    font-size: 1.125rem;
+    line-height: 1.6;
+    border: none;
+    background: transparent;
+    resize: none;
+    min-height: 150px;
+}
+
+.post-textarea:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+.image-preview-container {
+    position: relative;
+    margin-bottom: 1rem;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #f9fafb;
+}
+
+.image-preview-container img {
+    width: 100%;
+    max-height: 400px;
+    object-fit: contain;
+}
+
+.remove-image-btn {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s;
+}
+
+.remove-image-btn:hover {
+    transform: scale(1.1);
+}
+
+.form-attachments {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--background-color);
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+}
+
+.attachments-label {
+    font-weight: 500;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+.attachment-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.attachment-option {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.attachment-option:hover {
+    background: var(--surface-color);
+}
+
+.attachment-option svg {
+    width: 20px;
+    height: 20px;
+}
+
+.text-success { color: #10b981; }
+.text-primary { color: var(--primary-color); }
+.text-info { color: #06b6d4; }
+.text-danger { color: #ef4444; }
+
+@media (max-width: 600px) {
+    .form-attachments {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .attachments-label {
+        margin-bottom: 0.5rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+function previewImage(input) {
+    const container = document.getElementById('imagePreviewContainer');
+    const preview = document.getElementById('imagePreview');
+
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.src = e.target.result;
+            container.style.display = 'block';
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function removeImage() {
+    document.getElementById('postImage').value = '';
+    document.getElementById('imagePreviewContainer').style.display = 'none';
+}
+
+// Auto-expand textarea
+document.querySelector('.post-textarea')?.addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = this.scrollHeight + 'px';
+});
+</script>
+{% endblock %}

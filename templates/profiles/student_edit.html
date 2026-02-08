@@ -1,0 +1,677 @@
+{% extends 'dashboard/base_dashboard.html' %}
+
+{% block title %}My Profile - {{ SITE_NAME }}{% endblock %}
+
+{% block dashboard_content %}
+<div class="dashboard-header">
+    <div>
+        <h1>My Profile</h1>
+        <p class="text-muted">View and manage your student profile</p>
+    </div>
+    <a href="{% url 'mentorship:search' %}" class="btn btn-primary">
+        <i data-feather="search"></i> Find Mentors
+    </a>
+</div>
+
+<div class="profile-page-layout">
+    <!-- Left Column - Main Info -->
+    <div class="profile-main-column">
+        <!-- Profile Header Card -->
+        <div class="card profile-header-card">
+            <div class="profile-cover student-cover"></div>
+            <div class="profile-header-content">
+                <div class="profile-avatar-section">
+                    <div class="profile-avatar-wrapper">
+                        <img src="{{ user.get_avatar_url }}" alt="{{ user.get_full_name }}" class="profile-avatar" id="avatarPreview">
+                        <button class="avatar-edit-btn" onclick="openEditModal('photoModal')">
+                            <i data-feather="camera"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="profile-header-info">
+                    <div class="profile-name-row">
+                        <h2>{{ user.get_full_name }}</h2>
+                        <span class="badge badge-student">Student</span>
+                    </div>
+                    <p class="profile-headline">{{ profile.headline|default:"Add a headline to stand out" }}</p>
+                    <div class="profile-meta">
+                        {% if profile.institution %}
+                        <span><i data-feather="book-open"></i> {{ profile.institution }}</span>
+                        {% endif %}
+                        {% if profile.field_of_study %}
+                        <span><i data-feather="award"></i> {{ profile.field_of_study }}</span>
+                        {% endif %}
+                        {% if profile.graduation_year %}
+                        <span><i data-feather="calendar"></i> Class of {{ profile.graduation_year }}</span>
+                        {% endif %}
+                    </div>
+                    <button class="btn btn-outline btn-sm mt-3" onclick="openEditModal('basicInfoModal')">
+                        <i data-feather="edit-2"></i> Edit Basic Info
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- About Section -->
+        <div class="card profile-section">
+            <div class="section-header">
+                <h3><i data-feather="user"></i> About Me</h3>
+                <button class="btn btn-ghost btn-sm" onclick="openEditModal('aboutModal')">
+                    <i data-feather="edit-2"></i> Edit
+                </button>
+            </div>
+            <div class="section-content">
+                {% if profile.bio %}
+                <p class="profile-bio">{{ profile.bio|linebreaks }}</p>
+                {% else %}
+                <p class="text-muted empty-state">Add a bio to tell mentors about yourself and what you're looking for.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Education Section -->
+        <div class="card profile-section">
+            <div class="section-header">
+                <h3><i data-feather="book-open"></i> Education</h3>
+                <button class="btn btn-ghost btn-sm" onclick="openEditModal('educationModal')">
+                    <i data-feather="edit-2"></i> Edit
+                </button>
+            </div>
+            <div class="section-content">
+                {% if profile.institution %}
+                <div class="education-item">
+                    <div class="education-icon">
+                        <i data-feather="building"></i>
+                    </div>
+                    <div class="education-info">
+                        <h4>{{ profile.institution }}</h4>
+                        {% if profile.field_of_study %}
+                        <p>{{ profile.field_of_study }}</p>
+                        {% endif %}
+                        {% if profile.graduation_year %}
+                        <span class="text-muted">Expected graduation: {{ profile.graduation_year }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% else %}
+                <p class="text-muted empty-state">Add your education details to help mentors understand your background.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Skills & Interests Section -->
+        <div class="card profile-section">
+            <div class="section-header">
+                <h3><i data-feather="star"></i> Skills & Interests</h3>
+                <button class="btn btn-ghost btn-sm" onclick="openEditModal('skillsModal')">
+                    <i data-feather="edit-2"></i> Edit
+                </button>
+            </div>
+            <div class="section-content">
+                {% if profile.get_skills_list %}
+                <div class="subsection">
+                    <h5>Skills</h5>
+                    <div class="skills-list">
+                        {% for skill in profile.get_skills_list %}
+                        <span class="skill-tag">{{ skill }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if profile.get_interests_list %}
+                <div class="subsection mt-3">
+                    <h5>Interests</h5>
+                    <div class="skills-list">
+                        {% for interest in profile.get_interests_list %}
+                        <span class="interest-tag">{{ interest }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if not profile.get_skills_list and not profile.get_interests_list %}
+                <p class="text-muted empty-state">Add your skills and interests to help mentors match with you.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Social Links Section -->
+        <div class="card profile-section">
+            <div class="section-header">
+                <h3><i data-feather="link"></i> Social Links</h3>
+                <button class="btn btn-ghost btn-sm" onclick="openEditModal('socialModal')">
+                    <i data-feather="edit-2"></i> Edit
+                </button>
+            </div>
+            <div class="section-content">
+                <div class="social-links-list">
+                    {% if profile.linkedin_url %}
+                    <a href="{{ profile.linkedin_url }}" target="_blank" class="social-link linkedin">
+                        <i data-feather="linkedin"></i>
+                        <span>LinkedIn</span>
+                    </a>
+                    {% endif %}
+                    {% if profile.github_url %}
+                    <a href="{{ profile.github_url }}" target="_blank" class="social-link github">
+                        <i data-feather="github"></i>
+                        <span>GitHub</span>
+                    </a>
+                    {% endif %}
+                    {% if profile.portfolio_url %}
+                    <a href="{{ profile.portfolio_url }}" target="_blank" class="social-link website">
+                        <i data-feather="globe"></i>
+                        <span>Portfolio</span>
+                    </a>
+                    {% endif %}
+                    {% if not profile.linkedin_url and not profile.github_url and not profile.portfolio_url %}
+                    <p class="text-muted empty-state">Add social links to showcase your work.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column - Goals & Stats -->
+    <div class="profile-sidebar-column">
+        <!-- Profile Completion -->
+        <div class="card profile-completion-card">
+            <h4>Profile Completion</h4>
+            <div class="completion-circle">
+                <svg viewBox="0 0 36 36">
+                    <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                    <path class="circle-progress" stroke-dasharray="{{ profile.calculate_completion }}, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                </svg>
+                <span class="completion-text">{{ profile.calculate_completion }}%</span>
+            </div>
+            <p class="text-muted text-center text-sm">Complete your profile to get better mentor matches</p>
+        </div>
+
+        <!-- Goals -->
+        <div class="card profile-section">
+            <div class="section-header">
+                <h3><i data-feather="target"></i> Goals</h3>
+                <button class="btn btn-ghost btn-sm" onclick="openEditModal('goalsModal')">
+                    <i data-feather="edit-2"></i> Edit
+                </button>
+            </div>
+            <div class="section-content">
+                {% if profile.goals %}
+                <p class="goals-text">{{ profile.goals|linebreaks }}</p>
+                {% else %}
+                <p class="text-muted empty-state">What are your career goals? Sharing them helps mentors guide you better.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Contact Info -->
+        <div class="card profile-section">
+            <div class="section-header">
+                <h3><i data-feather="mail"></i> Contact Info</h3>
+                <button class="btn btn-ghost btn-sm" onclick="openEditModal('contactModal')">
+                    <i data-feather="edit-2"></i> Edit
+                </button>
+            </div>
+            <div class="section-content">
+                <div class="contact-list">
+                    <div class="contact-item">
+                        <i data-feather="mail"></i>
+                        <span>{{ user.email }}</span>
+                    </div>
+                    {% if user.phone %}
+                    <div class="contact-item">
+                        <i data-feather="phone"></i>
+                        <span>{{ user.phone }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- CV/Resume -->
+        <div class="card profile-section">
+            <div class="section-header">
+                <h3><i data-feather="file-text"></i> CV/Resume</h3>
+                <button class="btn btn-ghost btn-sm" onclick="openEditModal('cvModal')">
+                    <i data-feather="edit-2"></i> Edit
+                </button>
+            </div>
+            <div class="section-content">
+                {% if profile.cv %}
+                <a href="{{ profile.cv.url }}" target="_blank" class="cv-link">
+                    <i data-feather="file-text"></i>
+                    <span>View CV</span>
+                </a>
+                {% else %}
+                <p class="text-muted empty-state">Upload your CV to share with potential mentors.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Modals -->
+<!-- Photo Modal -->
+<div class="modal-overlay" id="photoModal">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h3>Change Profile Photo</h3>
+            <button class="modal-close" onclick="closeEditModal('photoModal')"><i data-feather="x"></i></button>
+        </div>
+        <form method="post" enctype="multipart/form-data" class="modal-form">
+            {% csrf_token %}
+            <input type="hidden" name="section" value="photo">
+            <div class="modal-body">
+                <div class="photo-upload-preview">
+                    <img src="{{ user.get_avatar_url }}" alt="" id="photoPreview" class="avatar-large">
+                </div>
+                <div class="form-group">
+                    <label class="file-upload-btn btn btn-outline w-full">
+                        <i data-feather="upload"></i> Choose Photo
+                        <input type="file" name="avatar" accept="image/*" hidden onchange="previewPhoto(this, 'photoPreview')">
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeEditModal('photoModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Photo</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Basic Info Modal -->
+<div class="modal-overlay" id="basicInfoModal">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h3>Edit Basic Information</h3>
+            <button class="modal-close" onclick="closeEditModal('basicInfoModal')"><i data-feather="x"></i></button>
+        </div>
+        <form method="post" class="modal-form">
+            {% csrf_token %}
+            <input type="hidden" name="section" value="basic">
+            <div class="modal-body">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">First Name *</label>
+                        <input type="text" name="first_name" value="{{ user.first_name }}" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Last Name *</label>
+                        <input type="text" name="last_name" value="{{ user.last_name }}" class="form-input" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Headline</label>
+                    <input type="text" name="headline" value="{{ profile.headline }}" class="form-input" placeholder="e.g., Computer Science Student">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeEditModal('basicInfoModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- About Modal -->
+<div class="modal-overlay" id="aboutModal">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h3>Edit About Me</h3>
+            <button class="modal-close" onclick="closeEditModal('aboutModal')"><i data-feather="x"></i></button>
+        </div>
+        <form method="post" class="modal-form">
+            {% csrf_token %}
+            <input type="hidden" name="section" value="about">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Bio</label>
+                    <textarea name="bio" class="form-textarea" rows="6" placeholder="Tell mentors about yourself...">{{ profile.bio }}</textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeEditModal('aboutModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Education Modal -->
+<div class="modal-overlay" id="educationModal">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h3>Edit Education</h3>
+            <button class="modal-close" onclick="closeEditModal('educationModal')"><i data-feather="x"></i></button>
+        </div>
+        <form method="post" class="modal-form">
+            {% csrf_token %}
+            <input type="hidden" name="section" value="education">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">School/University</label>
+                    <input type="text" name="institution" value="{{ profile.institution }}" class="form-input" placeholder="e.g., University of Rwanda">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Field of Study</label>
+                    <input type="text" name="field_of_study" value="{{ profile.field_of_study }}" class="form-input" placeholder="e.g., Computer Science">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Expected Graduation Year</label>
+                    <input type="number" name="graduation_year" value="{{ profile.graduation_year }}" class="form-input" min="2020" max="2035">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeEditModal('educationModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Skills Modal -->
+<div class="modal-overlay" id="skillsModal">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h3>Edit Skills & Interests</h3>
+            <button class="modal-close" onclick="closeEditModal('skillsModal')"><i data-feather="x"></i></button>
+        </div>
+        <form method="post" class="modal-form">
+            {% csrf_token %}
+            <input type="hidden" name="section" value="skills">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Skills (comma separated)</label>
+                    <input type="text" name="skills" value="{{ profile.skills }}" class="form-input" placeholder="Python, JavaScript, Data Analysis">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Interests (comma separated)</label>
+                    <input type="text" name="interests" value="{{ profile.interests }}" class="form-input" placeholder="Machine Learning, Web Development">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeEditModal('skillsModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Goals Modal -->
+<div class="modal-overlay" id="goalsModal">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h3>Edit Goals</h3>
+            <button class="modal-close" onclick="closeEditModal('goalsModal')"><i data-feather="x"></i></button>
+        </div>
+        <form method="post" class="modal-form">
+            {% csrf_token %}
+            <input type="hidden" name="section" value="goals">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Career Goals</label>
+                    <textarea name="goals" class="form-textarea" rows="5" placeholder="What are your career aspirations?">{{ profile.goals }}</textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeEditModal('goalsModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Social Links Modal -->
+<div class="modal-overlay" id="socialModal">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h3>Edit Social Links</h3>
+            <button class="modal-close" onclick="closeEditModal('socialModal')"><i data-feather="x"></i></button>
+        </div>
+        <form method="post" class="modal-form">
+            {% csrf_token %}
+            <input type="hidden" name="section" value="social">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label"><i data-feather="linkedin"></i> LinkedIn URL</label>
+                    <input type="url" name="linkedin_url" value="{{ profile.linkedin_url }}" class="form-input" placeholder="https://linkedin.com/in/yourprofile">
+                </div>
+                <div class="form-group">
+                    <label class="form-label"><i data-feather="github"></i> GitHub URL</label>
+                    <input type="url" name="github_url" value="{{ profile.github_url }}" class="form-input" placeholder="https://github.com/yourusername">
+                </div>
+                <div class="form-group">
+                    <label class="form-label"><i data-feather="globe"></i> Portfolio URL</label>
+                    <input type="url" name="portfolio_url" value="{{ profile.portfolio_url }}" class="form-input" placeholder="https://yourportfolio.com">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeEditModal('socialModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Contact Modal -->
+<div class="modal-overlay" id="contactModal">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h3>Edit Contact Info</h3>
+            <button class="modal-close" onclick="closeEditModal('contactModal')"><i data-feather="x"></i></button>
+        </div>
+        <form method="post" class="modal-form">
+            {% csrf_token %}
+            <input type="hidden" name="section" value="contact">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" value="{{ user.email }}" class="form-input" disabled>
+                    <p class="form-help">Email cannot be changed</p>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Phone</label>
+                    <input type="tel" name="phone" value="{{ user.phone }}" class="form-input" placeholder="+250 788 000 000">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeEditModal('contactModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- CV Modal -->
+<div class="modal-overlay" id="cvModal">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h3>Upload CV/Resume</h3>
+            <button class="modal-close" onclick="closeEditModal('cvModal')"><i data-feather="x"></i></button>
+        </div>
+        <form method="post" enctype="multipart/form-data" class="modal-form">
+            {% csrf_token %}
+            <input type="hidden" name="section" value="cv">
+            <div class="modal-body">
+                {% if profile.cv %}
+                <div class="current-cv mb-3">
+                    <p>Current CV: <a href="{{ profile.cv.url }}" target="_blank">View</a></p>
+                </div>
+                {% endif %}
+                <div class="form-group">
+                    <label class="file-upload-btn btn btn-outline w-full">
+                        <i data-feather="upload"></i> Choose File
+                        <input type="file" name="cv" accept=".pdf,.doc,.docx" hidden>
+                    </label>
+                    <p class="form-help text-center mt-2">Accepted formats: PDF, DOC, DOCX (Max 5MB)</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeEditModal('cvModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Upload CV</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Mobile Toggle Button -->
+<button class="sidebar-toggle-mobile">
+    <i data-feather="menu"></i>
+</button>
+<div class="sidebar-overlay"></div>
+{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+/* Profile Page Layout */
+.profile-page-layout {
+    display: grid;
+    grid-template-columns: 1fr 350px;
+    gap: 1.5rem;
+    max-width: 1200px;
+}
+
+/* Profile Header Card */
+.profile-header-card { overflow: hidden; }
+.profile-cover { height: 120px; background: linear-gradient(135deg, var(--primary-color), var(--primary-hover)); }
+.student-cover { background: linear-gradient(135deg, #6366f1, #8b5cf6); }
+
+.profile-header-content {
+    display: flex;
+    gap: 1.5rem;
+    padding: 0 1.5rem 1.5rem;
+    margin-top: -50px;
+}
+
+.profile-avatar-wrapper { position: relative; flex-shrink: 0; }
+.profile-avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 4px solid var(--surface-color);
+    object-fit: cover;
+    background: var(--surface-color);
+}
+
+.avatar-edit-btn {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    color: white;
+    border: 2px solid var(--surface-color);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.avatar-edit-btn i { width: 14px; height: 14px; }
+.profile-header-info { padding-top: 55px; flex: 1; }
+.profile-name-row { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+.profile-name-row h2 { margin: 0; }
+
+.badge { padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
+.badge-student { background: #ddd6fe; color: #7c3aed; }
+
+.profile-headline { color: var(--text-secondary); margin: 0.5rem 0; font-size: 1rem; }
+.profile-meta { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 0.75rem; font-size: 0.875rem; color: var(--text-muted); }
+.profile-meta span { display: flex; align-items: center; gap: 0.375rem; }
+.profile-meta i { width: 16px; height: 16px; }
+
+/* Profile Sections */
+.profile-section { padding: 1.25rem; }
+.section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+.section-header h3 { display: flex; align-items: center; gap: 0.5rem; margin: 0; font-size: 1rem; }
+.section-header h3 i { width: 18px; height: 18px; color: var(--primary-color); }
+.section-content { color: var(--text-secondary); }
+.empty-state { font-style: italic; padding: 1rem; background: var(--background-color); border-radius: var(--button-radius); text-align: center; }
+.profile-bio { line-height: 1.7; white-space: pre-wrap; }
+
+/* Education */
+.education-item { display: flex; gap: 1rem; }
+.education-icon { width: 48px; height: 48px; background: var(--primary-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary-color); flex-shrink: 0; }
+.education-icon i { width: 24px; height: 24px; }
+.education-info h4 { margin: 0 0 0.25rem; }
+.education-info p { margin: 0 0 0.25rem; color: var(--text-secondary); }
+
+/* Skills */
+.subsection h5 { font-size: 0.8125rem; color: var(--text-muted); margin: 0 0 0.5rem; text-transform: uppercase; letter-spacing: 0.5px; }
+.skills-list { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.skill-tag { background: var(--background-color); color: var(--text-secondary); padding: 0.375rem 0.75rem; border-radius: var(--button-radius); font-size: 0.875rem; }
+.interest-tag { background: #fef3c7; color: #d97706; padding: 0.375rem 0.75rem; border-radius: var(--button-radius); font-size: 0.875rem; }
+
+/* Social Links */
+.social-links-list { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+.social-link { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: var(--button-radius); text-decoration: none; font-weight: 500; font-size: 0.875rem; transition: all 0.2s; }
+.social-link i { width: 18px; height: 18px; }
+.social-link.linkedin { background: #e8f4f8; color: #0077b5; }
+.social-link.github { background: #f3f4f6; color: #333; }
+.social-link.website { background: var(--primary-light); color: var(--primary-color); }
+.social-link:hover { transform: translateY(-2px); box-shadow: var(--shadow-sm); }
+
+/* Profile Completion */
+.profile-completion-card { padding: 1.25rem; text-align: center; }
+.profile-completion-card h4 { margin: 0 0 1rem; font-size: 0.875rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.completion-circle { position: relative; width: 100px; height: 100px; margin: 0 auto 1rem; }
+.completion-circle svg { transform: rotate(-90deg); }
+.circle-bg { fill: none; stroke: var(--background-color); stroke-width: 3; }
+.circle-progress { fill: none; stroke: var(--primary-color); stroke-width: 3; stroke-linecap: round; }
+.completion-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 1.25rem; font-weight: 700; }
+
+/* Goals */
+.goals-text { line-height: 1.6; }
+
+/* Contact */
+.contact-list { display: flex; flex-direction: column; gap: 0.75rem; }
+.contact-item { display: flex; align-items: center; gap: 0.75rem; color: var(--text-secondary); }
+.contact-item i { width: 18px; height: 18px; color: var(--text-muted); }
+
+/* CV Link */
+.cv-link { display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem; background: var(--background-color); border-radius: var(--button-radius); text-decoration: none; color: var(--primary-color); font-weight: 500; }
+.cv-link:hover { background: var(--primary-light); }
+.cv-link i { width: 20px; height: 20px; }
+
+/* Modal Styles */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; visibility: hidden; transition: all 0.3s; padding: 1rem; }
+.modal-overlay.active { opacity: 1; visibility: visible; }
+.modal-container { background: var(--surface-color); border-radius: var(--card-radius); width: 100%; max-width: 500px; max-height: 90vh; display: flex; flex-direction: column; transform: translateY(-20px); transition: transform 0.3s; }
+.modal-overlay.active .modal-container { transform: translateY(0); }
+.modal-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color, #e5e7eb); }
+.modal-header h3 { margin: 0; }
+.modal-close { background: none; border: none; padding: 0.5rem; cursor: pointer; color: var(--text-secondary); border-radius: var(--button-radius); }
+.modal-close:hover { background: var(--background-color); }
+.modal-body { padding: 1.5rem; overflow-y: auto; }
+.modal-footer { display: flex; justify-content: flex-end; gap: 0.75rem; padding: 1rem 1.5rem; border-top: 1px solid var(--border-color, #e5e7eb); }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.photo-upload-preview { text-align: center; margin-bottom: 1rem; }
+.avatar-large { width: 150px; height: 150px; border-radius: 50%; object-fit: cover; }
+.file-upload-btn { cursor: pointer; }
+
+/* Responsive */
+@media (max-width: 900px) {
+    .profile-page-layout { grid-template-columns: 1fr; }
+    .profile-header-content { flex-direction: column; align-items: center; text-align: center; }
+    .profile-header-info { padding-top: 0.5rem; }
+    .profile-name-row { justify-content: center; }
+    .profile-meta { justify-content: center; }
+    .form-row { grid-template-columns: 1fr; }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function openEditModal(modalId) { document.getElementById(modalId).classList.add('active'); }
+function closeEditModal(modalId) { document.getElementById(modalId).classList.remove('active'); }
+document.querySelectorAll('.modal-overlay').forEach(modal => { modal.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('active'); }); });
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') document.querySelectorAll('.modal-overlay.active').forEach(modal => modal.classList.remove('active')); });
+function previewPhoto(input, previewId) { if (input.files && input.files[0]) { const reader = new FileReader(); reader.onload = function(e) { document.getElementById(previewId).src = e.target.result; }; reader.readAsDataURL(input.files[0]); } }
+if (typeof feather !== 'undefined') feather.replace();
+</script>
+{% endblock %}

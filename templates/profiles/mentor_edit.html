@@ -1,0 +1,1221 @@
+{% extends 'dashboard/base_dashboard.html' %}
+
+{% block title %}My Profile - {{ SITE_NAME }}{% endblock %}
+
+{% block dashboard_content %}
+<div class="dashboard-header">
+    <div>
+        <h1>My Profile</h1>
+        <p class="text-muted">View and manage your mentor profile</p>
+    </div>
+    <a href="{% url 'profiles:mentor_detail' user.id %}" class="btn btn-outline" target="_blank">
+        <i data-feather="eye"></i> View Public Profile
+    </a>
+</div>
+
+<div class="profile-page-layout">
+    <!-- Left Column - Main Info -->
+    <div class="profile-main-column">
+        <!-- Profile Header Card -->
+        <div class="card profile-header-card">
+            <div class="profile-cover"></div>
+            <div class="profile-header-content">
+                <div class="profile-avatar-section">
+                    <div class="profile-avatar-wrapper">
+                        <img src="{{ user.get_avatar_url }}" alt="{{ user.get_full_name }}" class="profile-avatar" id="avatarPreview">
+                        <button class="avatar-edit-btn" onclick="openEditModal('photoModal')">
+                            <i data-feather="camera"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="profile-header-info">
+                    <div class="profile-name-row">
+                        <h2>{{ user.get_full_name }}</h2>
+                        {% if profile.is_available %}
+                        <span class="badge badge-success">Available</span>
+                        {% else %}
+                        <span class="badge badge-secondary">Not Available</span>
+                        {% endif %}
+                    </div>
+                    <p class="profile-headline">{{ profile.headline|default:"Add a headline to stand out" }}</p>
+                    <div class="profile-meta">
+                        {% if profile.job_title or profile.company %}
+                        <span><i data-feather="briefcase"></i> {{ profile.job_title }}{% if profile.company %} at {{ profile.company }}{% endif %}</span>
+                        {% endif %}
+                        {% if profile.experience_years %}
+                        <span><i data-feather="award"></i> {{ profile.experience_years }} years experience</span>
+                        {% endif %}
+                    </div>
+                    <button class="btn btn-outline btn-sm mt-3" onclick="openEditModal('basicInfoModal')">
+                        <i data-feather="edit-2"></i> Edit Basic Info
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- About Section -->
+        <div class="card profile-section">
+            <div class="section-header">
+                <h3><i data-feather="user"></i> About</h3>
+                <button class="btn btn-ghost btn-sm" onclick="openEditModal('aboutModal')">
+                    <i data-feather="edit-2"></i> Edit
+                </button>
+            </div>
+            <div class="section-content">
+                {% if profile.bio %}
+                <p class="profile-bio">{{ profile.bio|linebreaks }}</p>
+                {% else %}
+                <p class="text-muted empty-state">Add a bio to tell students about yourself, your experience, and what you can help them with.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Expertise & Skills Section -->
+        <div class="card profile-section">
+            <div class="section-header">
+                <h3><i data-feather="star"></i> Expertise & Skills</h3>
+                <button class="btn btn-ghost btn-sm" onclick="openEditModal('skillsModal')">
+                    <i data-feather="edit-2"></i> Edit
+                </button>
+            </div>
+            <div class="section-content">
+                {% if profile.expertise %}
+                <div class="expertise-badge">
+                    <i data-feather="target"></i>
+                    <span>{{ profile.expertise }}</span>
+                </div>
+                {% endif %}
+
+                {% if profile.get_skills_list %}
+                <div class="skills-list">
+                    {% for skill in profile.get_skills_list %}
+                    <span class="skill-tag">{{ skill }}</span>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted empty-state">Add your skills to help students find you.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Location & Observation Internship Section -->
+        <div class="card profile-section">
+            <div class="section-header">
+                <h3><i data-feather="map-pin"></i> Location & Observation Internship</h3>
+                <button class="btn btn-ghost btn-sm" onclick="openEditModal('locationModal')">
+                    <i data-feather="edit-2"></i> Edit
+                </button>
+            </div>
+            <div class="section-content">
+                <div class="grid grid-2 gap-4">
+                    <div>
+                        <h4 style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">Location</h4>
+                        {% if profile.city %}
+                        <p class="mb-1"><i data-feather="map-pin" style="width: 14px; height: 14px;"></i> {{ profile.city }}{% if profile.country %}, {{ profile.country }}{% endif %}</p>
+                        {% else %}
+                        <p class="text-muted mb-1">No location set</p>
+                        {% endif %}
+                        {% if profile.workplace_address %}
+                        <p class="text-sm text-muted">{{ profile.workplace_address }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <h4 style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">Internship Duration</h4>
+                        <p class="mb-0">{{ profile.min_internship_days|default:1 }} - {{ profile.max_internship_days|default:5 }} days</p>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <h4 style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">Mentorship Types Offered</h4>
+                    <div class="flex flex-wrap gap-2">
+                        {% if profile.accepts_in_person %}
+                        <span class="tag" style="background: #d1fae5; color: #059669;">
+                            <i data-feather="building" style="width: 14px; height: 14px;"></i> In-Person Shadowing
+                        </span>
+                        {% endif %}
+                        {% if profile.accepts_virtual %}
+                        <span class="tag" style="background: #dbeafe; color: #2563eb;">
+                            <i data-feather="video" style="width: 14px; height: 14px;"></i> Virtual Sessions
+                        </span>
+                        {% endif %}
+                        {% if not profile.accepts_in_person and not profile.accepts_virtual %}
+                        <span class="text-muted">No mentorship types enabled</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% if profile.diploma or profile.educational_institution %}
+                <div class="mt-3">
+                    <h4 style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">Education</h4>
+                    <p class="mb-0">
+                        <i data-feather="award" style="width: 14px; height: 14px;"></i>
+                        {{ profile.diploma }}{% if profile.educational_institution %} — {{ profile.educational_institution }}{% endif %}
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        <!-- Social Links Section -->
+        <div class="card profile-section">
+            <div class="section-header">
+                <h3><i data-feather="link"></i> Social Links</h3>
+                <button class="btn btn-ghost btn-sm" onclick="openEditModal('socialModal')">
+                    <i data-feather="edit-2"></i> Edit
+                </button>
+            </div>
+            <div class="section-content">
+                <div class="social-links-list">
+                    {% if profile.linkedin_url %}
+                    <a href="{{ profile.linkedin_url }}" target="_blank" class="social-link linkedin">
+                        <i data-feather="linkedin"></i>
+                        <span>LinkedIn</span>
+                    </a>
+                    {% endif %}
+                    {% if profile.twitter_url %}
+                    <a href="{{ profile.twitter_url }}" target="_blank" class="social-link twitter">
+                        <i data-feather="twitter"></i>
+                        <span>Twitter</span>
+                    </a>
+                    {% endif %}
+                    {% if profile.github_url %}
+                    <a href="{{ profile.github_url }}" target="_blank" class="social-link github">
+                        <i data-feather="github"></i>
+                        <span>GitHub</span>
+                    </a>
+                    {% endif %}
+                    {% if profile.website_url %}
+                    <a href="{{ profile.website_url }}" target="_blank" class="social-link website">
+                        <i data-feather="globe"></i>
+                        <span>Website</span>
+                    </a>
+                    {% endif %}
+                    {% if not profile.linkedin_url and not profile.twitter_url and not profile.github_url and not profile.website_url %}
+                    <p class="text-muted empty-state">Add social links to help students connect with you.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column - Settings & Stats -->
+    <div class="profile-sidebar-column">
+        <!-- Stats Card -->
+        <div class="card profile-stats-card">
+            <h4>Profile Stats</h4>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="stat-value">{{ followers_count|default:0 }}</span>
+                    <span class="stat-label">Followers</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">{{ active_mentees|default:0 }}</span>
+                    <span class="stat-label">Active Mentees</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">{{ sessions_completed|default:0 }}</span>
+                    <span class="stat-label">Sessions</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">{{ profile.rating|default:"N/A" }}</span>
+                    <span class="stat-label">Rating</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Availability Settings -->
+        <div class="card profile-section">
+            <div class="section-header">
+                <h3><i data-feather="calendar"></i> Availability</h3>
+                <button class="btn btn-ghost btn-sm" onclick="openEditModal('availabilityModal')">
+                    <i data-feather="edit-2"></i> Edit
+                </button>
+            </div>
+            <div class="section-content">
+                <div class="availability-status {% if profile.is_available %}available{% else %}unavailable{% endif %}">
+                    <i data-feather="{% if profile.is_available %}check-circle{% else %}x-circle{% endif %}"></i>
+                    <span>{% if profile.is_available %}Available for Mentoring{% else %}Not Available{% endif %}</span>
+                </div>
+                <div class="availability-details">
+                    <div class="detail-row">
+                        <span class="detail-label">Session Duration</span>
+                        <span class="detail-value">{{ profile.session_duration|default:60 }} min</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Max Mentees</span>
+                        <span class="detail-value">{{ profile.max_mentees|default:5 }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Hourly Rate</span>
+                        <span class="detail-value">{% if profile.hourly_rate %}${{ profile.hourly_rate }}{% else %}Free{% endif %}</span>
+                    </div>
+                </div>
+                <a href="{% url 'mentorship:availability' %}" class="btn btn-outline btn-sm w-full mt-3">
+                    <i data-feather="clock"></i> Manage Schedule
+                </a>
+            </div>
+        </div>
+
+        <!-- Contact Info -->
+        <div class="card profile-section">
+            <div class="section-header">
+                <h3><i data-feather="mail"></i> Contact Info</h3>
+                <button class="btn btn-ghost btn-sm" onclick="openEditModal('contactModal')">
+                    <i data-feather="edit-2"></i> Edit
+                </button>
+            </div>
+            <div class="section-content">
+                <div class="contact-list">
+                    <div class="contact-item">
+                        <i data-feather="mail"></i>
+                        <span>{{ user.email }}</span>
+                    </div>
+                    {% if user.phone %}
+                    <div class="contact-item">
+                        <i data-feather="phone"></i>
+                        <span>{{ user.phone }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Modals -->
+<!-- Photo Modal -->
+<div class="modal-overlay" id="photoModal">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h3>Change Profile Photo</h3>
+            <button class="modal-close" onclick="closeEditModal('photoModal')">
+                <i data-feather="x"></i>
+            </button>
+        </div>
+        <form method="post" enctype="multipart/form-data" class="modal-form">
+            {% csrf_token %}
+            <input type="hidden" name="section" value="photo">
+            <div class="modal-body">
+                <div class="photo-upload-preview">
+                    <img src="{{ user.get_avatar_url }}" alt="" id="photoPreview" class="avatar-large">
+                </div>
+                <div class="form-group">
+                    <label class="file-upload-btn btn btn-outline w-full">
+                        <i data-feather="upload"></i> Choose Photo
+                        <input type="file" name="avatar" accept="image/*" hidden onchange="previewPhoto(this, 'photoPreview')">
+                    </label>
+                    <p class="form-help text-center mt-2">Recommended: Square image, at least 200x200px</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeEditModal('photoModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Photo</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Basic Info Modal -->
+<div class="modal-overlay" id="basicInfoModal">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h3>Edit Basic Information</h3>
+            <button class="modal-close" onclick="closeEditModal('basicInfoModal')">
+                <i data-feather="x"></i>
+            </button>
+        </div>
+        <form method="post" class="modal-form">
+            {% csrf_token %}
+            <input type="hidden" name="section" value="basic">
+            <div class="modal-body">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">First Name *</label>
+                        <input type="text" name="first_name" value="{{ user.first_name }}" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Last Name *</label>
+                        <input type="text" name="last_name" value="{{ user.last_name }}" class="form-input" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Headline</label>
+                    <input type="text" name="headline" value="{{ profile.headline }}" class="form-input" placeholder="e.g., Senior Software Engineer | Tech Mentor">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Job Title</label>
+                        <input type="text" name="job_title" value="{{ profile.job_title }}" class="form-input" placeholder="e.g., Software Engineer">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Company</label>
+                        <input type="text" name="company" value="{{ profile.company }}" class="form-input" placeholder="e.g., Google">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Years of Experience</label>
+                    <input type="number" name="experience_years" value="{{ profile.experience_years }}" class="form-input" min="0" max="50">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeEditModal('basicInfoModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- About Modal -->
+<div class="modal-overlay" id="aboutModal">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h3>Edit About</h3>
+            <button class="modal-close" onclick="closeEditModal('aboutModal')">
+                <i data-feather="x"></i>
+            </button>
+        </div>
+        <form method="post" class="modal-form">
+            {% csrf_token %}
+            <input type="hidden" name="section" value="about">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Bio</label>
+                    <textarea name="bio" class="form-textarea" rows="6" placeholder="Tell students about yourself, your experience, and what you can help them with...">{{ profile.bio }}</textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeEditModal('aboutModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Skills Modal -->
+<div class="modal-overlay" id="skillsModal">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h3>Edit Expertise & Skills</h3>
+            <button class="modal-close" onclick="closeEditModal('skillsModal')">
+                <i data-feather="x"></i>
+            </button>
+        </div>
+        <form method="post" class="modal-form">
+            {% csrf_token %}
+            <input type="hidden" name="section" value="skills">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Area of Expertise *</label>
+                    <input type="text" name="expertise" value="{{ profile.expertise }}" class="form-input" required placeholder="e.g., Software Engineering, Data Science">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Skills (comma separated)</label>
+                    <input type="text" name="skills" value="{{ profile.skills }}" class="form-input" placeholder="Python, JavaScript, AWS, Leadership">
+                    <p class="form-help">Enter skills separated by commas</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeEditModal('skillsModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Location & Observation Internship Modal -->
+<div class="modal-overlay" id="locationModal">
+    <div class="modal-container modal-lg">
+        <div class="modal-header">
+            <h3>Location & Observation Internship Settings</h3>
+            <button class="modal-close" onclick="closeEditModal('locationModal')">
+                <i data-feather="x"></i>
+            </button>
+        </div>
+        <form method="post" class="modal-form">
+            {% csrf_token %}
+            <input type="hidden" name="section" value="location">
+            <div class="modal-body">
+                <h4 style="font-size: 1rem; margin-bottom: 1rem; color: var(--text-primary);">
+                    <i data-feather="map-pin" style="width: 18px; height: 18px;"></i> Location
+                </h4>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">City/Region *</label>
+                        <input type="text" name="city" value="{{ profile.city }}" class="form-input" placeholder="e.g., Kigali" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Country</label>
+                        <input type="text" name="country" value="{{ profile.country|default:'Rwanda' }}" class="form-input" placeholder="e.g., Rwanda">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Workplace Address</label>
+                    <textarea name="workplace_address" class="form-textarea" rows="2" placeholder="Address where students will shadow you">{{ profile.workplace_address }}</textarea>
+                    <p class="form-help">This will be shared with approved students only</p>
+                </div>
+
+                <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid var(--border-color);">
+
+                <h4 style="font-size: 1rem; margin-bottom: 1rem; color: var(--text-primary);">
+                    <i data-feather="award" style="width: 18px; height: 18px;"></i> Education Background
+                </h4>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Diploma/Degree</label>
+                        <input type="text" name="diploma" value="{{ profile.diploma }}" class="form-input" placeholder="e.g., Master of Medicine">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Educational Institution</label>
+                        <input type="text" name="educational_institution" value="{{ profile.educational_institution }}" class="form-input" placeholder="e.g., University of Rwanda">
+                    </div>
+                </div>
+
+                <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid var(--border-color);">
+
+                <h4 style="font-size: 1rem; margin-bottom: 1rem; color: var(--text-primary);">
+                    <i data-feather="eye" style="width: 18px; height: 18px;"></i> Observation Internship Settings
+                </h4>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Minimum Days</label>
+                        <select name="min_internship_days" class="form-input">
+                            {% for i in "12345" %}
+                            <option value="{{ forloop.counter }}" {% if profile.min_internship_days == forloop.counter %}selected{% endif %}>{{ forloop.counter }} day{% if forloop.counter > 1 %}s{% endif %}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Maximum Days</label>
+                        <select name="max_internship_days" class="form-input">
+                            {% for i in "12345" %}
+                            <option value="{{ forloop.counter }}" {% if profile.max_internship_days == forloop.counter %}selected{% endif %}>{{ forloop.counter }} day{% if forloop.counter > 1 %}s{% endif %}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group mt-3">
+                    <label class="form-label">Mentorship Types Offered</label>
+                    <div class="checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="accepts_in_person" value="true" {% if profile.accepts_in_person %}checked{% endif %}>
+                            <span class="checkbox-text">
+                                <i data-feather="building" style="width: 16px; height: 16px;"></i>
+                                <strong>In-Person Shadowing</strong> - Students shadow you at your workplace
+                            </span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="accepts_virtual" value="true" {% if profile.accepts_virtual %}checked{% endif %}>
+                            <span class="checkbox-text">
+                                <i data-feather="video" style="width: 16px; height: 16px;"></i>
+                                <strong>Virtual Sessions</strong> - Online mentoring via video calls
+                            </span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeEditModal('locationModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Social Links Modal -->
+<div class="modal-overlay" id="socialModal">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h3>Edit Social Links</h3>
+            <button class="modal-close" onclick="closeEditModal('socialModal')">
+                <i data-feather="x"></i>
+            </button>
+        </div>
+        <form method="post" class="modal-form">
+            {% csrf_token %}
+            <input type="hidden" name="section" value="social">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label"><i data-feather="linkedin"></i> LinkedIn URL</label>
+                    <input type="url" name="linkedin_url" value="{{ profile.linkedin_url }}" class="form-input" placeholder="https://linkedin.com/in/yourprofile">
+                </div>
+                <div class="form-group">
+                    <label class="form-label"><i data-feather="twitter"></i> Twitter URL</label>
+                    <input type="url" name="twitter_url" value="{{ profile.twitter_url }}" class="form-input" placeholder="https://twitter.com/yourusername">
+                </div>
+                <div class="form-group">
+                    <label class="form-label"><i data-feather="github"></i> GitHub URL</label>
+                    <input type="url" name="github_url" value="{{ profile.github_url }}" class="form-input" placeholder="https://github.com/yourusername">
+                </div>
+                <div class="form-group">
+                    <label class="form-label"><i data-feather="globe"></i> Website URL</label>
+                    <input type="url" name="website_url" value="{{ profile.website_url }}" class="form-input" placeholder="https://yourwebsite.com">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeEditModal('socialModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Availability Modal -->
+<div class="modal-overlay" id="availabilityModal">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h3>Edit Availability Settings</h3>
+            <button class="modal-close" onclick="closeEditModal('availabilityModal')">
+                <i data-feather="x"></i>
+            </button>
+        </div>
+        <form method="post" class="modal-form">
+            {% csrf_token %}
+            <input type="hidden" name="section" value="availability">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="toggle-switch">
+                        <input type="checkbox" name="is_available" {% if profile.is_available %}checked{% endif %}>
+                        <span class="toggle-slider"></span>
+                        <span class="toggle-text">Available for Mentoring</span>
+                    </label>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Session Duration</label>
+                        <select name="session_duration" class="form-select">
+                            <option value="30" {% if profile.session_duration == 30 %}selected{% endif %}>30 minutes</option>
+                            <option value="45" {% if profile.session_duration == 45 %}selected{% endif %}>45 minutes</option>
+                            <option value="60" {% if profile.session_duration == 60 %}selected{% endif %}>60 minutes</option>
+                            <option value="90" {% if profile.session_duration == 90 %}selected{% endif %}>90 minutes</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Max Mentees</label>
+                        <input type="number" name="max_mentees" value="{{ profile.max_mentees|default:5 }}" class="form-input" min="1" max="50">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Hourly Rate ($)</label>
+                    <input type="number" name="hourly_rate" value="{{ profile.hourly_rate }}" class="form-input" min="0" step="0.01" placeholder="0 for free">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeEditModal('availabilityModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Contact Info Modal -->
+<div class="modal-overlay" id="contactModal">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h3>Edit Contact Info</h3>
+            <button class="modal-close" onclick="closeEditModal('contactModal')">
+                <i data-feather="x"></i>
+            </button>
+        </div>
+        <form method="post" class="modal-form">
+            {% csrf_token %}
+            <input type="hidden" name="section" value="contact">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" value="{{ user.email }}" class="form-input" disabled>
+                    <p class="form-help">Email cannot be changed</p>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Phone</label>
+                    <input type="tel" name="phone" value="{{ user.phone }}" class="form-input" placeholder="+250 788 000 000">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeEditModal('contactModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Mobile Toggle Button -->
+<button class="sidebar-toggle-mobile">
+    <i data-feather="menu"></i>
+</button>
+<div class="sidebar-overlay"></div>
+{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+/* Profile Page Layout */
+.profile-page-layout {
+    display: grid;
+    grid-template-columns: 1fr 350px;
+    gap: 1.5rem;
+    max-width: 1200px;
+}
+
+/* Profile Header Card */
+.profile-header-card {
+    overflow: hidden;
+}
+
+.profile-cover {
+    height: 120px;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+}
+
+.profile-header-content {
+    display: flex;
+    gap: 1.5rem;
+    padding: 0 1.5rem 1.5rem;
+    margin-top: -50px;
+}
+
+.profile-avatar-wrapper {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.profile-avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 4px solid var(--surface-color);
+    object-fit: cover;
+    background: var(--surface-color);
+}
+
+.avatar-edit-btn {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    color: white;
+    border: 2px solid var(--surface-color);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.avatar-edit-btn i {
+    width: 14px;
+    height: 14px;
+}
+
+.profile-header-info {
+    padding-top: 55px;
+    flex: 1;
+}
+
+.profile-name-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.profile-name-row h2 {
+    margin: 0;
+}
+
+.badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.badge-success {
+    background: #d1fae5;
+    color: #059669;
+}
+
+.badge-secondary {
+    background: #f3f4f6;
+    color: #6b7280;
+}
+
+.profile-headline {
+    color: var(--text-secondary);
+    margin: 0.5rem 0;
+    font-size: 1rem;
+}
+
+.profile-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 0.75rem;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.profile-meta span {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.profile-meta i {
+    width: 16px;
+    height: 16px;
+}
+
+/* Profile Sections */
+.profile-section {
+    padding: 1.25rem;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.section-header h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+    font-size: 1rem;
+}
+
+.section-header h3 i {
+    width: 18px;
+    height: 18px;
+    color: var(--primary-color);
+}
+
+.section-content {
+    color: var(--text-secondary);
+}
+
+.empty-state {
+    font-style: italic;
+    padding: 1rem;
+    background: var(--background-color);
+    border-radius: var(--button-radius);
+    text-align: center;
+}
+
+/* Bio */
+.profile-bio {
+    line-height: 1.7;
+    white-space: pre-wrap;
+}
+
+/* Expertise & Skills */
+.expertise-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--primary-light);
+    color: var(--primary-color);
+    padding: 0.5rem 1rem;
+    border-radius: var(--button-radius);
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.expertise-badge i {
+    width: 18px;
+    height: 18px;
+}
+
+.skills-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.skill-tag {
+    background: var(--background-color);
+    color: var(--text-secondary);
+    padding: 0.375rem 0.75rem;
+    border-radius: var(--button-radius);
+    font-size: 0.875rem;
+}
+
+/* Social Links */
+.social-links-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.social-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: var(--button-radius);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+}
+
+.social-link i {
+    width: 18px;
+    height: 18px;
+}
+
+.social-link.linkedin {
+    background: #e8f4f8;
+    color: #0077b5;
+}
+
+.social-link.twitter {
+    background: #e8f6fd;
+    color: #1da1f2;
+}
+
+.social-link.github {
+    background: #f3f4f6;
+    color: #333;
+}
+
+.social-link.website {
+    background: var(--primary-light);
+    color: var(--primary-color);
+}
+
+.social-link:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+/* Stats Card */
+.profile-stats-card {
+    padding: 1.25rem;
+}
+
+.profile-stats-card h4 {
+    margin: 0 0 1rem;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 0.75rem;
+    background: var(--background-color);
+    border-radius: var(--button-radius);
+}
+
+.stat-value {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+/* Availability */
+.availability-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    border-radius: var(--button-radius);
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.availability-status i {
+    width: 20px;
+    height: 20px;
+}
+
+.availability-status.available {
+    background: #d1fae5;
+    color: #059669;
+}
+
+.availability-status.unavailable {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.availability-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border-color, #e5e7eb);
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.detail-label {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}
+
+.detail-value {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* Contact List */
+.contact-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.contact-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.contact-item i {
+    width: 18px;
+    height: 18px;
+    color: var(--text-muted);
+}
+
+/* Modal Styles */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s;
+    padding: 1rem;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-container {
+    background: var(--surface-color);
+    border-radius: var(--card-radius);
+    width: 100%;
+    max-width: 500px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    transform: translateY(-20px);
+    transition: transform 0.3s;
+}
+
+.modal-overlay.active .modal-container {
+    transform: translateY(0);
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border-color, #e5e7eb);
+}
+
+.modal-header h3 {
+    margin: 0;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    padding: 0.5rem;
+    cursor: pointer;
+    color: var(--text-secondary);
+    border-radius: var(--button-radius);
+}
+
+.modal-close:hover {
+    background: var(--background-color);
+}
+
+.modal-body {
+    padding: 1.5rem;
+    overflow-y: auto;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--border-color, #e5e7eb);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.photo-upload-preview {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.avatar-large {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.file-upload-btn {
+    cursor: pointer;
+}
+
+/* Toggle Switch */
+.toggle-switch {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+}
+
+.toggle-switch input {
+    display: none;
+}
+
+.toggle-slider {
+    width: 48px;
+    height: 24px;
+    background: #e5e7eb;
+    border-radius: 9999px;
+    position: relative;
+    transition: background 0.3s;
+}
+
+.toggle-slider::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: white;
+    border-radius: 50%;
+    top: 2px;
+    left: 2px;
+    transition: transform 0.3s;
+}
+
+.toggle-switch input:checked + .toggle-slider {
+    background: var(--primary-color);
+}
+
+.toggle-switch input:checked + .toggle-slider::after {
+    transform: translateX(24px);
+}
+
+.toggle-text {
+    font-weight: 500;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .profile-page-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .profile-header-content {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .profile-header-info {
+        padding-top: 0.5rem;
+    }
+
+    .profile-name-row {
+        justify-content: center;
+    }
+
+    .profile-meta {
+        justify-content: center;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Modal functions
+function openEditModal(modalId) {
+    document.getElementById(modalId).classList.add('active');
+}
+
+function closeEditModal(modalId) {
+    document.getElementById(modalId).classList.remove('active');
+}
+
+// Close modal on overlay click
+document.querySelectorAll('.modal-overlay').forEach(modal => {
+    modal.addEventListener('click', function(e) {
+        if (e.target === this) {
+            this.classList.remove('active');
+        }
+    });
+});
+
+// Close modal on Escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-overlay.active').forEach(modal => {
+            modal.classList.remove('active');
+        });
+    }
+});
+
+// Preview photo
+function previewPhoto(input, previewId) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById(previewId).src = e.target.result;
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+// Initialize feather icons
+if (typeof feather !== 'undefined') {
+    feather.replace();
+}
+</script>
+{% endblock %}

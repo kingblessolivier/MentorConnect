@@ -1,0 +1,1300 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Feed - {{ SITE_NAME }}{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Premium Feed Layout */
+.feed-premium-layout {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 2rem;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 1.5rem;
+}
+
+@media (max-width: 1024px) {
+    .feed-premium-layout {
+        grid-template-columns: 1fr;
+    }
+    .feed-sidebar-premium {
+        display: none;
+    }
+}
+
+/* Create Post Premium */
+.create-post-premium {
+    background: white;
+    border-radius: 20px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    transition: all 0.3s ease;
+}
+
+.create-post-premium:focus-within {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border-color: #cbd5e1;
+}
+
+.create-post-header-premium {
+    display: flex;
+    gap: 1rem;
+}
+
+.create-post-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #e2e8f0;
+}
+
+.create-post-input-wrapper {
+    flex: 1;
+}
+
+.create-post-textarea {
+    width: 100%;
+    min-height: 80px;
+    padding: 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 16px;
+    font-size: 1rem;
+    font-family: inherit;
+    background: #f8fafc;
+    resize: none;
+    transition: all 0.2s;
+    line-height: 1.5;
+}
+
+.create-post-textarea:focus {
+    outline: none;
+    border-color: #3b82f6;
+    background: white;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+.create-post-textarea::placeholder {
+    color: #94a3b8;
+}
+
+.image-preview-premium {
+    margin: 1rem 0;
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+    display: none;
+}
+
+.image-preview-premium img {
+    width: 100%;
+    max-height: 300px;
+    object-fit: cover;
+}
+
+.image-preview-remove {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    width: 36px;
+    height: 36px;
+    background: rgba(0, 0, 0, 0.6);
+    border: none;
+    border-radius: 50%;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.image-preview-remove:hover {
+    background: rgba(239, 68, 68, 0.9);
+}
+
+.create-post-actions-premium {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 1rem;
+    margin-top: 1rem;
+    border-top: 1px solid #f1f5f9;
+}
+
+.post-attachments-premium {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.attachment-btn-premium {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1rem;
+    border-radius: 12px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: transparent;
+    border: none;
+}
+
+.attachment-btn-premium:hover {
+    background: #f1f5f9;
+    color: #1e3a5f;
+}
+
+.attachment-btn-premium svg {
+    width: 20px;
+    height: 20px;
+}
+
+.attachment-btn-premium input[type="file"] {
+    display: none;
+}
+
+.btn-post-premium {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%);
+    color: white;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-post-premium:hover {
+    background: linear-gradient(135deg, #2d5a87 0%, #3b7fb8 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(30, 58, 95, 0.3);
+}
+
+.btn-post-premium:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-post-premium svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* Post Card Premium */
+.post-card-premium {
+    background: white;
+    border-radius: 20px;
+    margin-bottom: 1.5rem;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.post-card-premium:hover {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+}
+
+.post-header-premium {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
+}
+
+.post-avatar-link {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.post-avatar-premium {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #e2e8f0;
+    transition: all 0.2s;
+}
+
+.post-avatar-link:hover .post-avatar-premium {
+    border-color: #3b82f6;
+}
+
+.post-author-badge {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    width: 18px;
+    height: 18px;
+    background: linear-gradient(135deg, #10b981, #059669);
+    border-radius: 50%;
+    border: 2px solid white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.post-author-badge svg {
+    width: 10px;
+    height: 10px;
+    color: white;
+}
+
+.post-author-info-premium {
+    flex: 1;
+    min-width: 0;
+}
+
+.post-author-name-premium {
+    font-weight: 600;
+    font-size: 1rem;
+    color: #1e293b;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.post-author-name-premium:hover {
+    color: #3b82f6;
+}
+
+.post-meta-premium {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.25rem;
+    font-size: 0.8125rem;
+    color: #94a3b8;
+}
+
+.post-role-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.125rem 0.5rem;
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #1e3a5f;
+}
+
+.post-role-badge.mentor {
+    background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+    color: #166534;
+}
+
+.post-menu-premium {
+    position: relative;
+}
+
+.post-menu-btn-premium {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.post-menu-btn-premium:hover {
+    background: #f1f5f9;
+    color: #64748b;
+}
+
+.post-menu-btn-premium svg {
+    width: 20px;
+    height: 20px;
+}
+
+.post-content-premium {
+    padding: 0 1.5rem 1rem;
+}
+
+.post-text-premium {
+    color: #374151;
+    font-size: 0.9375rem;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.post-text-premium p {
+    margin-bottom: 0;
+}
+
+.post-image-container-premium {
+    margin: 0;
+    background: #f8fafc;
+}
+
+.post-image-premium {
+    width: 100%;
+    max-height: 500px;
+    object-fit: cover;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.post-image-premium:hover {
+    opacity: 0.95;
+}
+
+/* Shared Post */
+.shared-post-premium {
+    margin: 0 1.5rem 1rem;
+    padding: 1rem;
+    background: #f8fafc;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+}
+
+.shared-post-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.shared-post-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.shared-post-author {
+    font-weight: 500;
+    color: #1e293b;
+    font-size: 0.875rem;
+}
+
+.shared-post-time {
+    color: #94a3b8;
+    font-size: 0.8125rem;
+}
+
+.shared-post-content {
+    color: #475569;
+    font-size: 0.875rem;
+    line-height: 1.6;
+}
+
+.shared-post-image {
+    margin-top: 0.75rem;
+    border-radius: 12px;
+    width: 100%;
+    max-height: 200px;
+    object-fit: cover;
+}
+
+/* Post Stats */
+.post-stats-premium {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+    font-size: 0.875rem;
+    color: #64748b;
+}
+
+.post-stats-left {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.post-stats-reactions {
+    display: flex;
+    align-items: center;
+}
+
+.reaction-emoji {
+    font-size: 1rem;
+    margin-right: 0.375rem;
+}
+
+.post-stats-right {
+    display: flex;
+    gap: 1rem;
+}
+
+.post-stats-right span {
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.post-stats-right span:hover {
+    color: #1e293b;
+}
+
+/* Post Actions */
+.post-actions-premium {
+    display: flex;
+    padding: 0.5rem 0.75rem;
+    border-top: 1px solid #f1f5f9;
+}
+
+.post-action-btn-premium {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 0.5rem;
+    border-radius: 12px;
+    font-weight: 500;
+    font-size: 0.9375rem;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: transparent;
+    border: none;
+    text-decoration: none;
+}
+
+.post-action-btn-premium:hover {
+    background: #f8fafc;
+    color: #1e293b;
+}
+
+.post-action-btn-premium.liked {
+    color: #ef4444;
+}
+
+.post-action-btn-premium.liked svg {
+    fill: currentColor;
+}
+
+.post-action-btn-premium svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* Quick Comment */
+.quick-comment-premium {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #f1f5f9;
+    background: #fafbfc;
+}
+
+.quick-comment-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.quick-comment-form-premium {
+    flex: 1;
+    display: flex;
+    gap: 0.5rem;
+}
+
+.quick-comment-input-premium {
+    flex: 1;
+    padding: 0.625rem 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 24px;
+    font-size: 0.9375rem;
+    background: white;
+    transition: all 0.2s;
+    font-family: inherit;
+}
+
+.quick-comment-input-premium:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.quick-comment-input-premium::placeholder {
+    color: #94a3b8;
+}
+
+.quick-comment-submit {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%);
+    border: none;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.quick-comment-submit:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(30, 58, 95, 0.3);
+}
+
+.quick-comment-submit svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* Empty Feed */
+.empty-feed-premium {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: white;
+    border-radius: 20px;
+    border: 1px solid #e2e8f0;
+}
+
+.empty-feed-icon {
+    width: 100px;
+    height: 100px;
+    margin: 0 auto 1.5rem;
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.empty-feed-icon svg {
+    width: 40px;
+    height: 40px;
+    color: #3b82f6;
+}
+
+.empty-feed-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+}
+
+.empty-feed-text {
+    color: #64748b;
+    margin-bottom: 1.5rem;
+}
+
+/* Pagination */
+.feed-pagination-premium {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.pagination-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    color: #1e293b;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.pagination-btn:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+}
+
+.pagination-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
+.pagination-info {
+    padding: 0.75rem 1.25rem;
+    background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%);
+    color: white;
+    border-radius: 12px;
+    font-weight: 600;
+}
+
+/* Sidebar Premium */
+.feed-sidebar-premium {
+    position: sticky;
+    top: 5.5rem;
+    height: fit-content;
+}
+
+.sidebar-card-premium {
+    background: white;
+    border-radius: 20px;
+    padding: 1.5rem;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 1.5rem;
+}
+
+.sidebar-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.sidebar-card-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.sidebar-card-title svg {
+    width: 18px;
+    height: 18px;
+    color: #3b82f6;
+}
+
+.sidebar-card-link {
+    font-size: 0.8125rem;
+    color: #3b82f6;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.sidebar-card-link:hover {
+    text-decoration: underline;
+}
+
+/* Trending Topics */
+.trending-item-premium {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #f8fafc;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.trending-item-premium:last-child {
+    border-bottom: none;
+}
+
+.trending-item-premium:hover .trending-tag {
+    color: #3b82f6;
+}
+
+.trending-tag {
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 0.9375rem;
+}
+
+.trending-count {
+    font-size: 0.8125rem;
+    color: #94a3b8;
+}
+
+/* Suggested Mentors */
+.suggested-mentor-premium {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #f8fafc;
+}
+
+.suggested-mentor-premium:last-child {
+    border-bottom: none;
+}
+
+.suggested-mentor-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #e2e8f0;
+}
+
+.suggested-mentor-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.suggested-mentor-name {
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 0.9375rem;
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-decoration: none;
+}
+
+.suggested-mentor-name:hover {
+    color: #3b82f6;
+}
+
+.suggested-mentor-title {
+    font-size: 0.8125rem;
+    color: #94a3b8;
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.btn-follow-premium {
+    padding: 0.375rem 0.875rem;
+    background: #f1f5f9;
+    color: #1e293b;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    flex-shrink: 0;
+}
+
+.btn-follow-premium:hover {
+    background: #e2e8f0;
+}
+
+/* Quick Links Card */
+.quick-links-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+}
+
+.quick-link-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    background: #f8fafc;
+    border-radius: 12px;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.quick-link-item:hover {
+    background: #f1f5f9;
+    transform: translateY(-2px);
+}
+
+.quick-link-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.quick-link-icon svg {
+    width: 20px;
+    height: 20px;
+    color: white;
+}
+
+.quick-link-icon.blue { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+.quick-link-icon.green { background: linear-gradient(135deg, #10b981, #059669); }
+.quick-link-icon.purple { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+.quick-link-icon.orange { background: linear-gradient(135deg, #f59e0b, #d97706); }
+
+.quick-link-text {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: #475569;
+}
+</style>
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="feed-premium-layout">
+    <!-- Main Feed Column -->
+    <div class="feed-main-premium">
+        <!-- Create Post Card -->
+        <div class="create-post-premium">
+            <form method="post" action="{% url 'feed:create_post' %}" enctype="multipart/form-data" id="createPostForm">
+                {% csrf_token %}
+                <div class="create-post-header-premium">
+                    <img src="{{ user.get_avatar_url }}" alt="{{ user.get_full_name }}" class="create-post-avatar">
+                    <div class="create-post-input-wrapper">
+                        <textarea name="content" class="create-post-textarea" placeholder="Share your thoughts, experiences, or insights..." rows="3" required id="postContent"></textarea>
+                    </div>
+                </div>
+
+                <!-- Image Preview -->
+                <div class="image-preview-premium" id="imagePreviewContainer">
+                    <img id="imagePreview" src="" alt="Preview">
+                    <button type="button" class="image-preview-remove" onclick="removeImage()">
+                        <i data-feather="x"></i>
+                    </button>
+                </div>
+
+                <div class="create-post-actions-premium">
+                    <div class="post-attachments-premium">
+                        <label class="attachment-btn-premium" title="Add Photo">
+                            <i data-feather="image"></i>
+                            <span>Photo</span>
+                            <input type="file" name="image" accept="image/*" id="postImage" onchange="previewImage(this)">
+                        </label>
+                        <label class="attachment-btn-premium" title="Add Video">
+                            <i data-feather="video"></i>
+                            <span>Video</span>
+                        </label>
+                        <label class="attachment-btn-premium" title="Share Link">
+                            <i data-feather="link"></i>
+                            <span>Link</span>
+                        </label>
+                    </div>
+                    <button type="submit" class="btn-post-premium" id="postBtn">
+                        <i data-feather="send"></i>
+                        <span>Post</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Feed Posts -->
+        <div class="posts-container-premium">
+            {% for post in posts %}
+            <article class="post-card-premium" data-post-id="{{ post.id }}">
+                <!-- Post Header -->
+                <div class="post-header-premium">
+                    <a href="{% url 'profiles:detail' post.author.id %}" class="post-avatar-link">
+                        <img src="{{ post.author.get_avatar_url }}" alt="{{ post.author.get_full_name }}" class="post-avatar-premium">
+                        {% if post.author.role == 'mentor' %}
+                        <div class="post-author-badge">
+                            <i data-feather="check"></i>
+                        </div>
+                        {% endif %}
+                    </a>
+                    <div class="post-author-info-premium">
+                        <a href="{% url 'profiles:detail' post.author.id %}" class="post-author-name-premium">
+                            {{ post.author.get_full_name }}
+                        </a>
+                        <div class="post-meta-premium">
+                            <span class="post-role-badge {% if post.author.role == 'mentor' %}mentor{% endif %}">
+                                {{ post.author.get_role_display }}
+                            </span>
+                            <span>•</span>
+                            <span title="{{ post.created_at }}">{{ post.created_at|timesince }} ago</span>
+                            {% if post.is_edited %}
+                            <span>•</span>
+                            <span style="font-style: italic;">Edited</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {% if post.author == user or user.is_admin_user %}
+                    <div class="post-menu-premium dropdown">
+                        <button class="post-menu-btn-premium dropdown-toggle" aria-label="Post options">
+                            <i data-feather="more-horizontal"></i>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-right">
+                            <a href="#" class="dropdown-item" onclick="editPost({{ post.id }})">
+                                <i data-feather="edit-2"></i> Edit
+                            </a>
+                            <form method="post" action="{% url 'feed:delete_post' post.id %}" class="delete-form">
+                                {% csrf_token %}
+                                <button type="submit" class="dropdown-item text-danger" onclick="return confirm('Delete this post?')">
+                                    <i data-feather="trash-2"></i> Delete
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Post Content -->
+                <div class="post-content-premium">
+                    <div class="post-text-premium">{{ post.content|linebreaks }}</div>
+                </div>
+
+                <!-- Post Image -->
+                {% if post.image %}
+                <div class="post-image-container-premium">
+                    <img src="{{ post.image.url }}" alt="Post image" class="post-image-premium" onclick="openImageModal('{{ post.image.url }}')">
+                </div>
+                {% endif %}
+
+                <!-- Shared Post -->
+                {% if post.shared_post %}
+                <div class="shared-post-premium">
+                    <div class="shared-post-header">
+                        <img src="{{ post.shared_post.author.get_avatar_url }}" alt="" class="shared-post-avatar">
+                        <div>
+                            <span class="shared-post-author">{{ post.shared_post.author.get_full_name }}</span>
+                            <span class="shared-post-time">• {{ post.shared_post.created_at|timesince }} ago</span>
+                        </div>
+                    </div>
+                    <p class="shared-post-content">{{ post.shared_post.content|truncatewords:50 }}</p>
+                    {% if post.shared_post.image %}
+                    <img src="{{ post.shared_post.image.url }}" alt="" class="shared-post-image">
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <!-- Post Stats -->
+                {% if post.likes_count > 0 or post.comments_count > 0 or post.shares_count > 0 %}
+                <div class="post-stats-premium">
+                    <div class="post-stats-left">
+                        {% if post.likes_count > 0 %}
+                        <div class="post-stats-reactions">
+                            <span class="reaction-emoji">❤️</span>
+                            <span>{{ post.likes_count }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="post-stats-right">
+                        {% if post.comments_count > 0 %}
+                        <span>{{ post.comments_count }} comment{{ post.comments_count|pluralize }}</span>
+                        {% endif %}
+                        {% if post.shares_count > 0 %}
+                        <span>{{ post.shares_count }} share{{ post.shares_count|pluralize }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Post Actions -->
+                <div class="post-actions-premium">
+                    <button class="post-action-btn-premium {% if post.id in liked_posts %}liked{% endif %}"
+                            onclick="toggleLike({{ post.id }}, this)" data-post-id="{{ post.id }}">
+                        <i data-feather="heart"></i>
+                        <span>{% if post.id in liked_posts %}Liked{% else %}Like{% endif %}</span>
+                    </button>
+                    <a href="{% url 'feed:post_detail' post.id %}" class="post-action-btn-premium">
+                        <i data-feather="message-circle"></i>
+                        <span>Comment</span>
+                    </a>
+                    <button class="post-action-btn-premium" onclick="openShareModal({{ post.id }})">
+                        <i data-feather="share-2"></i>
+                        <span>Share</span>
+                    </button>
+                    <button class="post-action-btn-premium" onclick="copyPostLink({{ post.id }})">
+                        <i data-feather="link"></i>
+                        <span>Copy</span>
+                    </button>
+                </div>
+
+                <!-- Quick Comment Section -->
+                <div class="quick-comment-premium">
+                    <img src="{{ user.get_avatar_url }}" alt="" class="quick-comment-avatar">
+                    <form method="post" action="{% url 'feed:add_comment' post.id %}" class="quick-comment-form-premium">
+                        {% csrf_token %}
+                        <input type="text" name="content" placeholder="Write a comment..." class="quick-comment-input-premium">
+                        <button type="submit" class="quick-comment-submit">
+                            <i data-feather="send"></i>
+                        </button>
+                    </form>
+                </div>
+            </article>
+            {% empty %}
+            <div class="empty-feed-premium">
+                <div class="empty-feed-icon">
+                    <i data-feather="edit-3"></i>
+                </div>
+                <h3 class="empty-feed-title">No posts yet</h3>
+                <p class="empty-feed-text">Be the first to share something with the community!</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <div class="feed-pagination-premium">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}" class="pagination-btn">
+                <i data-feather="chevron-left"></i> Previous
+            </a>
+            {% endif %}
+
+            <span class="pagination-info">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" class="pagination-btn">
+                Next <i data-feather="chevron-right"></i>
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Sidebar -->
+    <aside class="feed-sidebar-premium">
+        <!-- Quick Links -->
+        <div class="sidebar-card-premium">
+            <div class="sidebar-card-header">
+                <h4 class="sidebar-card-title">
+                    <i data-feather="zap"></i>
+                    Quick Links
+                </h4>
+            </div>
+            <div class="quick-links-grid">
+                <a href="{% url 'core:mentors' %}" class="quick-link-item">
+                    <div class="quick-link-icon blue">
+                        <i data-feather="search"></i>
+                    </div>
+                    <span class="quick-link-text">Find Mentors</span>
+                </a>
+                <a href="{% url 'mentorship:requests' %}" class="quick-link-item">
+                    <div class="quick-link-icon green">
+                        <i data-feather="send"></i>
+                    </div>
+                    <span class="quick-link-text">My Requests</span>
+                </a>
+                <a href="{% url 'chat:list' %}" class="quick-link-item">
+                    <div class="quick-link-icon purple">
+                        <i data-feather="message-circle"></i>
+                    </div>
+                    <span class="quick-link-text">Messages</span>
+                </a>
+                <a href="{% url 'profiles:edit' %}" class="quick-link-item">
+                    <div class="quick-link-icon orange">
+                        <i data-feather="user"></i>
+                    </div>
+                    <span class="quick-link-text">My Profile</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Trending Topics -->
+        <div class="sidebar-card-premium">
+            <div class="sidebar-card-header">
+                <h4 class="sidebar-card-title">
+                    <i data-feather="trending-up"></i>
+                    Trending Topics
+                </h4>
+            </div>
+            <div class="trending-list-premium">
+                <a href="#" class="trending-item-premium">
+                    <span class="trending-tag">#shadowing</span>
+                    <span class="trending-count">245 posts</span>
+                </a>
+                <a href="#" class="trending-item-premium">
+                    <span class="trending-tag">#careerinsights</span>
+                    <span class="trending-count">189 posts</span>
+                </a>
+                <a href="#" class="trending-item-premium">
+                    <span class="trending-tag">#mentorship</span>
+                    <span class="trending-count">156 posts</span>
+                </a>
+                <a href="#" class="trending-item-premium">
+                    <span class="trending-tag">#healthcare</span>
+                    <span class="trending-count">134 posts</span>
+                </a>
+                <a href="#" class="trending-item-premium">
+                    <span class="trending-tag">#technology</span>
+                    <span class="trending-count">98 posts</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Suggested Mentors -->
+        <div class="sidebar-card-premium">
+            <div class="sidebar-card-header">
+                <h4 class="sidebar-card-title">
+                    <i data-feather="users"></i>
+                    Suggested Professionals
+                </h4>
+                <a href="{% url 'core:mentors' %}" class="sidebar-card-link">See all</a>
+            </div>
+            <div class="suggested-list-premium">
+                {% for mentor in recommended_mentors|slice:":4" %}
+                <div class="suggested-mentor-premium">
+                    <img src="{{ mentor.user.get_avatar_url }}" alt="" class="suggested-mentor-avatar">
+                    <div class="suggested-mentor-info">
+                        <a href="{% url 'profiles:mentor_detail' mentor.user.id %}" class="suggested-mentor-name">
+                            {{ mentor.user.get_full_name }}
+                        </a>
+                        <span class="suggested-mentor-title">{{ mentor.job_title|default:mentor.expertise|truncatewords:3 }}</span>
+                    </div>
+                    <a href="{% url 'profiles:follow' mentor.user.id %}" class="btn-follow-premium">Follow</a>
+                </div>
+                {% empty %}
+                <p style="color: #94a3b8; font-size: 0.875rem; text-align: center; padding: 1rem 0;">No suggestions available</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Mirror Info Card -->
+        <div class="sidebar-card-premium" style="background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%); border: none;">
+            <h4 style="color: white; font-size: 1rem; margin-bottom: 0.75rem;">🌟 Mirror Platform</h4>
+            <p style="color: rgba(255,255,255,0.8); font-size: 0.875rem; line-height: 1.6; margin-bottom: 1rem;">
+                Discover your future career through real-world observation internships.
+            </p>
+            <a href="{% url 'core:about' %}" style="display: inline-flex; align-items: center; gap: 0.5rem; color: white; font-size: 0.875rem; font-weight: 600; text-decoration: none;">
+                Learn more <i data-feather="arrow-right" style="width: 16px; height: 16px;"></i>
+            </a>
+        </div>
+    </aside>
+</div>
+
+<!-- Image Modal -->
+<div class="modal" id="imageModal" style="display: none;">
+    <div class="modal-overlay" onclick="closeImageModal()"></div>
+    <div class="modal-content" style="max-width: 90%; max-height: 90%; padding: 0; background: transparent;">
+        <img id="modalImage" src="" alt="" style="width: 100%; height: auto; border-radius: 12px;">
+        <button class="modal-close" onclick="closeImageModal()" style="position: absolute; top: -40px; right: 0;">
+            <i data-feather="x"></i>
+        </button>
+    </div>
+</div>
+
+<!-- Share Modal -->
+<div class="modal" id="shareModal" style="display: none;">
+    <div class="modal-overlay" onclick="closeShareModal()"></div>
+    <div class="modal-content" style="max-width: 500px;">
+        <div class="modal-header">
+            <h3>Share Post</h3>
+            <button class="modal-close" onclick="closeShareModal()">
+                <i data-feather="x"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form method="post" id="shareForm">
+                {% csrf_token %}
+                <textarea name="content" class="form-input" rows="3" placeholder="Add a comment to your share (optional)..."></textarea>
+                <input type="hidden" name="shared_post_id" id="sharedPostId">
+                <div class="mt-4 flex justify-end">
+                    <button type="button" class="btn btn-outline mr-2" onclick="closeShareModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Share</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Image Preview
+function previewImage(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('imagePreview').src = e.target.result;
+            document.getElementById('imagePreviewContainer').style.display = 'block';
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function removeImage() {
+    document.getElementById('postImage').value = '';
+    document.getElementById('imagePreviewContainer').style.display = 'none';
+}
+
+// Like Toggle
+async function toggleLike(postId, button) {
+    try {
+        const response = await fetch(`/feed/post/${postId}/like/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            button.classList.toggle('liked');
+            const icon = button.querySelector('svg');
+            const text = button.querySelector('span');
+
+            if (button.classList.contains('liked')) {
+                text.textContent = 'Liked';
+                icon.setAttribute('fill', 'currentColor');
+            } else {
+                text.textContent = 'Like';
+                icon.removeAttribute('fill');
+            }
+            feather.replace();
+        }
+    } catch (error) {
+        console.error('Error toggling like:', error);
+    }
+}
+
+// Image Modal
+function openImageModal(src) {
+    document.getElementById('modalImage').src = src;
+    document.getElementById('imageModal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeImageModal() {
+    document.getElementById('imageModal').style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+// Share Modal
+function openShareModal(postId) {
+    document.getElementById('sharedPostId').value = postId;
+    document.getElementById('shareForm').action = `/feed/post/${postId}/share/`;
+    document.getElementById('shareModal').style.display = 'flex';
+}
+
+function closeShareModal() {
+    document.getElementById('shareModal').style.display = 'none';
+}
+
+// Copy Post Link
+function copyPostLink(postId) {
+    const url = `${window.location.origin}/feed/post/${postId}/`;
+    navigator.clipboard.writeText(url).then(() => {
+        // Show toast notification
+        const toast = document.createElement('div');
+        toast.className = 'toast toast-success';
+        toast.innerHTML = '<div class="toast-content"><i data-feather="check-circle"></i><span>Link copied to clipboard!</span></div>';
+        document.body.appendChild(toast);
+        feather.replace();
+        setTimeout(() => toast.remove(), 3000);
+    });
+}
+
+// Auto-resize textarea
+document.getElementById('postContent').addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 200) + 'px';
+});
+
+// Initialize feather icons
+document.addEventListener('DOMContentLoaded', function() {
+    feather.replace();
+});
+</script>
+{% endblock %}

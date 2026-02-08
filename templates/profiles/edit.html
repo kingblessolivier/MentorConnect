@@ -1,0 +1,70 @@
+{% extends 'dashboard/base_dashboard.html' %}
+
+{% block title %}Edit Profile - {{ SITE_NAME }}{% endblock %}
+
+{% block dashboard_content %}
+<div class="dashboard-header">
+    <div>
+        <h1>Edit Profile</h1>
+        <p class="text-muted">Update your profile information</p>
+    </div>
+</div>
+
+<form method="post" enctype="multipart/form-data" style="max-width: 700px;">
+    {% csrf_token %}
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h3 class="mb-4">Profile Photo</h3>
+            <div class="flex items-center gap-4">
+                <img src="{{ user.get_avatar_url }}" alt="" class="avatar avatar-xl">
+                <div>
+                    <input type="file" name="avatar" class="form-input" accept="image/*">
+                    <p class="form-help">Recommended: Square image, at least 200x200px</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h3 class="mb-4">Basic Information</h3>
+
+            <div class="grid grid-2" style="gap: 1rem;">
+                <div class="form-group">
+                    <label class="form-label">First Name</label>
+                    <input type="text" name="first_name" value="{{ user.first_name }}" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Last Name</label>
+                    <input type="text" name="last_name" value="{{ user.last_name }}" class="form-input" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" value="{{ user.email }}" class="form-input" disabled>
+                <p class="form-help">Email cannot be changed</p>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Phone</label>
+                <input type="tel" name="phone" value="{{ user.phone }}" class="form-input">
+            </div>
+        </div>
+    </div>
+
+    <div class="flex justify-end gap-3">
+        <a href="{% url 'dashboard:home' %}" class="btn btn-outline">Cancel</a>
+        <button type="submit" class="btn btn-primary">
+            <i data-feather="save"></i> Save Changes
+        </button>
+    </div>
+</form>
+
+<!-- Mobile Toggle Button -->
+<button class="sidebar-toggle-mobile">
+    <i data-feather="menu"></i>
+</button>
+<div class="sidebar-overlay"></div>
+{% endblock %}

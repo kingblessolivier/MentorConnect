@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 400" width="500" height="400">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#EEF2FF"/>
+      <stop offset="100%" style="stop-color:#F0FDF4"/>
+    </linearGradient>
+    <linearGradient id="primary" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4F46E5"/>
+      <stop offset="100%" style="stop-color:#7C3AED"/>
+    </linearGradient>
+    <linearGradient id="secondary" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#10B981"/>
+      <stop offset="100%" style="stop-color:#059669"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="500" height="400" fill="url(#bg)" rx="20"/>
+
+  <!-- Decorative blobs -->
+  <ellipse cx="420" cy="80" rx="60" ry="50" fill="#4F46E5" opacity="0.08"/>
+  <ellipse cx="80" cy="320" rx="70" ry="55" fill="#10B981" opacity="0.08"/>
+  <circle cx="450" cy="350" r="40" fill="#F59E0B" opacity="0.1"/>
+
+  <!-- Laptop/Screen -->
+  <g transform="translate(150, 120)">
+    <rect x="0" y="0" width="200" height="130" rx="8" fill="#1F2937"/>
+    <rect x="8" y="8" width="184" height="106" rx="4" fill="#374151"/>
+    <!-- Screen content -->
+    <rect x="15" y="15" width="80" height="10" rx="2" fill="#4F46E5" opacity="0.6"/>
+    <rect x="15" y="32" width="170" height="6" rx="2" fill="#6B7280"/>
+    <rect x="15" y="44" width="150" height="6" rx="2" fill="#6B7280"/>
+    <rect x="15" y="56" width="160" height="6" rx="2" fill="#6B7280"/>
+    <!-- Video call avatars -->
+    <circle cx="60" cy="85" r="20" fill="url(#primary)"/>
+    <circle cx="60" cy="80" r="12" fill="#F9FAFB"/>
+    <circle cx="140" cy="85" r="20" fill="url(#secondary)"/>
+    <circle cx="140" cy="80" r="12" fill="#F9FAFB"/>
+    <!-- Laptop base -->
+    <path d="M-20 130 L220 130 L230 145 L-30 145 Z" fill="#374151"/>
+  </g>
+
+  <!-- Mentor figure (left) -->
+  <g transform="translate(60, 140)">
+    <ellipse cx="45" cy="130" rx="35" ry="10" fill="#1F2937" opacity="0.1"/>
+    <rect x="20" y="70" width="50" height="60" rx="8" fill="url(#primary)"/>
+    <circle cx="45" cy="45" r="30" fill="url(#primary)"/>
+    <circle cx="45" cy="40" r="20" fill="#F9FAFB"/>
+    <!-- Mentor badge -->
+    <circle cx="70" cy="25" r="15" fill="#F59E0B"/>
+    <polygon points="70,17 73,23 80,24 75,29 76,36 70,33 64,36 65,29 60,24 67,23" fill="white"/>
+    <!-- Pointer/Teaching gesture -->
+    <line x1="70" y1="90" x2="110" y2="70" stroke="#F9FAFB" stroke-width="4" stroke-linecap="round"/>
+  </g>
+
+  <!-- Student figure (right) -->
+  <g transform="translate(340, 160)">
+    <ellipse cx="45" cy="115" rx="30" ry="8" fill="#1F2937" opacity="0.1"/>
+    <rect x="22" y="65" width="46" height="50" rx="8" fill="url(#secondary)"/>
+    <circle cx="45" cy="42" r="27" fill="url(#secondary)"/>
+    <circle cx="45" cy="38" r="18" fill="#F9FAFB"/>
+    <!-- Notebook -->
+    <rect x="75" y="70" width="30" height="40" rx="3" fill="white" stroke="#E5E7EB" stroke-width="2"/>
+    <line x1="80" y1="80" x2="100" y2="80" stroke="#9CA3AF" stroke-width="2"/>
+    <line x1="80" y1="88" x2="98" y2="88" stroke="#9CA3AF" stroke-width="2"/>
+    <line x1="80" y1="96" x2="95" y2="96" stroke="#9CA3AF" stroke-width="2"/>
+  </g>
+
+  <!-- Connection/Communication elements -->
+  <g transform="translate(200, 60)">
+    <!-- Chat bubble 1 -->
+    <rect x="0" y="0" width="50" height="25" rx="12" fill="white" stroke="#4F46E5" stroke-width="2"/>
+    <circle cx="12" cy="12" r="3" fill="#4F46E5"/>
+    <circle cx="25" cy="12" r="3" fill="#4F46E5"/>
+    <circle cx="38" cy="12" r="3" fill="#4F46E5"/>
+
+    <!-- Chat bubble 2 -->
+    <rect x="60" y="10" width="40" height="20" rx="10" fill="#10B981"/>
+    <path d="M70 18 L75 22 L85 18" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/>
+  </g>
+
+  <!-- Floating elements -->
+  <!-- Lightbulb (ideas) -->
+  <g transform="translate(420, 180)">
+    <ellipse cx="20" cy="18" rx="15" ry="18" fill="#F59E0B"/>
+    <rect x="12" y="36" width="16" height="10" rx="2" fill="#F59E0B"/>
+    <line x1="10" y1="46" x2="30" y2="46" stroke="#D97706" stroke-width="2"/>
+    <line x1="13" y1="50" x2="27" y2="50" stroke="#D97706" stroke-width="2"/>
+    <line x1="20" y1="-2" x2="20" y2="-12" stroke="#F59E0B" stroke-width="3" stroke-linecap="round"/>
+    <line x1="5" y1="8" x2="-3" y2="2" stroke="#F59E0B" stroke-width="3" stroke-linecap="round"/>
+    <line x1="35" y1="8" x2="43" y2="2" stroke="#F59E0B" stroke-width="3" stroke-linecap="round"/>
+  </g>
+
+  <!-- Growth chart -->
+  <g transform="translate(40, 280)">
+    <rect x="0" y="0" width="80" height="60" rx="8" fill="white" stroke="#E5E7EB" stroke-width="2"/>
+    <polyline points="10,45 25,35 40,40 55,25 70,15" stroke="#10B981" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="70" cy="15" r="4" fill="#10B981"/>
+  </g>
+
+  <!-- Calendar icon -->
+  <g transform="translate(430, 280)">
+    <rect x="0" y="5" width="45" height="40" rx="6" fill="white" stroke="#E5E7EB" stroke-width="2"/>
+    <rect x="0" y="5" width="45" height="12" rx="6" fill="#4F46E5"/>
+    <rect x="0" y="11" width="45" height="6" fill="#4F46E5"/>
+    <circle cx="10" cy="5" r="3" fill="#374151"/>
+    <circle cx="35" cy="5" r="3" fill="#374151"/>
+    <rect x="8" y="25" width="8" height="8" rx="2" fill="#10B981"/>
+    <rect x="20" y="25" width="8" height="8" rx="2" fill="#E5E7EB"/>
+    <rect x="32" y="25" width="8" height="8" rx="2" fill="#E5E7EB"/>
+  </g>
+
+  <!-- Stars decoration -->
+  <polygon points="100,60 102,66 108,66 103,70 105,76 100,72 95,76 97,70 92,66 98,66" fill="#F59E0B"/>
+  <polygon points="380,320 381,324 386,324 383,327 384,331 380,328 376,331 377,327 374,324 379,324" fill="#4F46E5"/>
+  <polygon points="320,50 321,53 325,53 322,55 323,58 320,56 317,58 318,55 315,53 319,53" fill="#10B981"/>
+
+  <!-- Connecting dots -->
+  <circle cx="130" cy="200" r="4" fill="#4F46E5" opacity="0.4"/>
+  <circle cx="150" cy="180" r="3" fill="#10B981" opacity="0.4"/>
+  <circle cx="340" cy="140" r="4" fill="#4F46E5" opacity="0.4"/>
+  <circle cx="360" cy="160" r="3" fill="#F59E0B" opacity="0.4"/>
+</svg>

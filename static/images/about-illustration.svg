@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="400" height="300">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#EEF2FF"/>
+      <stop offset="100%" style="stop-color:#E0E7FF"/>
+    </linearGradient>
+    <linearGradient id="primaryGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4F46E5"/>
+      <stop offset="100%" style="stop-color:#7C3AED"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="400" height="300" fill="url(#bgGrad)" rx="20"/>
+
+  <!-- Decorative circles -->
+  <circle cx="50" cy="50" r="30" fill="#4F46E5" opacity="0.1"/>
+  <circle cx="350" cy="250" r="40" fill="#10B981" opacity="0.1"/>
+  <circle cx="380" cy="50" r="20" fill="#F59E0B" opacity="0.15"/>
+
+  <!-- Mentor figure (left) -->
+  <g transform="translate(80, 80)">
+    <!-- Body -->
+    <rect x="15" y="60" width="50" height="70" rx="10" fill="url(#primaryGrad)"/>
+    <!-- Head -->
+    <circle cx="40" cy="35" r="30" fill="url(#primaryGrad)"/>
+    <circle cx="40" cy="30" r="20" fill="#F9FAFB"/>
+    <!-- Badge/Star (mentor indicator) -->
+    <circle cx="65" cy="20" r="12" fill="#F59E0B"/>
+    <polygon points="65,12 67,18 74,18 69,22 71,29 65,25 59,29 61,22 56,18 63,18" fill="white"/>
+  </g>
+
+  <!-- Student figure (right) -->
+  <g transform="translate(220, 100)">
+    <!-- Body -->
+    <rect x="20" y="55" width="45" height="65" rx="10" fill="#10B981"/>
+    <!-- Head -->
+    <circle cx="42" cy="32" r="27" fill="#10B981"/>
+    <circle cx="42" cy="27" r="18" fill="#F9FAFB"/>
+    <!-- Book (student indicator) -->
+    <rect x="70" cy="45" width="25" height="18" rx="3" fill="#3B82F6"/>
+    <line x1="82" y1="45" x2="82" y2="63" stroke="white" stroke-width="2"/>
+  </g>
+
+  <!-- Connection elements -->
+  <path d="M160 130 Q200 100 240 130" stroke="#4F46E5" stroke-width="3" fill="none" stroke-dasharray="8,4"/>
+  <path d="M160 150 Q200 180 240 150" stroke="#10B981" stroke-width="3" fill="none" stroke-dasharray="8,4"/>
+
+  <!-- Chat bubbles -->
+  <g transform="translate(170, 80)">
+    <rect x="0" y="0" width="60" height="30" rx="15" fill="white" stroke="#4F46E5" stroke-width="2"/>
+    <circle cx="15" cy="15" r="3" fill="#4F46E5"/>
+    <circle cx="30" cy="15" r="3" fill="#4F46E5"/>
+    <circle cx="45" cy="15" r="3" fill="#4F46E5"/>
+  </g>
+
+  <!-- Lightbulb (ideas/learning) -->
+  <g transform="translate(185, 180)">
+    <ellipse cx="15" cy="12" rx="12" ry="15" fill="#F59E0B"/>
+    <rect x="10" y="27" width="10" height="8" fill="#F59E0B"/>
+    <line x1="8" y1="35" x2="22" y2="35" stroke="#D97706" stroke-width="2"/>
+    <line x1="10" y1="38" x2="20" y2="38" stroke="#D97706" stroke-width="2"/>
+    <!-- Light rays -->
+    <line x1="15" y1="-5" x2="15" y2="-12" stroke="#F59E0B" stroke-width="2"/>
+    <line x1="0" y1="5" x2="-7" y2="0" stroke="#F59E0B" stroke-width="2"/>
+    <line x1="30" y1="5" x2="37" y2="0" stroke="#F59E0B" stroke-width="2"/>
+  </g>
+
+  <!-- Growth arrow -->
+  <g transform="translate(300, 200)">
+    <path d="M0 50 L30 20 L60 30" stroke="#10B981" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <polygon points="60,20 70,30 60,35" fill="#10B981"/>
+  </g>
+
+  <!-- Small decorative elements -->
+  <circle cx="100" cy="250" r="5" fill="#4F46E5"/>
+  <circle cx="120" cy="260" r="3" fill="#10B981"/>
+  <circle cx="300" cy="70" r="4" fill="#F59E0B"/>
+  <circle cx="320" cy="90" r="3" fill="#4F46E5"/>
+
+  <!-- Text at bottom -->
+  <text x="200" y="280" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="14" font-weight="600" fill="#6B7280">
+    Connecting Minds, Building Futures
+  </text>
+</svg>

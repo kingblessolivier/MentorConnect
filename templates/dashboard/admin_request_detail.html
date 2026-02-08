@@ -1,0 +1,368 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% block title %}Request Details - Admin{% endblock %}
+{% block dashboard_content %}
+<div class="dashboard-header">
+    <div>
+        <h1><i data-feather="file-text" class="header-icon"></i> Request Details</h1>
+        <p class="text-muted">#{{ mentorship_request.id }} - {{ mentorship_request.subject|truncatewords:8 }}</p>
+    </div>
+    <a href="{% url 'dashboard:admin_requests' %}" class="btn btn-outline">
+        <i data-feather="arrow-left"></i> Back to Requests
+    </a>
+</div>
+
+<!-- Status Banner -->
+<div class="status-banner status-{{ mentorship_request.status }}">
+    <div class="status-content">
+        {% if mentorship_request.status == 'pending' %}
+        <i data-feather="clock"></i>
+        {% elif mentorship_request.status == 'approved' %}
+        <i data-feather="check"></i>
+        {% elif mentorship_request.status == 'completed' %}
+        <i data-feather="check-circle"></i>
+        {% elif mentorship_request.status == 'rejected' %}
+        <i data-feather="x-circle"></i>
+        {% elif mentorship_request.status == 'in_progress' %}
+        <i data-feather="play-circle"></i>
+        {% endif %}
+        <span class="status-text">{{ mentorship_request.get_status_display }}</span>
+    </div>
+    <span class="status-date">Created {{ mentorship_request.created_at|timesince }} ago</span>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+    <!-- Student Card -->
+    <div class="card">
+        <div class="card-body">
+            <h3><i data-feather="user" class="card-icon"></i> Student</h3>
+            <div class="profile-card">
+                <img src="{{ mentorship_request.student.get_avatar_url }}" class="profile-avatar">
+                <div class="profile-info">
+                    <div class="profile-name">{{ mentorship_request.student.get_full_name }}</div>
+                    <div class="profile-email">
+                        <i data-feather="mail" style="width: 14px; height: 14px;"></i>
+                        {{ mentorship_request.student.email }}
+                    </div>
+                    <span class="badge badge-student">Student</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mentor Card -->
+    <div class="card">
+        <div class="card-body">
+            <h3><i data-feather="award" class="card-icon"></i> Mentor</h3>
+            <div class="profile-card">
+                <img src="{{ mentorship_request.mentor.get_avatar_url }}" class="profile-avatar">
+                <div class="profile-info">
+                    <div class="profile-name">{{ mentorship_request.mentor.get_full_name }}</div>
+                    <div class="profile-email">
+                        <i data-feather="mail" style="width: 14px; height: 14px;"></i>
+                        {{ mentorship_request.mentor.email }}
+                    </div>
+                    <span class="badge badge-mentor">Mentor</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Request Details -->
+<div class="card">
+    <div class="card-body">
+        <h3><i data-feather="info" class="card-icon"></i> Request Information</h3>
+
+        <div class="info-section">
+            <div class="info-item full-width">
+                <span class="info-label">Subject</span>
+                <span class="info-value subject-value">{{ mentorship_request.subject }}</span>
+            </div>
+
+            <div class="info-item">
+                <span class="info-label">Status</span>
+                <span class="badge badge-{{ mentorship_request.status }} badge-lg">
+                    {{ mentorship_request.get_status_display }}
+                </span>
+            </div>
+
+            <div class="info-item">
+                <span class="info-label">Created</span>
+                <span class="info-value">{{ mentorship_request.created_at|date:"F d, Y" }}</span>
+            </div>
+
+            {% if mentorship_request.scheduled_date %}
+            <div class="info-item">
+                <span class="info-label">Scheduled Date</span>
+                <span class="info-value">
+                    <i data-feather="calendar" style="width: 14px; height: 14px;"></i>
+                    {{ mentorship_request.scheduled_date|date:"F d, Y" }}
+                </span>
+            </div>
+
+            <div class="info-item">
+                <span class="info-label">Scheduled Time</span>
+                <span class="info-value">
+                    <i data-feather="clock" style="width: 14px; height: 14px;"></i>
+                    {{ mentorship_request.scheduled_time|time:"h:i A" }}
+                </span>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="message-section">
+            <h4>Message from Student</h4>
+            <div class="message-content">
+                {{ mentorship_request.message|linebreaks }}
+            </div>
+        </div>
+
+        {% if mentorship_request.goals %}
+        <div class="message-section">
+            <h4>Goals</h4>
+            <div class="message-content">
+                {{ mentorship_request.goals|linebreaks }}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if mentorship_request.mentor_response %}
+        <div class="message-section mentor-response">
+            <h4><i data-feather="message-circle" style="width: 16px; height: 16px;"></i> Mentor Response</h4>
+            <div class="message-content">
+                {{ mentorship_request.mentor_response|linebreaks }}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.header-icon {
+    width: 28px;
+    height: 28px;
+    vertical-align: middle;
+    margin-right: 0.5rem;
+    color: var(--primary-color, #4f46e5);
+}
+
+.card-icon {
+    width: 20px;
+    height: 20px;
+    vertical-align: middle;
+    margin-right: 0.5rem;
+    color: var(--primary-color, #4f46e5);
+}
+
+.status-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+}
+
+.status-banner.status-pending {
+    background: #fef3c7;
+    border: 1px solid #fcd34d;
+}
+
+.status-banner.status-approved {
+    background: #d1fae5;
+    border: 1px solid #6ee7b7;
+}
+
+.status-banner.status-completed {
+    background: #d1fae5;
+    border: 1px solid #6ee7b7;
+}
+
+.status-banner.status-rejected {
+    background: #fee2e2;
+    border: 1px solid #fca5a5;
+}
+
+.status-banner.status-in_progress {
+    background: #dbeafe;
+    border: 1px solid #93c5fd;
+}
+
+.status-content {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.status-content svg {
+    width: 24px;
+    height: 24px;
+}
+
+.status-banner.status-pending .status-content { color: #92400e; }
+.status-banner.status-approved .status-content,
+.status-banner.status-completed .status-content { color: #065f46; }
+.status-banner.status-rejected .status-content { color: #991b1b; }
+.status-banner.status-in_progress .status-content { color: #1e40af; }
+
+.status-text {
+    font-weight: 600;
+    font-size: 1.125rem;
+}
+
+.status-date {
+    font-size: 0.875rem;
+    color: var(--text-secondary, #6b7280);
+}
+
+.profile-card {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    padding: 1rem;
+    background: var(--background-color, #f9fafb);
+    border-radius: 12px;
+    margin-top: 1rem;
+}
+
+.profile-avatar {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.profile-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+}
+
+.profile-name {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary, #111827);
+}
+
+.profile-email {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.875rem;
+    color: var(--text-muted, #9ca3af);
+}
+
+.info-section {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin: 1.5rem 0;
+}
+
+@media (max-width: 768px) {
+    .info-section {
+        grid-template-columns: 1fr;
+    }
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1rem;
+    background: var(--background-color, #f9fafb);
+    border-radius: 10px;
+}
+
+.info-item.full-width {
+    grid-column: span 2;
+}
+
+@media (max-width: 768px) {
+    .info-item.full-width {
+        grid-column: span 1;
+    }
+}
+
+.info-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary, #6b7280);
+}
+
+.info-value {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9375rem;
+    color: var(--text-primary, #111827);
+    font-weight: 500;
+}
+
+.subject-value {
+    font-size: 1.125rem;
+    font-weight: 600;
+}
+
+.badge-lg {
+    padding: 0.375rem 1rem;
+    font-size: 0.8125rem;
+}
+
+.message-section {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color, #e5e7eb);
+}
+
+.message-section h4 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--text-primary, #111827);
+    margin: 0 0 1rem;
+}
+
+.message-content {
+    padding: 1.25rem;
+    background: var(--background-color, #f9fafb);
+    border-radius: 12px;
+    font-size: 0.9375rem;
+    color: var(--text-secondary, #374151);
+    line-height: 1.7;
+}
+
+.message-content p {
+    margin: 0 0 0.75rem;
+}
+
+.message-content p:last-child {
+    margin-bottom: 0;
+}
+
+.mentor-response {
+    background: #f0fdf4;
+    margin-left: -1.5rem;
+    margin-right: -1.5rem;
+    margin-bottom: -1.5rem;
+    padding: 1.5rem;
+    border-radius: 0 0 16px 16px;
+    border-top: 2px solid #d1fae5;
+}
+
+.mentor-response h4 {
+    color: #065f46;
+}
+
+.mentor-response .message-content {
+    background: white;
+    border: 1px solid #d1fae5;
+}
+</style>
+{% endblock %}

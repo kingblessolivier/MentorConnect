@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Sign Up - {{ SITE_NAME }}{% endblock %}
+
+{% block body_class %}auth-page-premium{% endblock %}
+
+{% block footer %}{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <!-- Left Side - Branding -->
+    <div class="auth-left">
+        <div class="auth-left-content">
+            <h1>Join <span>Mirror</span></h1>
+            <p>
+                Whether you're exploring career paths or ready to share your expertise,
+                Mirror connects you with the right opportunities.
+            </p>
+
+            <ul class="auth-features">
+                <li>
+                    <div class="auth-feature-icon blue">
+                        <i data-feather="eye"></i>
+                    </div>
+                    <span>Real-world observation internships</span>
+                </li>
+                <li>
+                    <div class="auth-feature-icon green">
+                        <i data-feather="users"></i>
+                    </div>
+                    <span>Connect with 500+ professionals</span>
+                </li>
+                <li>
+                    <div class="auth-feature-icon purple">
+                        <i data-feather="calendar"></i>
+                    </div>
+                    <span>Flexible 1-5 day experiences</span>
+                </li>
+                <li>
+                    <div class="auth-feature-icon orange">
+                        <i data-feather="award"></i>
+                    </div>
+                    <span>Make informed career decisions</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Right Side - Choice Cards -->
+    <div class="auth-right" style="max-width: 600px;">
+        <div style="width: 100%;">
+            <div class="auth-logo-premium">
+                <a href="{% url 'core:home' %}">
+                    <span class="auth-logo-text">Mirror</span>
+                </a>
+            </div>
+
+            <h1 class="auth-title-premium">Choose Your Path</h1>
+            <p class="auth-subtitle-premium">How would you like to join Mirror?</p>
+
+            <div style="display: flex; flex-direction: column; gap: 1.5rem; margin-top: 2rem;">
+                <!-- Student Option -->
+                <a href="{% url 'accounts:signup_student' %}" style="display: block; text-decoration: none;">
+                    <div style="background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 16px; padding: 1.5rem; transition: all 0.3s; cursor: pointer;" onmouseover="this.style.borderColor='#3b82f6'; this.style.background='#eff6ff';" onmouseout="this.style.borderColor='#e2e8f0'; this.style.background='#f8fafc';">
+                        <div style="display: flex; align-items: center; gap: 1.25rem;">
+                            <div style="width: 64px; height: 64px; background: linear-gradient(135deg, #3b82f6, #2563eb); border-radius: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                <i data-feather="eye" style="width: 28px; height: 28px; color: white;"></i>
+                            </div>
+                            <div style="flex: 1;">
+                                <h3 style="font-size: 1.125rem; font-weight: 700; color: #1e293b; margin-bottom: 0.25rem;">I'm a Student</h3>
+                                <p style="color: #64748b; margin: 0; font-size: 0.9375rem;">Looking to explore careers through observation internships</p>
+                            </div>
+                            <i data-feather="arrow-right" style="width: 24px; height: 24px; color: #94a3b8;"></i>
+                        </div>
+                        <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e2e8f0;">
+                            <span style="padding: 0.25rem 0.75rem; background: #dbeafe; color: #2563eb; font-size: 0.75rem; font-weight: 500; border-radius: 50px;">Shadow Professionals</span>
+                            <span style="padding: 0.25rem 0.75rem; background: #dcfce7; color: #16a34a; font-size: 0.75rem; font-weight: 500; border-radius: 50px;">1-5 Day Experiences</span>
+                            <span style="padding: 0.25rem 0.75rem; background: #fef3c7; color: #d97706; font-size: 0.75rem; font-weight: 500; border-radius: 50px;">Free to Join</span>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Mentor Option -->
+                <a href="{% url 'accounts:signup_mentor' %}" style="display: block; text-decoration: none;">
+                    <div style="background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 16px; padding: 1.5rem; transition: all 0.3s; cursor: pointer;" onmouseover="this.style.borderColor='#10b981'; this.style.background='#f0fdf4';" onmouseout="this.style.borderColor='#e2e8f0'; this.style.background='#f8fafc';">
+                        <div style="display: flex; align-items: center; gap: 1.25rem;">
+                            <div style="width: 64px; height: 64px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                <i data-feather="award" style="width: 28px; height: 28px; color: white;"></i>
+                            </div>
+                            <div style="flex: 1;">
+                                <h3 style="font-size: 1.125rem; font-weight: 700; color: #1e293b; margin-bottom: 0.25rem;">I'm a Professional</h3>
+                                <p style="color: #64748b; margin: 0; font-size: 0.9375rem;">Ready to share my expertise and inspire the next generation</p>
+                            </div>
+                            <i data-feather="arrow-right" style="width: 24px; height: 24px; color: #94a3b8;"></i>
+                        </div>
+                        <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e2e8f0;">
+                            <span style="padding: 0.25rem 0.75rem; background: #dcfce7; color: #16a34a; font-size: 0.75rem; font-weight: 500; border-radius: 50px;">Share Expertise</span>
+                            <span style="padding: 0.25rem 0.75rem; background: #ede9fe; color: #7c3aed; font-size: 0.75rem; font-weight: 500; border-radius: 50px;">Set Your Schedule</span>
+                            <span style="padding: 0.25rem 0.75rem; background: #fce7f3; color: #db2777; font-size: 0.75rem; font-weight: 500; border-radius: 50px;">Make an Impact</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="auth-footer-premium" style="margin-top: 2rem;">
+                Already have an account? <a href="{% url 'accounts:login' %}">Sign in</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,171 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Privacy Policy - {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="legal-page">
+    <div class="container">
+        <div class="legal-header">
+            <h1>Privacy Policy</h1>
+            <p class="last-updated">Last updated: February 7, 2026</p>
+        </div>
+
+        <div class="legal-content">
+            <section class="legal-section">
+                <h2>1. Introduction</h2>
+                <p>Welcome to {{ SITE_NAME }} ("we," "our," or "us"). We are committed to protecting your personal information and your right to privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website and use our services.</p>
+            </section>
+
+            <section class="legal-section">
+                <h2>2. Information We Collect</h2>
+                <h3>2.1 Personal Information</h3>
+                <p>We may collect personal information that you voluntarily provide to us when you:</p>
+                <ul>
+                    <li>Register for an account</li>
+                    <li>Create or update your profile</li>
+                    <li>Request mentorship or offer mentor services</li>
+                    <li>Contact us with inquiries</li>
+                    <li>Participate in community features</li>
+                </ul>
+
+                <h3>2.2 Information Automatically Collected</h3>
+                <p>When you visit our platform, we automatically collect certain information, including:</p>
+                <ul>
+                    <li>Device and browser information</li>
+                    <li>IP address and location data</li>
+                    <li>Usage patterns and preferences</li>
+                    <li>Cookies and similar tracking technologies</li>
+                </ul>
+            </section>
+
+            <section class="legal-section">
+                <h2>3. How We Use Your Information</h2>
+                <p>We use the information we collect to:</p>
+                <ul>
+                    <li>Provide and maintain our services</li>
+                    <li>Match students with appropriate mentors</li>
+                    <li>Process and manage mentorship requests</li>
+                    <li>Send notifications and updates</li>
+                    <li>Improve and personalize user experience</li>
+                    <li>Ensure platform security and prevent fraud</li>
+                    <li>Comply with legal obligations</li>
+                </ul>
+            </section>
+
+            <section class="legal-section">
+                <h2>4. Information Sharing</h2>
+                <p>We may share your information with:</p>
+                <ul>
+                    <li><strong>Other Users:</strong> Your profile information is visible to other platform users</li>
+                    <li><strong>Service Providers:</strong> Third parties who assist in operating our platform</li>
+                    <li><strong>Legal Requirements:</strong> When required by law or to protect our rights</li>
+                </ul>
+                <p>We do not sell your personal information to third parties.</p>
+            </section>
+
+            <section class="legal-section">
+                <h2>5. Data Security</h2>
+                <p>We implement appropriate technical and organizational security measures to protect your personal information. However, no method of transmission over the Internet is 100% secure, and we cannot guarantee absolute security.</p>
+            </section>
+
+            <section class="legal-section">
+                <h2>6. Your Rights</h2>
+                <p>Depending on your location, you may have the right to:</p>
+                <ul>
+                    <li>Access your personal information</li>
+                    <li>Correct inaccurate data</li>
+                    <li>Request deletion of your data</li>
+                    <li>Object to data processing</li>
+                    <li>Data portability</li>
+                    <li>Withdraw consent</li>
+                </ul>
+            </section>
+
+            <section class="legal-section">
+                <h2>7. Contact Us</h2>
+                <p>If you have questions about this Privacy Policy, please contact us at:</p>
+                <p><strong>Email:</strong> privacy@mentorconnect.com</p>
+                <p><strong>Address:</strong> {{ site_settings.contact_address|default:"MentorConnect Headquarters" }}</p>
+            </section>
+        </div>
+    </div>
+</div>
+
+<style>
+.legal-page {
+    padding: 4rem 1rem;
+    background: var(--background-color);
+    min-height: 100vh;
+}
+
+.legal-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.legal-header h1 {
+    margin-bottom: 0.5rem;
+}
+
+.last-updated {
+    color: var(--text-muted);
+}
+
+.legal-content {
+    max-width: 800px;
+    margin: 0 auto;
+    background: var(--surface-color);
+    padding: 2.5rem;
+    border-radius: var(--card-radius);
+    box-shadow: var(--shadow-sm);
+}
+
+.legal-section {
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border-color, #e5e7eb);
+}
+
+.legal-section:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.legal-section h2 {
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    font-size: 1.25rem;
+}
+
+.legal-section h3 {
+    color: var(--text-secondary);
+    margin: 1.5rem 0 0.75rem;
+    font-size: 1rem;
+}
+
+.legal-section p {
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin-bottom: 1rem;
+}
+
+.legal-section ul {
+    margin: 1rem 0;
+    padding-left: 1.5rem;
+}
+
+.legal-section li {
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+    .legal-content {
+        padding: 1.5rem;
+    }
+}
+</style>
+{% endblock %}

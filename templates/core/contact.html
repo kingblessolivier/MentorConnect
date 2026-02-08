@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block title %}Contact Us - {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 800px;">
+    <div class="section-header text-center mb-5">
+        <h1>Contact Us</h1>
+        <p class="text-muted">We'd love to hear from you</p>
+    </div>
+
+    <div class="grid grid-2" style="gap: 3rem;">
+        <div>
+            <h3 class="mb-4">Get in Touch</h3>
+            <div class="card">
+                <div class="card-body">
+                    {% if site_settings.contact_email %}
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="stat-card-icon" style="width: 48px; height: 48px;">
+                            <i data-feather="mail"></i>
+                        </div>
+                        <div>
+                            <div class="text-sm text-muted">Email</div>
+                            <div class="font-medium">{{ site_settings.contact_email }}</div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if site_settings.contact_phone %}
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="stat-card-icon" style="width: 48px; height: 48px; background: #d1fae5;">
+                            <i data-feather="phone" style="color: #059669;"></i>
+                        </div>
+                        <div>
+                            <div class="text-sm text-muted">Phone</div>
+                            <div class="font-medium">{{ site_settings.contact_phone }}</div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if site_settings.contact_address %}
+                    <div class="flex items-center gap-3">
+                        <div class="stat-card-icon" style="width: 48px; height: 48px; background: #fef3c7;">
+                            <i data-feather="map-pin" style="color: #d97706;"></i>
+                        </div>
+                        <div>
+                            <div class="text-sm text-muted">Address</div>
+                            <div class="font-medium">{{ site_settings.contact_address }}</div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <h3 class="mb-4">Send a Message</h3>
+            <div class="card">
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label class="form-label">Your Name</label>
+                            <input type="text" name="name" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email Address</label>
+                            <input type="email" name="email" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Subject</label>
+                            <input type="text" name="subject" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Message</label>
+                            <textarea name="message" class="form-textarea" rows="5" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">
+                            <i data-feather="send"></i> Send Message
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,427 @@
+{% extends 'dashboard/base_dashboard.html' %}
+
+{% block title %}Add New Mentor - Admin Dashboard{% endblock %}
+
+{% block dashboard_content %}
+<div class="dashboard-header">
+    <div>
+        <h1><i data-feather="user-plus" class="header-icon"></i> Add New Mentor</h1>
+        <p class="text-muted">Create a new mentor account on the platform</p>
+    </div>
+    <a href="{% url 'dashboard:admin_mentors' %}" class="btn btn-outline">
+        <i data-feather="arrow-left"></i> Back to Mentors
+    </a>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <div class="lg-col-span-2">
+        <div class="card">
+            <div class="card-body">
+                <form method="post" class="form-modern">
+                    {% csrf_token %}
+
+                    {% if form.errors %}
+                    <div class="alert alert-danger mb-4">
+                        <i data-feather="alert-circle"></i>
+                        <div>
+                            <strong>Please correct the following errors:</strong>
+                            <ul class="error-list">
+                                {% for field in form %}
+                                    {% for error in field.errors %}
+                                    <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                                    {% endfor %}
+                                {% endfor %}
+                                {% for error in form.non_field_errors %}
+                                <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="form-section">
+                        <h3 class="form-section-title">
+                            <i data-feather="user" class="section-icon"></i> Account Information
+                        </h3>
+
+                        <div class="form-group">
+                            <label for="email" class="form-label">Email Address *</label>
+                            <div class="input-icon">
+                                <i data-feather="mail"></i>
+                                <input type="email" name="email" id="email" class="form-control" placeholder="mentor@example.com" required>
+                            </div>
+                            <p class="form-help">This will be their login email</p>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="first_name" class="form-label">First Name *</label>
+                                <input type="text" name="first_name" id="first_name" class="form-control" placeholder="John" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="last_name" class="form-label">Last Name *</label>
+                                <input type="text" name="last_name" id="last_name" class="form-control" placeholder="Doe" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="phone" class="form-label">Phone Number</label>
+                            <div class="input-icon">
+                                <i data-feather="phone"></i>
+                                <input type="text" name="phone" id="phone" class="form-control" placeholder="+250 7XX XXX XXX">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3 class="form-section-title">
+                            <i data-feather="briefcase" class="section-icon"></i> Professional Information
+                        </h3>
+
+                        <div class="form-group">
+                            <label for="expertise" class="form-label">Area of Expertise *</label>
+                            <input type="text" name="expertise" id="expertise" class="form-control" placeholder="e.g., Software Engineering, Data Science" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="skills" class="form-label">Skills</label>
+                            <textarea name="skills" id="skills" class="form-control form-textarea" rows="2" placeholder="Python, JavaScript, Machine Learning, etc."></textarea>
+                            <p class="form-help">Comma-separated list of skills</p>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="bio" class="form-label">Bio</label>
+                            <textarea name="bio" id="bio" class="form-control form-textarea" rows="4" placeholder="Tell us about this mentor's background and experience..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3 class="form-section-title">
+                            <i data-feather="settings" class="section-icon"></i> Status Options
+                        </h3>
+
+                        <div class="toggle-list">
+                            <label class="toggle-option">
+                                <div class="toggle-info">
+                                    <span class="toggle-title">Mark as Verified</span>
+                                    <span class="toggle-desc">Verified mentors appear with a badge</span>
+                                </div>
+                                <div class="toggle-switch">
+                                    <input type="checkbox" name="is_verified" checked>
+                                    <span class="toggle-slider"></span>
+                                </div>
+                            </label>
+
+                            <label class="toggle-option">
+                                <div class="toggle-info">
+                                    <span class="toggle-title">Feature this Mentor</span>
+                                    <span class="toggle-desc">Featured mentors appear prominently on the homepage</span>
+                                </div>
+                                <div class="toggle-switch">
+                                    <input type="checkbox" name="is_featured">
+                                    <span class="toggle-slider"></span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i data-feather="user-plus"></i> Create Mentor
+                        </button>
+                        <a href="{% url 'dashboard:admin_mentors' %}" class="btn btn-outline btn-lg">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <div class="card mb-4">
+            <div class="card-body">
+                <h3><i data-feather="key" class="card-icon"></i> Default Password</h3>
+                <div class="password-info">
+                    <code class="password-display">MentorConnect2026!</code>
+                    <p class="form-help">Mentor should change this after first login</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <h3><i data-feather="info" class="card-icon"></i> Quick Tips</h3>
+                <ul class="tips-list">
+                    <li>
+                        <i data-feather="check" class="tip-check"></i>
+                        Use a valid email - verification link will be sent
+                    </li>
+                    <li>
+                        <i data-feather="check" class="tip-check"></i>
+                        Verified mentors get more visibility
+                    </li>
+                    <li>
+                        <i data-feather="check" class="tip-check"></i>
+                        Add detailed skills for better matching
+                    </li>
+                    <li>
+                        <i data-feather="check" class="tip-check"></i>
+                        A good bio helps students choose mentors
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.header-icon {
+    width: 28px;
+    height: 28px;
+    vertical-align: middle;
+    margin-right: 0.5rem;
+    color: var(--primary-color, #4f46e5);
+}
+
+.card-icon {
+    width: 20px;
+    height: 20px;
+    vertical-align: middle;
+    margin-right: 0.5rem;
+    color: var(--primary-color, #4f46e5);
+}
+
+.alert {
+    display: flex;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    border-radius: 10px;
+    align-items: flex-start;
+}
+
+.alert svg {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.alert-danger {
+    background: #fee2e2;
+    border: 1px solid #fca5a5;
+    color: #991b1b;
+}
+
+.alert-danger svg {
+    color: #dc2626;
+}
+
+.error-list {
+    margin: 0.5rem 0 0;
+    padding-left: 1.25rem;
+}
+
+.error-list li {
+    margin-bottom: 0.25rem;
+}
+
+.lg-col-span-2 {
+    grid-column: span 2;
+}
+
+@media (max-width: 1024px) {
+    .lg-col-span-2 {
+        grid-column: span 1;
+    }
+}
+
+.form-section {
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border-color, #e5e7eb);
+}
+
+.form-section:last-of-type {
+    border-bottom: none;
+}
+
+.form-section-title {
+    display: flex;
+    align-items: center;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary, #111827);
+    margin-bottom: 1.5rem;
+}
+
+.section-icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 0.625rem;
+    color: var(--primary-color, #4f46e5);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+.input-icon {
+    position: relative;
+}
+
+.input-icon i, .input-icon svg {
+    position: absolute;
+    left: 0.875rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 18px;
+    height: 18px;
+    color: var(--text-muted, #9ca3af);
+    pointer-events: none;
+}
+
+.input-icon .form-control {
+    padding-left: 2.75rem;
+}
+
+.form-textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.toggle-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.toggle-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--background-color, #f9fafb);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.toggle-option:hover {
+    background: #f3f4f6;
+}
+
+.toggle-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+}
+
+.toggle-title {
+    font-weight: 600;
+    color: var(--text-primary, #111827);
+    font-size: 0.9375rem;
+}
+
+.toggle-desc {
+    font-size: 0.8125rem;
+    color: var(--text-muted, #9ca3af);
+}
+
+.toggle-switch {
+    position: relative;
+    width: 48px;
+    height: 26px;
+    flex-shrink: 0;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    inset: 0;
+    background: #d1d5db;
+    border-radius: 26px;
+    transition: 0.3s;
+}
+
+.toggle-slider::before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    bottom: 3px;
+    background: white;
+    border-radius: 50%;
+    transition: 0.3s;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-switch input:checked + .toggle-slider {
+    background: var(--primary-color, #4f46e5);
+}
+
+.toggle-switch input:checked + .toggle-slider::before {
+    transform: translateX(22px);
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color, #e5e7eb);
+}
+
+.password-info {
+    margin-top: 1rem;
+}
+
+.password-display {
+    display: block;
+    padding: 0.875rem 1rem;
+    background: #fef3c7;
+    color: #92400e;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.tips-list {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0 0;
+}
+
+.tips-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.625rem;
+    padding: 0.5rem 0;
+    font-size: 0.875rem;
+    color: var(--text-secondary, #6b7280);
+}
+
+.tip-check {
+    width: 16px;
+    height: 16px;
+    color: #10b981;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+</style>
+{% endblock %}

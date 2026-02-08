@@ -1,0 +1,1268 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Admin Dashboard - {{ SITE_NAME }}{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ============================================
+   ADMIN DASHBOARD - PREMIUM DESIGN
+   ============================================ */
+
+/* Hero Section */
+.admin-hero {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 50%, #3b7fb8 100%);
+    border-radius: 24px;
+    padding: 2.5rem;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(30, 58, 95, 0.35);
+}
+
+.admin-hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 80%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 60%);
+    animation: heroGlow 6s ease-in-out infinite;
+}
+
+.admin-hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.06'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+@keyframes heroGlow {
+    0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.5; }
+    50% { transform: scale(1.1) rotate(5deg); opacity: 0.8; }
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+}
+
+.hero-text { color: white; }
+
+.hero-text h1 {
+    font-size: 2rem;
+    font-weight: 800;
+    margin: 0 0 0.5rem;
+    text-shadow: 0 2px 15px rgba(0,0,0,0.2);
+}
+
+.hero-text p {
+    font-size: 1.0625rem;
+    opacity: 0.9;
+    margin: 0 0 1rem;
+}
+
+.hero-date {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255,255,255,0.2);
+    padding: 0.5rem 1rem;
+    border-radius: 50px;
+    font-size: 0.875rem;
+    backdrop-filter: blur(10px);
+}
+
+.hero-date svg { width: 16px; height: 16px; }
+
+.hero-actions { display: flex; gap: 0.75rem; }
+
+.hero-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.875rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    text-decoration: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hero-btn svg { width: 18px; height: 18px; }
+
+.hero-btn-light {
+    background: white;
+    color: #1e3a5f;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+
+.hero-btn-light:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+}
+
+.hero-btn-ghost {
+    background: rgba(255,255,255,0.2);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.3);
+    backdrop-filter: blur(10px);
+}
+
+.hero-btn-ghost:hover {
+    background: rgba(255,255,255,0.3);
+    transform: translateY(-2px);
+}
+
+/* Stats Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+}
+
+@media (max-width: 1200px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 640px) { .stats-grid { grid-template-columns: 1fr; } }
+
+.stat-card-premium {
+    background: var(--surface-color, #ffffff);
+    border-radius: 20px;
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(0,0,0,0.04);
+    box-shadow: 0 4px 25px rgba(0,0,0,0.04);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.stat-card-premium:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+}
+
+.stat-card-premium::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: var(--stat-gradient);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.stat-card-premium:hover::before { opacity: 1; }
+
+.stat-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.stat-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--stat-gradient);
+    color: white;
+    box-shadow: 0 8px 20px var(--stat-shadow);
+}
+
+.stat-icon svg { width: 24px; height: 24px; }
+
+.stat-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.625rem;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.stat-badge.up { background: #ecfdf5; color: #059669; }
+.stat-badge.down { background: #fef2f2; color: #dc2626; }
+.stat-badge.neutral { background: #f3f4f6; color: #6b7280; }
+.stat-badge svg { width: 12px; height: 12px; }
+
+.stat-value {
+    font-size: 2.25rem;
+    font-weight: 800;
+    color: var(--text-primary, #111827);
+    line-height: 1;
+    margin-bottom: 0.375rem;
+}
+
+.stat-label {
+    font-size: 0.9375rem;
+    color: var(--text-secondary, #6b7280);
+    font-weight: 500;
+}
+
+.stat-footer {
+    margin-top: 1rem;
+    padding-top: 0.875rem;
+    border-top: 1px dashed rgba(0,0,0,0.06);
+    font-size: 0.8125rem;
+    color: var(--text-muted, #9ca3af);
+}
+
+/* Stat Card Variants */
+.stat-card-premium.users { --stat-gradient: linear-gradient(135deg, #1e3a5f, #3b7fb8); --stat-shadow: rgba(30, 58, 95, 0.3); }
+.stat-card-premium.students { --stat-gradient: linear-gradient(135deg, #10b981, #059669); --stat-shadow: rgba(16, 185, 129, 0.3); }
+.stat-card-premium.mentors { --stat-gradient: linear-gradient(135deg, #f59e0b, #d97706); --stat-shadow: rgba(245, 158, 11, 0.3); }
+.stat-card-premium.active { --stat-gradient: linear-gradient(135deg, #ec4899, #be185d); --stat-shadow: rgba(236, 72, 153, 0.3); }
+.stat-card-premium.requests { --stat-gradient: linear-gradient(135deg, #8b5cf6, #7c3aed); --stat-shadow: rgba(139, 92, 246, 0.3); }
+.stat-card-premium.completed { --stat-gradient: linear-gradient(135deg, #06b6d4, #0891b2); --stat-shadow: rgba(6, 182, 212, 0.3); }
+.stat-card-premium.sessions { --stat-gradient: linear-gradient(135deg, #3b82f6, #2563eb); --stat-shadow: rgba(59, 130, 246, 0.3); }
+.stat-card-premium.rating { --stat-gradient: linear-gradient(135deg, #eab308, #ca8a04); --stat-shadow: rgba(234, 179, 8, 0.3); }
+
+/* Charts Section */
+.charts-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+@media (max-width: 1024px) { .charts-grid { grid-template-columns: 1fr; } }
+
+.chart-card {
+    background: var(--surface-color, #ffffff);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 25px rgba(0,0,0,0.04);
+    border: 1px solid rgba(0,0,0,0.04);
+}
+
+.chart-header {
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(0,0,0,0.04);
+}
+
+.chart-header h3 {
+    font-size: 1.0625rem;
+    font-weight: 700;
+    color: var(--text-primary, #111827);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+}
+
+.chart-header h3 svg {
+    width: 20px;
+    height: 20px;
+    color: var(--primary-color, #1e3a5f);
+}
+
+.chart-body {
+    padding: 1.5rem;
+    height: 280px;
+}
+
+/* Feed Engagement Card */
+.engagement-card {
+    background: var(--surface-color, #ffffff);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 25px rgba(0,0,0,0.04);
+    border: 1px solid rgba(0,0,0,0.04);
+}
+
+.engagement-header {
+    padding: 1.25rem 1.5rem;
+    background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%);
+    border-bottom: 1px solid #fbcfe8;
+}
+
+.engagement-header h3 {
+    font-size: 1.0625rem;
+    font-weight: 700;
+    color: #9d174d;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+}
+
+.engagement-header h3 svg { width: 20px; height: 20px; }
+
+.engagement-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.engagement-item {
+    padding: 1.5rem;
+    text-align: center;
+    border-right: 1px solid rgba(0,0,0,0.04);
+    border-bottom: 1px solid rgba(0,0,0,0.04);
+    transition: background 0.2s;
+}
+
+.engagement-item:nth-child(2n) { border-right: none; }
+.engagement-item:nth-child(n+3) { border-bottom: none; }
+.engagement-item:hover { background: #fafafa; }
+
+.engagement-icon {
+    width: 50px;
+    height: 50px;
+    margin: 0 auto 1rem;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.engagement-icon svg { width: 24px; height: 24px; }
+.engagement-icon.posts { background: linear-gradient(135deg, #fce7f3, #fbcfe8); color: #ec4899; }
+.engagement-icon.comments { background: linear-gradient(135deg, #dbeafe, #bfdbfe); color: #3b82f6; }
+.engagement-icon.likes { background: linear-gradient(135deg, #fee2e2, #fecaca); color: #ef4444; }
+.engagement-icon.growth { background: linear-gradient(135deg, #dcfce7, #bbf7d0); color: #22c55e; }
+
+.engagement-value {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--text-primary, #111827);
+    margin-bottom: 0.25rem;
+}
+
+.engagement-label {
+    font-size: 0.875rem;
+    color: var(--text-muted, #9ca3af);
+    font-weight: 500;
+}
+
+/* Quick Actions */
+.quick-actions-card {
+    background: var(--surface-color, #ffffff);
+    border-radius: 20px;
+    padding: 1.75rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 25px rgba(0,0,0,0.04);
+    border: 1px solid rgba(0,0,0,0.04);
+}
+
+.quick-actions-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+}
+
+.quick-actions-header h3 {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--text-primary, #111827);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+}
+
+.quick-actions-header h3 svg {
+    width: 22px;
+    height: 22px;
+    color: #f59e0b;
+}
+
+.actions-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 1rem;
+}
+
+@media (max-width: 1200px) { .actions-grid { grid-template-columns: repeat(4, 1fr); } }
+@media (max-width: 768px) { .actions-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 480px) { .actions-grid { grid-template-columns: repeat(2, 1fr); } }
+
+.action-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1.25rem 1rem;
+    border-radius: 16px;
+    background: #f9fafb;
+    text-decoration: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 2px solid transparent;
+    position: relative;
+    overflow: hidden;
+}
+
+.action-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--action-bg);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.action-btn:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px rgba(0,0,0,0.1);
+    border-color: var(--action-color);
+}
+
+.action-btn:hover::before { opacity: 0.08; }
+
+.action-icon-wrap {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.75rem;
+    position: relative;
+    z-index: 1;
+    transition: transform 0.3s, box-shadow 0.3s;
+    background: var(--action-bg);
+    color: white;
+}
+
+.action-btn:hover .action-icon-wrap {
+    transform: scale(1.08);
+    box-shadow: 0 8px 20px var(--action-shadow);
+}
+
+.action-icon-wrap svg { width: 22px; height: 22px; }
+
+.action-text {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text-secondary, #4b5563);
+    text-align: center;
+    position: relative;
+    z-index: 1;
+    transition: color 0.3s;
+}
+
+.action-btn:hover .action-text { color: var(--text-primary, #111827); }
+
+/* Action Button Variants */
+.action-btn.users { --action-color: #1e3a5f; --action-bg: linear-gradient(135deg, #1e3a5f, #3b7fb8); --action-shadow: rgba(30, 58, 95, 0.4); }
+.action-btn.mentors { --action-color: #f59e0b; --action-bg: linear-gradient(135deg, #f59e0b, #d97706); --action-shadow: rgba(245, 158, 11, 0.4); }
+.action-btn.add { --action-color: #10b981; --action-bg: linear-gradient(135deg, #10b981, #059669); --action-shadow: rgba(16, 185, 129, 0.4); }
+.action-btn.requests { --action-color: #8b5cf6; --action-bg: linear-gradient(135deg, #8b5cf6, #7c3aed); --action-shadow: rgba(139, 92, 246, 0.4); }
+.action-btn.sessions { --action-color: #06b6d4; --action-bg: linear-gradient(135deg, #06b6d4, #0891b2); --action-shadow: rgba(6, 182, 212, 0.4); }
+.action-btn.posts { --action-color: #ec4899; --action-bg: linear-gradient(135deg, #ec4899, #db2777); --action-shadow: rgba(236, 72, 153, 0.4); }
+.action-btn.reviews { --action-color: #eab308; --action-bg: linear-gradient(135deg, #eab308, #ca8a04); --action-shadow: rgba(234, 179, 8, 0.4); }
+.action-btn.analytics { --action-color: #3b82f6; --action-bg: linear-gradient(135deg, #3b82f6, #2563eb); --action-shadow: rgba(59, 130, 246, 0.4); }
+.action-btn.theme { --action-color: #a855f7; --action-bg: linear-gradient(135deg, #a855f7, #9333ea); --action-shadow: rgba(168, 85, 247, 0.4); }
+.action-btn.settings { --action-color: #64748b; --action-bg: linear-gradient(135deg, #64748b, #475569); --action-shadow: rgba(100, 116, 139, 0.4); }
+.action-btn.broadcast { --action-color: #f43f5e; --action-bg: linear-gradient(135deg, #f43f5e, #e11d48); --action-shadow: rgba(244, 63, 94, 0.4); }
+.action-btn.export { --action-color: #14b8a6; --action-bg: linear-gradient(135deg, #14b8a6, #0d9488); --action-shadow: rgba(20, 184, 166, 0.4); }
+
+/* Data Cards Row */
+.data-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+@media (max-width: 1024px) { .data-row { grid-template-columns: 1fr; } }
+
+.data-card {
+    background: var(--surface-color, #ffffff);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 25px rgba(0,0,0,0.04);
+    border: 1px solid rgba(0,0,0,0.04);
+}
+
+.data-card-header {
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(0,0,0,0.04);
+}
+
+.data-card-header h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary, #111827);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.data-card-header h3 svg { width: 18px; height: 18px; }
+.data-card-header.mentors h3 svg { color: #f59e0b; }
+.data-card-header.users h3 svg { color: #1e3a5f; }
+
+.data-card-header a {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--primary-color, #1e3a5f);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    transition: color 0.2s;
+}
+
+.data-card-header a:hover { color: #2d5a87; }
+.data-card-header a svg { width: 16px; height: 16px; }
+
+/* Top Mentors List */
+.mentor-list { list-style: none; padding: 0; margin: 0; }
+
+.mentor-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid rgba(0,0,0,0.04);
+    transition: background 0.2s;
+}
+
+.mentor-item:last-child { border-bottom: none; }
+.mentor-item:hover { background: #fafafa; }
+
+.mentor-rank {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 800;
+    flex-shrink: 0;
+}
+
+.mentor-rank.gold { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: white; box-shadow: 0 4px 12px rgba(251, 191, 36, 0.4); }
+.mentor-rank.silver { background: linear-gradient(135deg, #94a3b8, #64748b); color: white; }
+.mentor-rank.bronze { background: linear-gradient(135deg, #d97706, #b45309); color: white; }
+.mentor-rank.default { background: #f3f4f6; color: #6b7280; }
+
+.mentor-avatar { position: relative; flex-shrink: 0; }
+
+.mentor-avatar img {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    object-fit: cover;
+    border: 2px solid #f3f4f6;
+}
+
+.mentor-verified {
+    position: absolute;
+    bottom: -3px;
+    right: -3px;
+    width: 18px;
+    height: 18px;
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid white;
+    box-shadow: 0 2px 6px rgba(59, 130, 246, 0.4);
+}
+
+.mentor-verified svg { width: 10px; height: 10px; color: white; }
+
+.mentor-info { flex: 1; min-width: 0; }
+
+.mentor-name {
+    font-weight: 600;
+    color: var(--text-primary, #111827);
+    font-size: 0.9375rem;
+    margin-bottom: 0.125rem;
+}
+
+.mentor-expertise {
+    font-size: 0.8125rem;
+    color: var(--text-muted, #9ca3af);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.mentor-stats { text-align: right; flex-shrink: 0; }
+
+.mentor-rating {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.375rem;
+    font-weight: 700;
+    color: var(--text-primary, #111827);
+    font-size: 0.9375rem;
+}
+
+.mentor-rating svg { width: 16px; height: 16px; color: #fbbf24; fill: #fbbf24; }
+.mentor-reviews { font-size: 0.75rem; color: var(--text-muted, #9ca3af); }
+
+/* Recent Users List */
+.user-list { list-style: none; padding: 0; margin: 0; }
+
+.user-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid rgba(0,0,0,0.04);
+    transition: background 0.2s;
+}
+
+.user-item:last-child { border-bottom: none; }
+.user-item:hover { background: #fafafa; }
+
+.user-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    object-fit: cover;
+    border: 2px solid #f3f4f6;
+    flex-shrink: 0;
+}
+
+.user-info { flex: 1; min-width: 0; }
+
+.user-name {
+    font-weight: 600;
+    color: var(--text-primary, #111827);
+    font-size: 0.9375rem;
+    margin-bottom: 0.125rem;
+}
+
+.user-email {
+    font-size: 0.8125rem;
+    color: var(--text-muted, #9ca3af);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user-meta { text-align: right; flex-shrink: 0; }
+
+.user-role {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.625rem;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    border-radius: 6px;
+    margin-bottom: 0.25rem;
+}
+
+.user-role.student { background: linear-gradient(135deg, #dcfce7, #bbf7d0); color: #15803d; }
+.user-role.mentor { background: linear-gradient(135deg, #fef3c7, #fde68a); color: #b45309; }
+.user-role.admin { background: linear-gradient(135deg, #fee2e2, #fecaca); color: #dc2626; }
+
+.user-joined { font-size: 0.75rem; color: var(--text-muted, #9ca3af); display: block; }
+
+/* Activity Table */
+.activity-card {
+    background: var(--surface-color, #ffffff);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 25px rgba(0,0,0,0.04);
+    border: 1px solid rgba(0,0,0,0.04);
+    margin-bottom: 2rem;
+}
+
+.activity-header {
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+    border-bottom: 1px solid rgba(0,0,0,0.04);
+}
+
+.activity-header h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary, #111827);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.activity-header h3 svg { width: 18px; height: 18px; color: #1e3a5f; }
+
+.activity-header a {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--primary-color, #1e3a5f);
+    text-decoration: none;
+}
+
+.activity-table { width: 100%; border-collapse: collapse; }
+
+.activity-table th {
+    padding: 0.875rem 1.5rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary, #64748b);
+    background: #fafafa;
+    border-bottom: 1px solid rgba(0,0,0,0.04);
+}
+
+.activity-table td {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid rgba(0,0,0,0.04);
+    font-size: 0.9375rem;
+    color: var(--text-primary, #1e293b);
+}
+
+.activity-table tbody tr:hover { background: #fafafa; }
+.activity-table tbody tr:last-child td { border-bottom: none; }
+
+.activity-user { display: flex; align-items: center; gap: 0.75rem; }
+
+.activity-user img {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    object-fit: cover;
+}
+
+.activity-user-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: #f3f4f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6b7280;
+}
+
+.activity-user-icon svg { width: 16px; height: 16px; }
+
+.activity-badge {
+    display: inline-flex;
+    padding: 0.25rem 0.625rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 6px;
+    background: #f3f4f6;
+    color: #6b7280;
+}
+
+.activity-time { font-size: 0.8125rem; color: var(--text-muted, #9ca3af); }
+
+/* Empty States */
+.empty-state {
+    padding: 3rem 1.5rem;
+    text-align: center;
+    color: var(--text-muted, #9ca3af);
+}
+
+.empty-state svg { width: 48px; height: 48px; margin-bottom: 1rem; opacity: 0.4; }
+.empty-state p { font-size: 0.9375rem; margin: 0; }
+
+/* Responsive Hero */
+@media (max-width: 768px) {
+    .admin-hero { padding: 1.75rem; }
+    .hero-text h1 { font-size: 1.5rem; }
+    .hero-actions { width: 100%; flex-direction: column; }
+    .hero-btn { justify-content: center; }
+}
+</style>
+{% endblock %}
+
+{% block dashboard_content %}
+<!-- Hero Section -->
+<div class="admin-hero">
+    <div class="hero-content">
+        <div class="hero-text">
+            <h1>👋 Welcome back, Admin!</h1>
+            <p>Here's what's happening with your platform today.</p>
+            <div class="hero-date">
+                <i data-feather="calendar"></i>
+                <span>February 7, 2026</span>
+            </div>
+        </div>
+        <div class="hero-actions">
+            <a href="{% url 'dashboard:admin_reports' %}" class="hero-btn hero-btn-light">
+                <i data-feather="bar-chart-2"></i>
+                View Reports
+            </a>
+            <a href="{% url 'dashboard:admin_export' %}?type=users&format=csv" class="hero-btn hero-btn-ghost">
+                <i data-feather="download"></i>
+                Export Data
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Row 1 -->
+<div class="stats-grid">
+    <div class="stat-card-premium users">
+        <div class="stat-header">
+            <div class="stat-icon"><i data-feather="users"></i></div>
+            <span class="stat-badge up"><i data-feather="trending-up"></i> +{{ new_users_week|default:0 }}</span>
+        </div>
+        <div class="stat-value">{{ total_users|default:0 }}</div>
+        <div class="stat-label">Total Users</div>
+        <div class="stat-footer">New this week</div>
+    </div>
+
+    <div class="stat-card-premium students">
+        <div class="stat-header">
+            <div class="stat-icon"><i data-feather="book-open"></i></div>
+            <span class="stat-badge up">Active</span>
+        </div>
+        <div class="stat-value">{{ total_students|default:0 }}</div>
+        <div class="stat-label">Students</div>
+        <div class="stat-footer">Registered learners</div>
+    </div>
+
+    <div class="stat-card-premium mentors">
+        <div class="stat-header">
+            <div class="stat-icon"><i data-feather="award"></i></div>
+            <span class="stat-badge neutral">Verified</span>
+        </div>
+        <div class="stat-value">{{ total_mentors|default:0 }}</div>
+        <div class="stat-label">Mentors</div>
+        <div class="stat-footer">Expert mentors</div>
+    </div>
+
+    <div class="stat-card-premium active">
+        <div class="stat-header">
+            <div class="stat-icon"><i data-feather="activity"></i></div>
+            <span class="stat-badge up">Online</span>
+        </div>
+        <div class="stat-value">{{ active_users|default:0 }}</div>
+        <div class="stat-label">Active Users</div>
+        <div class="stat-footer">Currently active</div>
+    </div>
+</div>
+
+<!-- Stats Row 2 -->
+<div class="stats-grid">
+    <div class="stat-card-premium requests">
+        <div class="stat-header">
+            <div class="stat-icon"><i data-feather="file-text"></i></div>
+            <span class="stat-badge neutral">{{ pending_requests|default:0 }} pending</span>
+        </div>
+        <div class="stat-value">{{ total_requests|default:0 }}</div>
+        <div class="stat-label">Total Requests</div>
+        <div class="stat-footer">Mentorship requests</div>
+    </div>
+
+    <div class="stat-card-premium completed">
+        <div class="stat-header">
+            <div class="stat-icon"><i data-feather="check-circle"></i></div>
+            <span class="stat-badge up">Success</span>
+        </div>
+        <div class="stat-value">{{ completed_requests|default:0 }}</div>
+        <div class="stat-label">Completed</div>
+        <div class="stat-footer">Successfully matched</div>
+    </div>
+
+    <div class="stat-card-premium sessions">
+        <div class="stat-header">
+            <div class="stat-icon"><i data-feather="calendar"></i></div>
+            <span class="stat-badge up">Growing</span>
+        </div>
+        <div class="stat-value">{{ total_sessions|default:0 }}</div>
+        <div class="stat-label">Total Sessions</div>
+        <div class="stat-footer">Mentoring sessions</div>
+    </div>
+
+    <div class="stat-card-premium rating">
+        <div class="stat-header">
+            <div class="stat-icon"><i data-feather="star"></i></div>
+            <span class="stat-badge up">{{ total_reviews|default:0 }} reviews</span>
+        </div>
+        <div class="stat-value">{{ average_rating|default:"0.0" }}</div>
+        <div class="stat-label">Avg Rating</div>
+        <div class="stat-footer">Platform satisfaction</div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="charts-grid">
+    <div class="chart-card">
+        <div class="chart-header">
+            <h3><i data-feather="trending-up"></i> User Growth</h3>
+        </div>
+        <div class="chart-body">
+            <canvas id="userGrowthChart"></canvas>
+        </div>
+    </div>
+
+    <div class="chart-card">
+        <div class="chart-header">
+            <h3><i data-feather="pie-chart"></i> User Distribution</h3>
+        </div>
+        <div class="chart-body">
+            <canvas id="roleDistributionChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row 2 -->
+<div class="charts-grid">
+    <div class="chart-card">
+        <div class="chart-header">
+            <h3><i data-feather="bar-chart-2"></i> Request Status</h3>
+        </div>
+        <div class="chart-body">
+            <canvas id="requestStatusChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Feed Engagement -->
+    <div class="engagement-card">
+        <div class="engagement-header">
+            <h3><i data-feather="heart"></i> Feed Engagement</h3>
+        </div>
+        <div class="engagement-grid">
+            <div class="engagement-item">
+                <div class="engagement-icon posts"><i data-feather="layout"></i></div>
+                <div class="engagement-value">{{ total_posts|default:0 }}</div>
+                <div class="engagement-label">Total Posts</div>
+            </div>
+            <div class="engagement-item">
+                <div class="engagement-icon comments"><i data-feather="message-square"></i></div>
+                <div class="engagement-value">{{ total_comments|default:0 }}</div>
+                <div class="engagement-label">Comments</div>
+            </div>
+            <div class="engagement-item">
+                <div class="engagement-icon likes"><i data-feather="heart"></i></div>
+                <div class="engagement-value">{{ total_likes|default:0 }}</div>
+                <div class="engagement-label">Likes</div>
+            </div>
+            <div class="engagement-item">
+                <div class="engagement-icon growth"><i data-feather="trending-up"></i></div>
+                <div class="engagement-value">{{ posts_this_week|default:0 }}</div>
+                <div class="engagement-label">This Week</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="quick-actions-card">
+    <div class="quick-actions-header">
+        <h3><i data-feather="zap"></i> Quick Actions</h3>
+    </div>
+    <div class="actions-grid">
+        <a href="{% url 'dashboard:admin_users' %}" class="action-btn users">
+            <div class="action-icon-wrap"><i data-feather="users"></i></div>
+            <span class="action-text">Manage Users</span>
+        </a>
+        <a href="{% url 'dashboard:admin_mentors' %}" class="action-btn mentors">
+            <div class="action-icon-wrap"><i data-feather="award"></i></div>
+            <span class="action-text">Manage Mentors</span>
+        </a>
+        <a href="{% url 'dashboard:admin_mentor_create' %}" class="action-btn add">
+            <div class="action-icon-wrap"><i data-feather="user-plus"></i></div>
+            <span class="action-text">Add Mentor</span>
+        </a>
+        <a href="{% url 'dashboard:admin_requests' %}" class="action-btn requests">
+            <div class="action-icon-wrap"><i data-feather="file-text"></i></div>
+            <span class="action-text">View Requests</span>
+        </a>
+        <a href="{% url 'dashboard:admin_sessions' %}" class="action-btn sessions">
+            <div class="action-icon-wrap"><i data-feather="calendar"></i></div>
+            <span class="action-text">View Sessions</span>
+        </a>
+        <a href="{% url 'dashboard:admin_posts' %}" class="action-btn posts">
+            <div class="action-icon-wrap"><i data-feather="layout"></i></div>
+            <span class="action-text">Manage Posts</span>
+        </a>
+        <a href="{% url 'dashboard:admin_reviews' %}" class="action-btn reviews">
+            <div class="action-icon-wrap"><i data-feather="star"></i></div>
+            <span class="action-text">View Reviews</span>
+        </a>
+        <a href="{% url 'dashboard:admin_reports' %}" class="action-btn analytics">
+            <div class="action-icon-wrap"><i data-feather="bar-chart-2"></i></div>
+            <span class="action-text">Analytics</span>
+        </a>
+        <a href="{% url 'dashboard:admin_theme' %}" class="action-btn theme">
+            <div class="action-icon-wrap"><i data-feather="palette"></i></div>
+            <span class="action-text">Theme</span>
+        </a>
+        <a href="{% url 'dashboard:admin_settings' %}" class="action-btn settings">
+            <div class="action-icon-wrap"><i data-feather="settings"></i></div>
+            <span class="action-text">Settings</span>
+        </a>
+        <a href="{% url 'dashboard:admin_broadcast' %}" class="action-btn broadcast">
+            <div class="action-icon-wrap"><i data-feather="send"></i></div>
+            <span class="action-text">Broadcast</span>
+        </a>
+        <a href="{% url 'dashboard:admin_export' %}?type=users&format=csv" class="action-btn export">
+            <div class="action-icon-wrap"><i data-feather="download"></i></div>
+            <span class="action-text">Export Data</span>
+        </a>
+    </div>
+</div>
+
+<!-- Top Mentors & Recent Users -->
+<div class="data-row">
+    <!-- Top Mentors -->
+    <div class="data-card">
+        <div class="data-card-header mentors">
+            <h3><i data-feather="award"></i> Top Mentors</h3>
+            <a href="{% url 'dashboard:admin_mentors' %}">View all <i data-feather="arrow-right"></i></a>
+        </div>
+        {% if top_mentors %}
+        <ul class="mentor-list">
+            {% for mentor in top_mentors %}
+            <li class="mentor-item">
+                <div class="mentor-rank {% if forloop.counter == 1 %}gold{% elif forloop.counter == 2 %}silver{% elif forloop.counter == 3 %}bronze{% else %}default{% endif %}">{{ forloop.counter }}</div>
+                <div class="mentor-avatar">
+                    <img src="{{ mentor.user.get_avatar_url }}" alt="{{ mentor.user.get_full_name }}">
+                    {% if mentor.is_verified %}<div class="mentor-verified"><i data-feather="check"></i></div>{% endif %}
+                </div>
+                <div class="mentor-info">
+                    <div class="mentor-name">{{ mentor.user.get_full_name }}</div>
+                    <div class="mentor-expertise">{{ mentor.expertise }}</div>
+                </div>
+                <div class="mentor-stats">
+                    <div class="mentor-rating"><i data-feather="star"></i> {{ mentor.rating|default:"0.0" }}</div>
+                    <div class="mentor-reviews">{{ mentor.total_reviews|default:0 }} reviews</div>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <div class="empty-state"><i data-feather="award"></i><p>No mentors yet</p></div>
+        {% endif %}
+    </div>
+
+    <!-- Recent Users -->
+    <div class="data-card">
+        <div class="data-card-header users">
+            <h3><i data-feather="user-plus"></i> Recent Users</h3>
+            <a href="{% url 'dashboard:admin_users' %}">View all <i data-feather="arrow-right"></i></a>
+        </div>
+        {% if recent_users %}
+        <ul class="user-list">
+            {% for user in recent_users %}
+            <li class="user-item">
+                <img src="{{ user.get_avatar_url }}" alt="{{ user.get_full_name }}" class="user-avatar">
+                <div class="user-info">
+                    <div class="user-name">{{ user.get_full_name }}</div>
+                    <div class="user-email">{{ user.email }}</div>
+                </div>
+                <div class="user-meta">
+                    <span class="user-role {{ user.role }}">{{ user.get_role_display }}</span>
+                    <span class="user-joined">{{ user.date_joined|timesince }} ago</span>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <div class="empty-state"><i data-feather="users"></i><p>No users yet</p></div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="activity-card">
+    <div class="activity-header">
+        <h3><i data-feather="activity"></i> Recent Activity</h3>
+        <a href="{% url 'dashboard:admin_activity_logs' %}">View all →</a>
+    </div>
+    <table class="activity-table">
+        <thead>
+            <tr>
+                <th>User</th>
+                <th>Action</th>
+                <th>Description</th>
+                <th>Time</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in recent_activity %}
+            <tr>
+                <td>
+                    <div class="activity-user">
+                        {% if log.user %}
+                        <img src="{{ log.user.get_avatar_url }}" alt="{{ log.user.get_full_name }}">
+                        <span>{{ log.user.get_full_name }}</span>
+                        {% else %}
+                        <div class="activity-user-icon"><i data-feather="settings"></i></div>
+                        <span>System</span>
+                        {% endif %}
+                    </div>
+                </td>
+                <td><span class="activity-badge">{{ log.get_action_display }}</span></td>
+                <td class="activity-time">{{ log.description|truncatewords:10 }}</td>
+                <td class="activity-time">{{ log.created_at|timesince }} ago</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4"><div class="empty-state"><i data-feather="activity"></i><p>No activity logs yet</p></div></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    Chart.defaults.font.family = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+
+    // User Growth Chart
+    const userGrowthCtx = document.getElementById('userGrowthChart');
+    if (userGrowthCtx) {
+        const ctx = userGrowthCtx.getContext('2d');
+        const gradient = ctx.createLinearGradient(0, 0, 0, 280);
+        gradient.addColorStop(0, 'rgba(30, 58, 95, 0.25)');
+        gradient.addColorStop(1, 'rgba(30, 58, 95, 0)');
+
+        new Chart(userGrowthCtx, {
+            type: 'line',
+            data: {
+                labels: {{ user_growth_labels|safe|default:"[]" }},
+                datasets: [{
+                    label: 'New Users',
+                    data: {{ user_growth_data|safe|default:"[]" }},
+                    borderColor: '#1e3a5f',
+                    backgroundColor: gradient,
+                    fill: true,
+                    tension: 0.4,
+                    borderWidth: 3,
+                    pointRadius: 0,
+                    pointHoverRadius: 6,
+                    pointBackgroundColor: '#1e3a5f',
+                    pointHoverBackgroundColor: '#1e3a5f',
+                    pointBorderColor: '#fff',
+                    pointHoverBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointHoverBorderWidth: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { intersect: false, mode: 'index' },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { backgroundColor: '#1e293b', titleColor: '#fff', bodyColor: '#94a3b8', padding: 12, cornerRadius: 8, displayColors: false }
+                },
+                scales: {
+                    x: { grid: { display: false }, border: { display: false }, ticks: { color: '#94a3b8', font: { size: 11 } } },
+                    y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.04)' }, border: { display: false }, ticks: { color: '#94a3b8', padding: 10 } }
+                }
+            }
+        });
+    }
+
+    // Role Distribution Chart
+    const roleDistributionCtx = document.getElementById('roleDistributionChart');
+    if (roleDistributionCtx) {
+        new Chart(roleDistributionCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Students', 'Mentors', 'Admins'],
+                datasets: [{
+                    data: {{ role_distribution|safe|default:"[0,0,0]" }},
+                    backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
+                    borderWidth: 0,
+                    hoverOffset: 8,
+                    borderRadius: 4,
+                    spacing: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { padding: 20, usePointStyle: true, pointStyle: 'circle', font: { size: 12 }, color: '#64748b' } },
+                    tooltip: { backgroundColor: '#1e293b', titleColor: '#fff', bodyColor: '#fff', padding: 12, cornerRadius: 8 }
+                },
+                cutout: '68%'
+            }
+        });
+    }
+
+    // Request Status Chart
+    const requestStatusCtx = document.getElementById('requestStatusChart');
+    if (requestStatusCtx) {
+        new Chart(requestStatusCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Pending', 'Approved', 'Scheduled', 'In Progress', 'Completed', 'Rejected'],
+                datasets: [{
+                    label: 'Requests',
+                    data: {{ request_status_data|safe|default:"[0,0,0,0,0,0]" }},
+                    backgroundColor: ['#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#22c55e', '#ef4444'],
+                    borderWidth: 0,
+                    borderRadius: 8,
+                    borderSkipped: false,
+                    maxBarThickness: 40
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { backgroundColor: '#1e293b', titleColor: '#fff', bodyColor: '#fff', padding: 12, cornerRadius: 8 }
+                },
+                scales: {
+                    x: { grid: { display: false }, border: { display: false }, ticks: { color: '#94a3b8', font: { size: 10 } } },
+                    y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.04)' }, border: { display: false }, ticks: { color: '#94a3b8', padding: 10 } }
+                }
+            }
+        });
+    }
+
+    // Animate stat values
+    const animateValue = (el, start, end, duration) => {
+        let startTime = null;
+        const step = (timestamp) => {
+            if (!startTime) startTime = timestamp;
+            const progress = Math.min((timestamp - startTime) / duration, 1);
+            el.textContent = Math.floor(progress * (end - start) + start).toLocaleString();
+            if (progress < 1) requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting && !entry.target.dataset.animated) {
+                entry.target.dataset.animated = 'true';
+                const val = parseFloat(entry.target.textContent.replace(/,/g, '')) || 0;
+                if (val > 0 && !entry.target.textContent.includes('.')) {
+                    animateValue(entry.target, 0, val, 800);
+                }
+            }
+        });
+    }, { threshold: 0.5 });
+
+    document.querySelectorAll('.stat-value, .engagement-value').forEach(el => observer.observe(el));
+
+    if (typeof feather !== 'undefined') feather.replace();
+});
+</script>
+{% endblock %}

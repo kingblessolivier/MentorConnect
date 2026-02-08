@@ -1,0 +1,121 @@
+{% extends 'dashboard/base_dashboard.html' %}
+
+{% block title %}Mentor Dashboard - {{ SITE_NAME }}{% endblock %}
+
+{% block dashboard_content %}
+<div class="dashboard-header">
+    <div>
+        <h1>Welcome, {{ user.first_name }}! 👋</h1>
+        <p class="text-muted">Manage your mentorship activities</p>
+    </div>
+    <a href="{% url 'feed:create_post' %}" class="btn btn-primary">
+        <i data-feather="edit"></i> Create Post
+    </a>
+</div>
+
+<!-- Stats -->
+<div class="dashboard-stats">
+    <div class="stat-card">
+        <div class="stat-card-icon" style="background: #fef3c7; color: #d97706;">
+            <i data-feather="clock"></i>
+        </div>
+        <div class="stat-card-value">{{ total_pending|default:0 }}</div>
+        <div class="stat-card-label">Pending Requests</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon" style="background: #d1fae5; color: #059669;">
+            <i data-feather="check-circle"></i>
+        </div>
+        <div class="stat-card-value">{{ total_approved|default:0 }}</div>
+        <div class="stat-card-label">Active Mentees</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon">
+            <i data-feather="award"></i>
+        </div>
+        <div class="stat-card-value">{{ total_completed|default:0 }}</div>
+        <div class="stat-card-label">Completed</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon" style="background: #fee2e2; color: #dc2626;">
+            <i data-feather="heart"></i>
+        </div>
+        <div class="stat-card-value">{{ followers_count|default:0 }}</div>
+        <div class="stat-card-label">Followers</div>
+    </div>
+</div>
+
+<!-- Profile Rating -->
+{% if profile %}
+<div class="card mb-4">
+    <div class="card-body flex justify-between items-center">
+        <div class="flex items-center gap-4">
+            <div>
+                <div class="text-muted text-sm">Your Rating</div>
+                <div class="flex items-center gap-2">
+                    <span class="text-2xl font-bold">{{ profile.rating|floatformat:1 }}</span>
+                    <div class="rating">
+                        {% for i in "12345" %}
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                             fill="{% if forloop.counter <= profile.rating %}#fbbf24{% else %}#e5e7eb{% endif %}" stroke="none">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                        </svg>
+                        {% endfor %}
+                    </div>
+                    <span class="text-muted">({{ profile.total_reviews }} reviews)</span>
+                </div>
+            </div>
+        </div>
+        <div class="text-right">
+            <div class="text-muted text-sm">Profile Status</div>
+            <span class="badge {% if profile.is_available %}badge-success{% else %}badge-danger{% endif %}">
+                {% if profile.is_available %}Available{% else %}Not Available{% endif %}
+            </span>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Pending Requests -->
+<div class="card">
+    <div class="card-body">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="mb-0">Pending Requests</h3>
+            <a href="{% url 'mentorship:request_list' %}" class="text-primary text-sm">View all</a>
+        </div>
+
+        {% for request in pending_requests %}
+        <div class="flex items-center gap-3 p-4 rounded-lg mb-3" style="background: var(--background-color);">
+            <img src="{{ request.student.get_avatar_url }}" alt="" class="avatar avatar-lg">
+            <div class="flex-1">
+                <div class="font-medium">{{ request.student.get_full_name }}</div>
+                <div class="text-sm font-medium text-primary">{{ request.subject }}</div>
+                <div class="text-sm text-muted">{{ request.message|truncatewords:15 }}</div>
+            </div>
+            <div class="flex gap-2">
+                <form method="post" action="{% url 'mentorship:approve_request' request.pk %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-primary">
+                        <i data-feather="check" style="width:16px;height:16px;"></i> Approve
+                    </button>
+                </form>
+                <form method="post" action="{% url 'mentorship:reject_request' request.pk %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-outline">
+                        <i data-feather="x" style="width:16px;height:16px;"></i> Decline
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% empty %}
+        <p class="text-muted text-center py-4">No pending requests</p>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Mobile Toggle Button -->
+<button class="sidebar-toggle-mobile">
+    <i data-feather="menu"></i>
+</button>
+<div class="sidebar-overlay"></div>
+{% endblock %}

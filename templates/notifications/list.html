@@ -1,0 +1,61 @@
+{% extends 'dashboard/base_dashboard.html' %}
+
+{% block title %}Notifications - {{ SITE_NAME }}{% endblock %}
+
+{% block dashboard_content %}
+<div class="dashboard-header">
+    <div>
+        <h1>Notifications</h1>
+        <p class="text-muted">Stay updated with your activities</p>
+    </div>
+    <a href="{% url 'notifications:mark_all_read' %}" class="btn btn-outline">
+        <i data-feather="check-circle"></i> Mark all as read
+    </a>
+</div>
+
+<div class="card">
+    {% for notification in notifications %}
+    <a href="{% url 'notifications:mark_read' notification.id %}"
+       class="flex items-start gap-4 p-4 border-b hover:bg-gray-50 transition-colors {% if not notification.is_read %}bg-primary-light{% endif %}">
+        <div class="stat-card-icon" style="width: 40px; height: 40px; flex-shrink: 0;">
+            <i data-feather="{{ notification.get_icon }}"></i>
+        </div>
+        <div class="flex-1">
+            {% if notification.title %}
+            <div class="font-semibold">{{ notification.title }}</div>
+            {% endif %}
+            <p class="text-sm {% if notification.is_read %}text-muted{% endif %}">{{ notification.message }}</p>
+            <span class="text-xs text-muted">{{ notification.created_at|timesince }} ago</span>
+        </div>
+        {% if not notification.is_read %}
+        <span class="w-2 h-2 rounded-full bg-primary flex-shrink-0 mt-2"></span>
+        {% endif %}
+    </a>
+    {% empty %}
+    <div class="p-5 text-center">
+        <i data-feather="bell-off" style="width: 48px; height: 48px; color: var(--text-muted);"></i>
+        <h3 class="mt-3">No notifications</h3>
+        <p class="text-muted">You're all caught up!</p>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if page_obj.has_other_pages %}
+<div class="pagination">
+    {% if page_obj.has_previous %}
+    <a href="?page={{ page_obj.previous_page_number }}">&laquo;</a>
+    {% endif %}
+    <span class="current">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}">&raquo;</a>
+    {% endif %}
+</div>
+{% endif %}
+
+<!-- Mobile Toggle Button -->
+<button class="sidebar-toggle-mobile">
+    <i data-feather="menu"></i>
+</button>
+<div class="sidebar-overlay"></div>
+{% endblock %}

@@ -1,0 +1,230 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Cookie Policy - {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="legal-page">
+    <div class="container">
+        <div class="legal-header">
+            <h1>Cookie Policy</h1>
+            <p class="last-updated">Last updated: February 7, 2026</p>
+        </div>
+
+        <div class="legal-content">
+            <section class="legal-section">
+                <h2>1. What Are Cookies?</h2>
+                <p>Cookies are small text files that are placed on your device when you visit a website. They are widely used to make websites work more efficiently and to provide information to the website owners.</p>
+            </section>
+
+            <section class="legal-section">
+                <h2>2. How We Use Cookies</h2>
+                <p>{{ SITE_NAME }} uses cookies for the following purposes:</p>
+
+                <h3>2.1 Essential Cookies</h3>
+                <p>These cookies are necessary for the website to function properly. They enable core functionality such as:</p>
+                <ul>
+                    <li>User authentication and session management</li>
+                    <li>Security features</li>
+                    <li>Remembering your preferences</li>
+                </ul>
+
+                <h3>2.2 Analytics Cookies</h3>
+                <p>We use analytics cookies to understand how visitors interact with our website. This helps us improve our services:</p>
+                <ul>
+                    <li>Page views and navigation patterns</li>
+                    <li>Time spent on pages</li>
+                    <li>Error tracking</li>
+                </ul>
+
+                <h3>2.3 Functional Cookies</h3>
+                <p>These cookies enable enhanced functionality and personalization:</p>
+                <ul>
+                    <li>Language preferences</li>
+                    <li>Accessibility settings</li>
+                    <li>User interface customizations</li>
+                </ul>
+            </section>
+
+            <section class="legal-section">
+                <h2>3. Cookies We Use</h2>
+                <div class="cookie-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Cookie Name</th>
+                                <th>Purpose</th>
+                                <th>Duration</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>sessionid</td>
+                                <td>User session management</td>
+                                <td>2 weeks</td>
+                            </tr>
+                            <tr>
+                                <td>csrftoken</td>
+                                <td>Security (CSRF protection)</td>
+                                <td>1 year</td>
+                            </tr>
+                            <tr>
+                                <td>django_language</td>
+                                <td>Language preference</td>
+                                <td>1 year</td>
+                            </tr>
+                            <tr>
+                                <td>high_contrast</td>
+                                <td>Accessibility preference</td>
+                                <td>Session</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="legal-section">
+                <h2>4. Managing Cookies</h2>
+                <p>You can control and manage cookies in several ways:</p>
+
+                <h3>4.1 Browser Settings</h3>
+                <p>Most web browsers allow you to control cookies through their settings. You can:</p>
+                <ul>
+                    <li>View cookies stored on your device</li>
+                    <li>Delete individual or all cookies</li>
+                    <li>Block cookies from specific or all websites</li>
+                    <li>Set preferences for different types of cookies</li>
+                </ul>
+
+                <h3>4.2 Impact of Disabling Cookies</h3>
+                <p>Please note that disabling certain cookies may affect the functionality of our website. Essential cookies are required for the platform to work properly.</p>
+            </section>
+
+            <section class="legal-section">
+                <h2>5. Third-Party Cookies</h2>
+                <p>We may use third-party services that set their own cookies, such as:</p>
+                <ul>
+                    <li>Google Analytics for website analytics</li>
+                    <li>Social media plugins for sharing features</li>
+                </ul>
+                <p>These third parties have their own privacy and cookie policies.</p>
+            </section>
+
+            <section class="legal-section">
+                <h2>6. Updates to This Policy</h2>
+                <p>We may update this Cookie Policy from time to time. Any changes will be posted on this page with an updated revision date.</p>
+            </section>
+
+            <section class="legal-section">
+                <h2>7. Contact Us</h2>
+                <p>If you have questions about our use of cookies, please contact us at:</p>
+                <p><strong>Email:</strong> privacy@mentorconnect.com</p>
+            </section>
+        </div>
+    </div>
+</div>
+
+<style>
+.legal-page {
+    padding: 4rem 1rem;
+    background: var(--background-color);
+    min-height: 100vh;
+}
+
+.legal-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.legal-header h1 {
+    margin-bottom: 0.5rem;
+}
+
+.last-updated {
+    color: var(--text-muted);
+}
+
+.legal-content {
+    max-width: 800px;
+    margin: 0 auto;
+    background: var(--surface-color);
+    padding: 2.5rem;
+    border-radius: var(--card-radius);
+    box-shadow: var(--shadow-sm);
+}
+
+.legal-section {
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border-color, #e5e7eb);
+}
+
+.legal-section:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.legal-section h2 {
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    font-size: 1.25rem;
+}
+
+.legal-section h3 {
+    color: var(--text-secondary);
+    margin: 1.5rem 0 0.75rem;
+    font-size: 1rem;
+}
+
+.legal-section p {
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin-bottom: 1rem;
+}
+
+.legal-section ul {
+    margin: 1rem 0;
+    padding-left: 1.5rem;
+}
+
+.legal-section li {
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+
+.cookie-table {
+    overflow-x: auto;
+    margin: 1rem 0;
+}
+
+.cookie-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.cookie-table th,
+.cookie-table td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border: 1px solid var(--border-color, #e5e7eb);
+}
+
+.cookie-table th {
+    background: var(--background-color);
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.cookie-table td {
+    color: var(--text-secondary);
+}
+
+@media (max-width: 768px) {
+    .legal-content {
+        padding: 1.5rem;
+    }
+}
+</style>
+{% endblock %}

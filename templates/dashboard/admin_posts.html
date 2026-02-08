@@ -1,0 +1,282 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% block title %}Posts Management - Admin{% endblock %}
+{% block dashboard_content %}
+<div class="dashboard-header">
+    <div>
+        <h1><i data-feather="layout" class="header-icon"></i> Feed Posts Management</h1>
+        <p class="text-muted">Manage all posts in the community feed</p>
+    </div>
+    <div class="dashboard-header-actions">
+        <span class="total-count"><strong>{{ total_posts|default:0 }}</strong> posts total</span>
+    </div>
+</div>
+
+<div class="dashboard-stats">
+    <div class="stat-card">
+        <div class="stat-card-icon">
+            <i data-feather="layout"></i>
+        </div>
+        <div class="stat-card-value">{{ total_posts|default:0 }}</div>
+        <div class="stat-card-label">Total Posts</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon" style="background:#d1fae5;color:#059669">
+            <i data-feather="check-circle"></i>
+        </div>
+        <div class="stat-card-value">{{ active_posts|default:0 }}</div>
+        <div class="stat-card-label">Active Posts</div>
+        <div class="stat-card-change positive">Published</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon" style="background:#fef3c7;color:#d97706">
+            <i data-feather="star"></i>
+        </div>
+        <div class="stat-card-value">{{ pinned_posts|default:0 }}</div>
+        <div class="stat-card-label">Pinned Posts</div>
+        <div class="stat-card-change">Featured</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon" style="background:#ede9fe;color:#7c3aed">
+            <i data-feather="message-square"></i>
+        </div>
+        <div class="stat-card-value">{{ total_comments|default:0 }}</div>
+        <div class="stat-card-label">Total Comments</div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="filters-form">
+            <div class="filters-row">
+                <div class="filter-group">
+                    <label>Search</label>
+                    <input type="text" name="search" class="form-control" placeholder="Search posts..." value="{{ request.GET.search }}">
+                </div>
+                <div class="filter-group">
+                    <label>Status</label>
+                    <select name="status" class="form-control">
+                        <option value="">All Status</option>
+                        <option value="active" {% if request.GET.status == 'active' %}selected{% endif %}>Active</option>
+                        <option value="inactive" {% if request.GET.status == 'inactive' %}selected{% endif %}>Inactive</option>
+                        <option value="pinned" {% if request.GET.status == 'pinned' %}selected{% endif %}>Pinned</option>
+                    </select>
+                </div>
+                <div class="filter-group filter-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i data-feather="search"></i> Filter
+                    </button>
+                    <a href="{% url 'dashboard:admin_posts' %}" class="btn btn-outline">Reset</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Author</th>
+                        <th>Content</th>
+                        <th>Engagement</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for post in posts %}
+                    <tr>
+                        <td>
+                            <div class="user-cell">
+                                <img src="{{ post.author.get_avatar_url }}" class="avatar avatar-md">
+                                <div class="user-info">
+                                    <div class="user-name">{{ post.author.get_full_name }}</div>
+                                    <span class="badge badge-{{ post.author.role }} badge-sm">{{ post.author.get_role_display }}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="post-cell">
+                                <div class="post-content-preview">{{ post.content|truncatewords:12 }}</div>
+                                {% if post.image %}
+                                <span class="post-media-badge">
+                                    <i data-feather="image" style="width: 12px; height: 12px;"></i> Has Image
+                                </span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="engagement-mini">
+                                <span class="engagement-item" title="Likes">
+                                    <i data-feather="heart"></i> {{ post.likes_count|default:0 }}
+                                </span>
+                                <span class="engagement-item" title="Comments">
+                                    <i data-feather="message-square"></i> {{ post.comments_count|default:0 }}
+                                </span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="status-badges">
+                                {% if post.is_active %}
+                                <span class="badge badge-success">
+                                    <i data-feather="eye" style="width: 12px; height: 12px;"></i> Active
+                                </span>
+                                {% else %}
+                                <span class="badge badge-muted">
+                                    <i data-feather="eye-off" style="width: 12px; height: 12px;"></i> Hidden
+                                </span>
+                                {% endif %}
+                                {% if post.is_pinned %}
+                                <span class="badge badge-warning">
+                                    <i data-feather="pin" style="width: 12px; height: 12px;"></i> Pinned
+                                </span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="date-info">
+                                <span class="date-value">{{ post.created_at|date:"M d, Y" }}</span>
+                                <span class="date-time text-muted text-xs">{{ post.created_at|timesince }} ago</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="{% url 'dashboard:toggle_post_status' post.pk %}" class="btn btn-sm {% if post.is_active %}btn-success{% else %}btn-outline{% endif %}" title="Toggle Visibility">
+                                    {% if post.is_active %}
+                                    <i data-feather="eye"></i>
+                                    {% else %}
+                                    <i data-feather="eye-off"></i>
+                                    {% endif %}
+                                </a>
+                                <a href="{% url 'dashboard:toggle_post_pinned' post.pk %}" class="btn btn-sm {% if post.is_pinned %}btn-warning{% else %}btn-outline{% endif %}" title="Toggle Pin">
+                                    <i data-feather="star"></i>
+                                </a>
+                                <a href="{% url 'dashboard:delete_post' post.pk %}" class="btn btn-sm btn-danger" onclick="return confirm('Delete this post? This action cannot be undone.')" title="Delete Post">
+                                    <i data-feather="trash-2"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4">
+                            <div class="empty-state">
+                                <i data-feather="layout" class="empty-icon"></i>
+                                <p class="text-muted">No posts found</p>
+                                <a href="{% url 'dashboard:admin_posts' %}" class="btn btn-outline btn-sm">Clear Filters</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if is_paginated %}
+        <div class="pagination-container">
+            <nav class="pagination">
+                {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" class="pagination-btn">
+                    <i data-feather="chevron-left"></i>
+                </a>
+                {% endif %}
+                <span class="pagination-info">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" class="pagination-btn">
+                    <i data-feather="chevron-right"></i>
+                </a>
+                {% endif %}
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.header-icon {
+    width: 28px;
+    height: 28px;
+    vertical-align: middle;
+    margin-right: 0.5rem;
+    color: var(--primary-color, #4f46e5);
+}
+
+.total-count {
+    font-size: 0.9375rem;
+    color: var(--text-secondary, #6b7280);
+    background: var(--background-color, #f3f4f6);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+}
+
+.post-cell {
+    max-width: 280px;
+}
+
+.post-media-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-top: 0.5rem;
+    padding: 0.125rem 0.5rem;
+    background: #dbeafe;
+    color: #2563eb;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.engagement-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.625rem;
+    background: var(--background-color, #f3f4f6);
+    border-radius: 6px;
+    font-size: 0.8125rem;
+    color: var(--text-secondary, #6b7280);
+}
+
+.engagement-item i {
+    width: 14px;
+    height: 14px;
+}
+
+.badge-sm {
+    font-size: 0.6875rem;
+    padding: 0.125rem 0.5rem;
+}
+
+.date-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+}
+
+.date-value {
+    font-weight: 500;
+    color: var(--text-primary, #111827);
+}
+
+.date-time {
+    color: var(--text-muted, #9ca3af);
+}
+
+.empty-state {
+    padding: 2rem;
+}
+
+.empty-state .empty-icon {
+    width: 48px;
+    height: 48px;
+    color: var(--text-muted, #9ca3af);
+    margin-bottom: 1rem;
+}
+
+.empty-state p {
+    margin-bottom: 1rem;
+}
+</style>
+{% endblock %}

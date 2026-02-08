@@ -1,0 +1,1007 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}{{ mentor.get_full_name }}'s Schedule - {{ SITE_NAME }}{% endblock %}
+
+{% block dashboard_content %}
+<div class="mentor-schedule-page">
+    <!-- Back Navigation -->
+    <a href="{% url 'profiles:mentor_detail' mentor.id %}" class="back-link">
+        <i data-feather="arrow-left"></i> Back to profile
+    </a>
+
+    <!-- Mentor Header Card -->
+    <div class="mentor-header-card">
+        <div class="mentor-info">
+            <img src="{{ mentor.get_avatar_url }}" alt="{{ mentor.get_full_name }}" class="mentor-avatar">
+            <div class="mentor-details">
+                <h1>{{ mentor.get_full_name }}'s Schedule</h1>
+                <p class="mentor-title">{{ mentor.mentor_profile.headline|default:mentor.mentor_profile.expertise }}</p>
+                <div class="mentor-meta">
+                    <span class="rating">
+                        <i data-feather="star"></i>
+                        {{ mentor.mentor_profile.rating|floatformat:1 }}
+                    </span>
+                    <span class="experience">
+                        <i data-feather="award"></i>
+                        {{ mentor.mentor_profile.experience_years }} years
+                    </span>
+                    {% if mentor.mentor_profile.is_available %}
+                    <span class="available-badge">
+                        <i data-feather="check-circle"></i>
+                        Available for Mentorship
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="mentor-actions">
+            <a href="{% url 'mentorship:create_request' mentor.id %}" class="btn btn-primary btn-lg">
+                <i data-feather="send"></i>
+                Request Mentorship
+            </a>
+            <a href="{% url 'chat:start' mentor.id %}" class="btn btn-outline">
+                <i data-feather="message-circle"></i>
+                Message
+            </a>
+        </div>
+    </div>
+
+    <!-- Calendar Section -->
+    <div class="schedule-container">
+        <!-- Calendar Navigation -->
+        <div class="calendar-nav-header">
+            <div class="nav-controls">
+                <a href="?year={{ prev_year }}&month={{ prev_month }}" class="nav-btn">
+                    <i data-feather="chevron-left"></i>
+                </a>
+                <h2 class="month-title">{{ month_name }} {{ year }}</h2>
+                <a href="?year={{ next_year }}&month={{ next_month }}" class="nav-btn">
+                    <i data-feather="chevron-right"></i>
+                </a>
+            </div>
+            <a href="?year={{ today.year }}&month={{ today.month }}" class="btn btn-outline btn-sm">
+                <i data-feather="calendar"></i> Today
+            </a>
+        </div>
+
+        <!-- Mini Calendar + Slots View -->
+        <div class="schedule-layout">
+            <!-- Calendar View -->
+            <div class="calendar-section">
+                <div class="mini-calendar">
+                    <div class="calendar-weekdays">
+                        {% for day in weekdays %}
+                        <div class="weekday">{{ day|slice:":1" }}</div>
+                        {% endfor %}
+                    </div>
+                    <div class="calendar-days">
+                        {% for week in month_days %}
+                        {% for day in week %}
+                        {% with date_str=year|stringformat:'d'|add:'-'|add:month|stringformat:'02d'|add:'-'|add:day|stringformat:'02d' %}
+                        <div class="calendar-day {% if day == 0 %}empty{% endif %} {% if day == today.day and month == today.month and year == today.year %}today{% endif %} {% if day == selected_day %}selected{% endif %}"
+                             {% if day != 0 %}onclick="selectDay({{ day }}, '{{ year }}-{{ month|stringformat:'02d' }}-{{ day|stringformat:'02d' }}')"{% endif %}
+                             data-date="{{ year }}-{{ month|stringformat:'02d' }}-{{ day|stringformat:'02d' }}">
+                            {% if day != 0 %}
+                            <span class="day-number">{{ day }}</span>
+                            {% for date_key, slots in availability_by_date.items %}
+                            {% for slot in slots %}
+                            {% if slot.date.day == day and slot.is_available %}
+                            <span class="has-slots-indicator"></span>
+                            {% endif %}
+                            {% endfor %}
+                            {% endfor %}
+                            {% endif %}
+                        </div>
+                        {% endwith %}
+                        {% endfor %}
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Legend -->
+                <div class="calendar-legend">
+                    <div class="legend-item">
+                        <span class="legend-dot available"></span>
+                        <span>Has Available Slots</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-dot today"></span>
+                        <span>Today</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-dot selected"></span>
+                        <span>Selected</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slots Panel -->
+            <div class="slots-panel">
+                <div class="slots-header">
+                    <h3 id="slotsTitle">Available Sessions</h3>
+                    <p id="slotsSubtitle">Select a day to see available sessions</p>
+                </div>
+
+                <div class="slots-content" id="slotsContent">
+                    {% if availability_by_date %}
+                    {% for date_str, slots in availability_by_date.items %}
+                    {% for slot in slots %}
+                    {% if slot.is_available %}
+                    <div class="session-card" data-date="{{ slot.date|date:'Y-m-d' }}">
+                        <div class="session-date-badge">
+                            <span class="badge-day">{{ slot.date|date:"d" }}</span>
+                            <span class="badge-month">{{ slot.date|date:"M" }}</span>
+                        </div>
+                        <div class="session-info">
+                            <h4>{{ slot.title }}</h4>
+                            <div class="session-meta">
+                                <span class="time">
+                                    <i data-feather="clock"></i>
+                                    {{ slot.start_time|time:"H:i" }} - {{ slot.end_time|time:"H:i" }}
+                                </span>
+                                <span class="spots">
+                                    <i data-feather="users"></i>
+                                    {{ slot.spots_left }} spot{{ slot.spots_left|pluralize }} left
+                                </span>
+                            </div>
+                            {% if slot.description %}
+                            <p class="session-desc">{{ slot.description }}</p>
+                            {% endif %}
+                        </div>
+                        <div class="session-actions">
+                            <button class="btn btn-primary btn-sm" onclick="bookSession({{ slot.id }})">
+                                <i data-feather="calendar"></i>
+                                Book Session
+                            </button>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                    {% endfor %}
+                    {% else %}
+                    <div class="no-sessions">
+                        <div class="no-sessions-icon">
+                            <i data-feather="calendar"></i>
+                        </div>
+                        <h4>No sessions available</h4>
+                        <p>{{ mentor.first_name }} hasn't added any availability for this month yet.</p>
+                        <a href="{% url 'mentorship:create_request' mentor.id %}" class="btn btn-primary">
+                            <i data-feather="send"></i>
+                            Request Mentorship Directly
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- All Upcoming Sessions -->
+    <div class="upcoming-section">
+        <h3><i data-feather="clock"></i> All Upcoming Sessions This Month</h3>
+        <div class="upcoming-grid">
+            {% for date_str, slots in availability_by_date.items %}
+            {% for slot in slots %}
+            {% if slot.is_available %}
+            <div class="upcoming-card">
+                <div class="upcoming-header">
+                    <div class="date-info">
+                        <span class="weekday">{{ slot.date|date:"l" }}</span>
+                        <span class="date">{{ slot.date|date:"M d, Y" }}</span>
+                    </div>
+                    <span class="time-badge">
+                        {{ slot.start_time|time:"H:i" }} - {{ slot.end_time|time:"H:i" }}
+                    </span>
+                </div>
+                <div class="upcoming-body">
+                    <h4>{{ slot.title }}</h4>
+                    {% if slot.description %}
+                    <p>{{ slot.description|truncatewords:15 }}</p>
+                    {% endif %}
+                </div>
+                <div class="upcoming-footer">
+                    <div class="spots-info">
+                        <div class="spots-bar">
+                            <div class="spots-filled" style="width: {{ slot.current_bookings|divisibleby:slot.max_bookings|default:0 }}%"></div>
+                        </div>
+                        <span>{{ slot.spots_left }} of {{ slot.max_bookings }} spots available</span>
+                    </div>
+                    <button class="btn btn-primary btn-sm" onclick="bookSession({{ slot.id }})">
+                        Book Now
+                    </button>
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+            {% empty %}
+            <div class="no-upcoming">
+                <p>No upcoming sessions available this month.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Booking Confirmation Modal -->
+<div class="modal-overlay" id="bookingModal">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h3>Confirm Booking</h3>
+            <button class="modal-close" onclick="closeBookingModal()">
+                <i data-feather="x"></i>
+            </button>
+        </div>
+        <div class="modal-body" id="bookingContent">
+            <!-- Loaded dynamically -->
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-outline" onclick="closeBookingModal()">Cancel</button>
+            <button type="button" class="btn btn-primary" onclick="confirmBooking()">
+                <i data-feather="check"></i>
+                Confirm Booking
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+/* Page Layout */
+.mentor-schedule-page {
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    margin-bottom: 1.5rem;
+    transition: color 0.2s;
+}
+
+.back-link:hover {
+    color: var(--primary-color);
+}
+
+.back-link i {
+    width: 18px;
+    height: 18px;
+}
+
+/* Mentor Header Card */
+.mentor-header-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+    border-radius: var(--card-radius);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    color: white;
+}
+
+.mentor-info {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.mentor-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 3px solid rgba(255,255,255,0.3);
+    object-fit: cover;
+}
+
+.mentor-details h1 {
+    margin: 0 0 0.25rem;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.mentor-title {
+    margin: 0 0 0.75rem;
+    opacity: 0.9;
+}
+
+.mentor-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    font-size: 0.875rem;
+}
+
+.mentor-meta span {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    opacity: 0.9;
+}
+
+.mentor-meta i {
+    width: 16px;
+    height: 16px;
+}
+
+.available-badge {
+    background: rgba(255,255,255,0.2);
+    padding: 0.25rem 0.75rem;
+    border-radius: 50px;
+}
+
+.mentor-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.mentor-actions .btn-primary {
+    background: white;
+    color: var(--primary-color);
+}
+
+.mentor-actions .btn-primary:hover {
+    background: rgba(255,255,255,0.9);
+}
+
+.mentor-actions .btn-outline {
+    border-color: rgba(255,255,255,0.5);
+    color: white;
+}
+
+.mentor-actions .btn-outline:hover {
+    background: rgba(255,255,255,0.1);
+    border-color: white;
+}
+
+/* Schedule Container */
+.schedule-container {
+    background: var(--surface-color);
+    border-radius: var(--card-radius);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+
+/* Calendar Navigation */
+.calendar-nav-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border-color, #e5e7eb);
+}
+
+.nav-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.nav-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    transition: all 0.2s;
+}
+
+.nav-btn:hover {
+    background: var(--primary-light);
+    color: var(--primary-color);
+}
+
+.nav-btn i {
+    width: 20px;
+    height: 20px;
+}
+
+.month-title {
+    margin: 0;
+    font-size: 1.25rem;
+    min-width: 180px;
+    text-align: center;
+}
+
+/* Schedule Layout */
+.schedule-layout {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    min-height: 400px;
+}
+
+/* Calendar Section */
+.calendar-section {
+    padding: 1.5rem;
+    border-right: 1px solid var(--border-color, #e5e7eb);
+}
+
+.mini-calendar {
+    margin-bottom: 1.5rem;
+}
+
+.calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    margin-bottom: 0.5rem;
+}
+
+.weekday {
+    text-align: center;
+    padding: 0.5rem;
+    font-weight: 600;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+}
+
+.calendar-day {
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s;
+}
+
+.calendar-day:not(.empty):hover {
+    background: var(--background-color);
+}
+
+.calendar-day.empty {
+    cursor: default;
+}
+
+.calendar-day.today {
+    background: var(--primary-light);
+}
+
+.calendar-day.today .day-number {
+    background: var(--primary-color);
+    color: white;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.calendar-day.selected {
+    background: var(--primary-color);
+    color: white;
+}
+
+.calendar-day.selected .day-number {
+    color: white;
+}
+
+.day-number {
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+.has-slots-indicator {
+    position: absolute;
+    bottom: 4px;
+    width: 6px;
+    height: 6px;
+    background: #22c55e;
+    border-radius: 50%;
+}
+
+.calendar-day.selected .has-slots-indicator {
+    background: white;
+}
+
+/* Legend */
+.calendar-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color, #e5e7eb);
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.legend-dot.available {
+    background: #22c55e;
+}
+
+.legend-dot.today {
+    background: var(--primary-light);
+    border: 2px solid var(--primary-color);
+}
+
+.legend-dot.selected {
+    background: var(--primary-color);
+}
+
+/* Slots Panel */
+.slots-panel {
+    padding: 1.5rem;
+    background: var(--background-color);
+}
+
+.slots-header {
+    margin-bottom: 1.5rem;
+}
+
+.slots-header h3 {
+    margin: 0 0 0.25rem;
+}
+
+.slots-header p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}
+
+.slots-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* Session Card */
+.session-card {
+    display: flex;
+    gap: 1rem;
+    background: var(--surface-color);
+    border-radius: 12px;
+    padding: 1.25rem;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s;
+}
+
+.session-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.session-date-badge {
+    width: 50px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.badge-day {
+    display: block;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.badge-month {
+    display: block;
+    font-size: 0.6875rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+}
+
+.session-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.session-info h4 {
+    margin: 0 0 0.5rem;
+    font-size: 1rem;
+}
+
+.session-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+}
+
+.session-meta span {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.session-meta i {
+    width: 14px;
+    height: 14px;
+}
+
+.session-desc {
+    margin: 0;
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+}
+
+.session-actions {
+    display: flex;
+    align-items: center;
+}
+
+/* No Sessions */
+.no-sessions {
+    text-align: center;
+    padding: 3rem 2rem;
+}
+
+.no-sessions-icon {
+    width: 64px;
+    height: 64px;
+    background: var(--surface-color);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+}
+
+.no-sessions-icon i {
+    width: 32px;
+    height: 32px;
+    color: var(--text-muted);
+}
+
+.no-sessions h4 {
+    margin: 0 0 0.5rem;
+}
+
+.no-sessions p {
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+}
+
+/* Upcoming Section */
+.upcoming-section {
+    background: var(--surface-color);
+    border-radius: var(--card-radius);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.upcoming-section h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 0 1.5rem;
+}
+
+.upcoming-section h3 i {
+    width: 20px;
+    height: 20px;
+    color: var(--primary-color);
+}
+
+.upcoming-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+}
+
+.upcoming-card {
+    background: var(--background-color);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.upcoming-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: var(--primary-light);
+}
+
+.date-info .weekday {
+    display: block;
+    font-size: 0.6875rem;
+    color: var(--primary-color);
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.date-info .date {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.time-badge {
+    background: var(--primary-color);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.upcoming-body {
+    padding: 1rem;
+}
+
+.upcoming-body h4 {
+    margin: 0 0 0.5rem;
+}
+
+.upcoming-body p {
+    margin: 0;
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+}
+
+.upcoming-footer {
+    padding: 1rem;
+    border-top: 1px solid var(--border-color, #e5e7eb);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.spots-info {
+    flex: 1;
+    margin-right: 1rem;
+}
+
+.spots-bar {
+    height: 4px;
+    background: var(--border-color, #e5e7eb);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 0.25rem;
+}
+
+.spots-filled {
+    height: 100%;
+    background: var(--primary-color);
+}
+
+.spots-info span {
+    font-size: 0.6875rem;
+    color: var(--text-muted);
+}
+
+.no-upcoming {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-muted);
+    grid-column: 1 / -1;
+}
+
+/* Modal */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s;
+    padding: 1rem;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-container {
+    background: var(--surface-color);
+    border-radius: var(--card-radius);
+    width: 100%;
+    max-width: 450px;
+    transform: translateY(-20px);
+    transition: transform 0.3s;
+}
+
+.modal-overlay.active .modal-container {
+    transform: translateY(0);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border-color, #e5e7eb);
+}
+
+.modal-header h3 {
+    margin: 0;
+}
+
+.modal-close {
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-close:hover {
+    background: var(--background-color);
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--border-color, #e5e7eb);
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .mentor-header-card {
+        flex-direction: column;
+        text-align: center;
+        gap: 1.5rem;
+    }
+
+    .mentor-info {
+        flex-direction: column;
+    }
+
+    .mentor-meta {
+        justify-content: center;
+    }
+
+    .schedule-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .calendar-section {
+        border-right: none;
+        border-bottom: 1px solid var(--border-color, #e5e7eb);
+    }
+}
+
+@media (max-width: 600px) {
+    .mentor-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .mentor-actions .btn {
+        width: 100%;
+    }
+
+    .upcoming-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let selectedDate = null;
+let selectedSlotId = null;
+
+function selectDay(day, dateStr) {
+    // Remove previous selection
+    document.querySelectorAll('.calendar-day.selected').forEach(el => {
+        el.classList.remove('selected');
+    });
+
+    // Add selection to clicked day
+    const dayEl = document.querySelector(`.calendar-day[data-date="${dateStr}"]`);
+    if (dayEl) {
+        dayEl.classList.add('selected');
+    }
+
+    selectedDate = dateStr;
+
+    // Update slots title
+    const date = new Date(dateStr);
+    const options = { weekday: 'long', month: 'long', day: 'numeric' };
+    document.getElementById('slotsTitle').textContent = date.toLocaleDateString('en-US', options);
+    document.getElementById('slotsSubtitle').textContent = 'Available sessions for this day';
+
+    // Filter session cards
+    const sessionCards = document.querySelectorAll('.session-card');
+    let hasVisibleCards = false;
+
+    sessionCards.forEach(card => {
+        if (card.dataset.date === dateStr) {
+            card.style.display = 'flex';
+            hasVisibleCards = true;
+        } else {
+            card.style.display = 'none';
+        }
+    });
+
+    // Show/hide no sessions message
+    const noSessions = document.querySelector('.no-sessions');
+    if (noSessions) {
+        if (hasVisibleCards) {
+            noSessions.style.display = 'none';
+        } else {
+            noSessions.style.display = 'block';
+            noSessions.querySelector('h4').textContent = 'No sessions on this day';
+            noSessions.querySelector('p').textContent = 'Try selecting a different day or request mentorship directly.';
+        }
+    }
+}
+
+function bookSession(slotId) {
+    selectedSlotId = slotId;
+    document.getElementById('bookingModal').classList.add('active');
+    document.getElementById('bookingContent').innerHTML = `
+        <div style="text-align: center; padding: 1rem;">
+            <div style="width: 64px; height: 64px; background: var(--primary-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                <i data-feather="calendar" style="width: 32px; height: 32px; color: var(--primary-color);"></i>
+            </div>
+            <h4 style="margin: 0 0 0.5rem;">Confirm Your Booking</h4>
+            <p style="color: var(--text-muted); margin: 0;">You're about to book a session with {{ mentor.first_name }}. They'll be notified and can confirm the booking.</p>
+        </div>
+    `;
+    feather.replace();
+}
+
+function closeBookingModal() {
+    document.getElementById('bookingModal').classList.remove('active');
+    selectedSlotId = null;
+}
+
+function confirmBooking() {
+    if (selectedSlotId) {
+        // Redirect to create request with pre-filled info
+        window.location.href = `/mentorship/request/{{ mentor.id }}/?slot=${selectedSlotId}`;
+    }
+}
+
+// Close modal on outside click
+document.getElementById('bookingModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeBookingModal();
+    }
+});
+
+// Initialize feather icons
+if (typeof feather !== 'undefined') {
+    feather.replace();
+}
+</script>
+{% endblock %}

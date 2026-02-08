@@ -1,0 +1,4 @@
+Operations to perform:
+  Apply all migrations: accounts, admin, auth, chat, contenttypes, core, feed, mentorship, notifications, profiles, sessions, sessions_app
+Running migrations:
+  No migrations to apply.

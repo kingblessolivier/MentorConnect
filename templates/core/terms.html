@@ -1,0 +1,188 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Terms of Service - {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="legal-page">
+    <div class="container">
+        <div class="legal-header">
+            <h1>Terms of Service</h1>
+            <p class="last-updated">Last updated: February 7, 2026</p>
+        </div>
+
+        <div class="legal-content">
+            <section class="legal-section">
+                <h2>1. Acceptance of Terms</h2>
+                <p>By accessing or using {{ SITE_NAME }}, you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our platform.</p>
+            </section>
+
+            <section class="legal-section">
+                <h2>2. Description of Service</h2>
+                <p>{{ SITE_NAME }} is a mentorship platform that connects students with experienced mentors. We provide tools and features to facilitate mentoring relationships, including:</p>
+                <ul>
+                    <li>Profile creation and management</li>
+                    <li>Mentor discovery and matching</li>
+                    <li>Communication tools</li>
+                    <li>Session scheduling</li>
+                    <li>Progress tracking</li>
+                </ul>
+            </section>
+
+            <section class="legal-section">
+                <h2>3. User Accounts</h2>
+                <h3>3.1 Registration</h3>
+                <p>To use certain features, you must create an account. You agree to provide accurate, current, and complete information during registration.</p>
+
+                <h3>3.2 Account Security</h3>
+                <p>You are responsible for maintaining the confidentiality of your account credentials and for all activities that occur under your account.</p>
+
+                <h3>3.3 Account Types</h3>
+                <ul>
+                    <li><strong>Student Accounts:</strong> For individuals seeking mentorship</li>
+                    <li><strong>Mentor Accounts:</strong> For professionals offering mentorship</li>
+                </ul>
+            </section>
+
+            <section class="legal-section">
+                <h2>4. User Conduct</h2>
+                <p>You agree not to:</p>
+                <ul>
+                    <li>Provide false or misleading information</li>
+                    <li>Harass, abuse, or harm other users</li>
+                    <li>Use the platform for unauthorized commercial purposes</li>
+                    <li>Violate any applicable laws or regulations</li>
+                    <li>Attempt to gain unauthorized access to the platform</li>
+                    <li>Interfere with the proper functioning of the service</li>
+                </ul>
+            </section>
+
+            <section class="legal-section">
+                <h2>5. Mentor Responsibilities</h2>
+                <p>Mentors agree to:</p>
+                <ul>
+                    <li>Provide accurate information about qualifications and experience</li>
+                    <li>Respond to mentorship requests in a timely manner</li>
+                    <li>Maintain professional conduct during all interactions</li>
+                    <li>Honor scheduled sessions or provide reasonable notice for cancellations</li>
+                    <li>Respect confidentiality of student information</li>
+                </ul>
+            </section>
+
+            <section class="legal-section">
+                <h2>6. Student Responsibilities</h2>
+                <p>Students agree to:</p>
+                <ul>
+                    <li>Be respectful of mentors' time and expertise</li>
+                    <li>Attend scheduled sessions or provide reasonable notice for cancellations</li>
+                    <li>Use mentorship for legitimate educational purposes</li>
+                    <li>Provide honest feedback about mentorship experiences</li>
+                </ul>
+            </section>
+
+            <section class="legal-section">
+                <h2>7. Intellectual Property</h2>
+                <p>All content and materials on {{ SITE_NAME }}, including logos, text, graphics, and software, are owned by us or our licensors and are protected by intellectual property laws.</p>
+            </section>
+
+            <section class="legal-section">
+                <h2>8. Limitation of Liability</h2>
+                <p>{{ SITE_NAME }} is provided "as is" without warranties of any kind. We are not liable for any damages arising from your use of the platform, including but not limited to outcomes of mentorship relationships.</p>
+            </section>
+
+            <section class="legal-section">
+                <h2>9. Termination</h2>
+                <p>We reserve the right to suspend or terminate your account at any time for violations of these terms or for any other reason at our discretion.</p>
+            </section>
+
+            <section class="legal-section">
+                <h2>10. Changes to Terms</h2>
+                <p>We may update these Terms of Service from time to time. Continued use of the platform after changes constitutes acceptance of the new terms.</p>
+            </section>
+
+            <section class="legal-section">
+                <h2>11. Contact</h2>
+                <p>For questions about these Terms of Service, please contact us at:</p>
+                <p><strong>Email:</strong> legal@mentorconnect.com</p>
+            </section>
+        </div>
+    </div>
+</div>
+
+<style>
+.legal-page {
+    padding: 4rem 1rem;
+    background: var(--background-color);
+    min-height: 100vh;
+}
+
+.legal-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.legal-header h1 {
+    margin-bottom: 0.5rem;
+}
+
+.last-updated {
+    color: var(--text-muted);
+}
+
+.legal-content {
+    max-width: 800px;
+    margin: 0 auto;
+    background: var(--surface-color);
+    padding: 2.5rem;
+    border-radius: var(--card-radius);
+    box-shadow: var(--shadow-sm);
+}
+
+.legal-section {
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border-color, #e5e7eb);
+}
+
+.legal-section:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.legal-section h2 {
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    font-size: 1.25rem;
+}
+
+.legal-section h3 {
+    color: var(--text-secondary);
+    margin: 1.5rem 0 0.75rem;
+    font-size: 1rem;
+}
+
+.legal-section p {
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin-bottom: 1rem;
+}
+
+.legal-section ul {
+    margin: 1rem 0;
+    padding-left: 1.5rem;
+}
+
+.legal-section li {
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+    .legal-content {
+        padding: 1.5rem;
+    }
+}
+</style>
+{% endblock %}

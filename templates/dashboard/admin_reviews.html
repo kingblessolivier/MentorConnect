@@ -1,0 +1,267 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% block title %}Reviews - Admin{% endblock %}
+{% block dashboard_content %}
+<div class="dashboard-header">
+    <div>
+        <h1><i data-feather="star" class="header-icon"></i> Reviews Management</h1>
+        <p class="text-muted">Monitor and manage all mentor reviews</p>
+    </div>
+    <div class="dashboard-header-actions">
+        <span class="total-count"><strong>{{ total_reviews|default:0 }}</strong> reviews total</span>
+    </div>
+</div>
+
+<div class="dashboard-stats">
+    <div class="stat-card">
+        <div class="stat-card-icon">
+            <i data-feather="star"></i>
+        </div>
+        <div class="stat-card-value">{{ total_reviews|default:0 }}</div>
+        <div class="stat-card-label">Total Reviews</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon" style="background:#fef3c7;color:#d97706">
+            <i data-feather="trending-up"></i>
+        </div>
+        <div class="stat-card-value">{{ average_rating|default:"0.0" }}</div>
+        <div class="stat-card-label">Average Rating</div>
+        <div class="stat-card-change">Out of 5.0</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon" style="background:#d1fae5;color:#059669">
+            <i data-feather="award"></i>
+        </div>
+        <div class="stat-card-value">{{ five_star|default:0 }}</div>
+        <div class="stat-card-label">5-Star Reviews</div>
+        <div class="stat-card-change positive">Excellent</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon" style="background:#fee2e2;color:#dc2626">
+            <i data-feather="thumbs-down"></i>
+        </div>
+        <div class="stat-card-value">{{ one_star|default:0 }}</div>
+        <div class="stat-card-label">1-Star Reviews</div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="filters-form">
+            <div class="filters-row">
+                <div class="filter-group">
+                    <label>Search</label>
+                    <input type="text" name="search" class="form-control" placeholder="Search by student, mentor or content..." value="{{ request.GET.search }}">
+                </div>
+                <div class="filter-group">
+                    <label>Rating</label>
+                    <select name="rating" class="form-control">
+                        <option value="">All Ratings</option>
+                        <option value="5" {% if request.GET.rating == '5' %}selected{% endif %}>⭐⭐⭐⭐⭐ 5 Stars</option>
+                        <option value="4" {% if request.GET.rating == '4' %}selected{% endif %}>⭐⭐⭐⭐ 4 Stars</option>
+                        <option value="3" {% if request.GET.rating == '3' %}selected{% endif %}>⭐⭐⭐ 3 Stars</option>
+                        <option value="2" {% if request.GET.rating == '2' %}selected{% endif %}>⭐⭐ 2 Stars</option>
+                        <option value="1" {% if request.GET.rating == '1' %}selected{% endif %}>⭐ 1 Star</option>
+                    </select>
+                </div>
+                <div class="filter-group filter-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i data-feather="search"></i> Filter
+                    </button>
+                    <a href="{% url 'dashboard:admin_reviews' %}" class="btn btn-outline">Reset</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Mentor</th>
+                        <th>Rating</th>
+                        <th>Review</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for review in reviews %}
+                    <tr>
+                        <td>
+                            <div class="user-cell">
+                                <img src="{{ review.student.get_avatar_url }}" class="avatar avatar-md">
+                                <div class="user-info">
+                                    <div class="user-name">{{ review.student.get_full_name }}</div>
+                                    <span class="badge badge-student badge-sm">Student</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="user-cell">
+                                <img src="{{ review.mentor.get_avatar_url }}" class="avatar avatar-md">
+                                <div class="user-info">
+                                    <div class="user-name">{{ review.mentor.get_full_name }}</div>
+                                    <span class="badge badge-mentor badge-sm">Mentor</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="rating-cell">
+                                <div class="rating-stars">
+                                    {% for i in "12345" %}
+                                    <svg class="star-icon {% if forloop.counter <= review.rating %}filled{% endif %}" viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                    </svg>
+                                    {% endfor %}
+                                </div>
+                                <span class="rating-value">{{ review.rating }}.0</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="review-preview">
+                                <p class="review-text">{{ review.content|truncatewords:15 }}</p>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="date-info">
+                                <span class="date-value">{{ review.created_at|date:"M d, Y" }}</span>
+                                <span class="date-time text-muted text-xs">{{ review.created_at|timesince }} ago</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="{% url 'dashboard:delete_review' review.pk %}" class="btn btn-sm btn-danger" onclick="return confirm('Delete this review? This action cannot be undone.')">
+                                    <i data-feather="trash-2"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4">
+                            <div class="empty-state">
+                                <i data-feather="star" class="empty-icon"></i>
+                                <p class="text-muted">No reviews found</p>
+                                <a href="{% url 'dashboard:admin_reviews' %}" class="btn btn-outline btn-sm">Clear Filters</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if is_paginated %}
+        <div class="pagination-container">
+            <nav class="pagination">
+                {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.rating %}&rating={{ request.GET.rating }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" class="pagination-btn">
+                    <i data-feather="chevron-left"></i>
+                </a>
+                {% endif %}
+                <span class="pagination-info">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if request.GET.rating %}&rating={{ request.GET.rating }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" class="pagination-btn">
+                    <i data-feather="chevron-right"></i>
+                </a>
+                {% endif %}
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.header-icon {
+    width: 28px;
+    height: 28px;
+    vertical-align: middle;
+    margin-right: 0.5rem;
+    color: var(--primary-color, #4f46e5);
+}
+
+.total-count {
+    font-size: 0.9375rem;
+    color: var(--text-secondary, #6b7280);
+    background: var(--background-color, #f3f4f6);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+}
+
+.badge-sm {
+    font-size: 0.6875rem;
+    padding: 0.125rem 0.5rem;
+}
+
+.rating-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.rating-stars {
+    display: flex;
+    gap: 0.125rem;
+}
+
+.star-icon {
+    width: 16px;
+    height: 16px;
+    color: #e5e7eb;
+}
+
+.star-icon.filled {
+    color: #fbbf24;
+}
+
+.rating-value {
+    font-weight: 600;
+    color: var(--text-primary, #111827);
+    font-size: 0.875rem;
+}
+
+.review-preview {
+    max-width: 300px;
+}
+
+.review-text {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--text-secondary, #6b7280);
+    line-height: 1.5;
+}
+
+.date-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+}
+
+.date-value {
+    font-weight: 500;
+    color: var(--text-primary, #111827);
+}
+
+.date-time {
+    color: var(--text-muted, #9ca3af);
+}
+
+.empty-state {
+    padding: 2rem;
+}
+
+.empty-state .empty-icon {
+    width: 48px;
+    height: 48px;
+    color: var(--text-muted, #9ca3af);
+    margin-bottom: 1rem;
+}
+
+.empty-state p {
+    margin-bottom: 1rem;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,274 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% block title %}Sessions - Admin{% endblock %}
+{% block dashboard_content %}
+<div class="dashboard-header">
+    <div>
+        <h1><i data-feather="calendar" class="header-icon"></i> Sessions Management</h1>
+        <p class="text-muted">Monitor and manage all mentorship sessions</p>
+    </div>
+    <div class="dashboard-header-actions">
+        <span class="total-count"><strong>{{ total_sessions|default:0 }}</strong> sessions total</span>
+    </div>
+</div>
+
+<div class="dashboard-stats">
+    <div class="stat-card">
+        <div class="stat-card-icon">
+            <i data-feather="calendar"></i>
+        </div>
+        <div class="stat-card-value">{{ total_sessions|default:0 }}</div>
+        <div class="stat-card-label">Total Sessions</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon" style="background:#dbeafe;color:#2563eb">
+            <i data-feather="clock"></i>
+        </div>
+        <div class="stat-card-value">{{ scheduled_count|default:0 }}</div>
+        <div class="stat-card-label">Scheduled</div>
+        <div class="stat-card-change">Upcoming</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon" style="background:#d1fae5;color:#059669">
+            <i data-feather="check-circle"></i>
+        </div>
+        <div class="stat-card-value">{{ completed_count|default:0 }}</div>
+        <div class="stat-card-label">Completed</div>
+        <div class="stat-card-change positive">Done</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon" style="background:#fee2e2;color:#dc2626">
+            <i data-feather="x-circle"></i>
+        </div>
+        <div class="stat-card-value">{{ cancelled_count|default:0 }}</div>
+        <div class="stat-card-label">Cancelled</div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="filters-form">
+            <div class="filters-row">
+                <div class="filter-group">
+                    <label>Search</label>
+                    <input type="text" name="search" class="form-control" placeholder="Search by title, student or mentor..." value="{{ request.GET.search }}">
+                </div>
+                <div class="filter-group">
+                    <label>Status</label>
+                    <select name="status" class="form-control">
+                        <option value="">All Status</option>
+                        <option value="scheduled" {% if request.GET.status == 'scheduled' %}selected{% endif %}>Scheduled</option>
+                        <option value="in_progress" {% if request.GET.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                        <option value="completed" {% if request.GET.status == 'completed' %}selected{% endif %}>Completed</option>
+                        <option value="cancelled" {% if request.GET.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                    </select>
+                </div>
+                <div class="filter-group filter-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i data-feather="search"></i> Filter
+                    </button>
+                    <a href="{% url 'dashboard:admin_sessions' %}" class="btn btn-outline">Reset</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Session</th>
+                        <th>Student</th>
+                        <th>Mentor</th>
+                        <th>Scheduled</th>
+                        <th>Duration</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for session in sessions %}
+                    <tr>
+                        <td>
+                            <div class="session-title">
+                                <i data-feather="video" class="session-icon"></i>
+                                <div>
+                                    <div class="font-medium">{{ session.title|truncatewords:5 }}</div>
+                                    {% if session.meeting_link %}
+                                    <a href="{{ session.meeting_link }}" target="_blank" class="session-link text-xs">
+                                        <i data-feather="external-link"></i> Join Link
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="user-cell">
+                                <img src="{{ session.student.get_avatar_url }}" class="avatar avatar-sm">
+                                <div class="user-info">
+                                    <div class="user-name">{{ session.student.get_full_name }}</div>
+                                    <div class="user-email text-xs">{{ session.student.email|truncatechars:20 }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="user-cell">
+                                <img src="{{ session.mentor.get_avatar_url }}" class="avatar avatar-sm">
+                                <div class="user-info">
+                                    <div class="user-name">{{ session.mentor.get_full_name }}</div>
+                                    <div class="user-email text-xs">{{ session.mentor.email|truncatechars:20 }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="schedule-info">
+                                <div class="schedule-date">{{ session.scheduled_time|date:"M d, Y" }}</div>
+                                <div class="schedule-time text-muted text-xs">{{ session.scheduled_time|date:"h:i A" }}</div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="duration-badge">
+                                <i data-feather="clock" style="width: 12px; height: 12px;"></i>
+                                {{ session.duration }} min
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge badge-{{ session.status }}">
+                                {% if session.status == 'scheduled' %}
+                                <i data-feather="clock" style="width: 12px; height: 12px;"></i>
+                                {% elif session.status == 'completed' %}
+                                <i data-feather="check-circle" style="width: 12px; height: 12px;"></i>
+                                {% elif session.status == 'cancelled' %}
+                                <i data-feather="x-circle" style="width: 12px; height: 12px;"></i>
+                                {% elif session.status == 'in_progress' %}
+                                <i data-feather="play-circle" style="width: 12px; height: 12px;"></i>
+                                {% endif %}
+                                {{ session.get_status_display }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4">
+                            <div class="empty-state">
+                                <i data-feather="calendar" class="empty-icon"></i>
+                                <p class="text-muted">No sessions found</p>
+                                <a href="{% url 'dashboard:admin_sessions' %}" class="btn btn-outline btn-sm">Clear Filters</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if is_paginated %}
+        <div class="pagination-container">
+            <nav class="pagination">
+                {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" class="pagination-btn">
+                    <i data-feather="chevron-left"></i>
+                </a>
+                {% endif %}
+                <span class="pagination-info">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" class="pagination-btn">
+                    <i data-feather="chevron-right"></i>
+                </a>
+                {% endif %}
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.header-icon {
+    width: 28px;
+    height: 28px;
+    vertical-align: middle;
+    margin-right: 0.5rem;
+    color: var(--primary-color, #4f46e5);
+}
+
+.total-count {
+    font-size: 0.9375rem;
+    color: var(--text-secondary, #6b7280);
+    background: var(--background-color, #f3f4f6);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+}
+
+.session-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.session-icon {
+    width: 20px;
+    height: 20px;
+    color: var(--primary-color, #4f46e5);
+}
+
+.session-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: var(--primary-color, #4f46e5);
+    text-decoration: none;
+    margin-top: 0.25rem;
+}
+
+.session-link:hover {
+    text-decoration: underline;
+}
+
+.session-link i {
+    width: 12px;
+    height: 12px;
+}
+
+.schedule-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+}
+
+.schedule-date {
+    font-weight: 500;
+    color: var(--text-primary, #111827);
+}
+
+.schedule-time {
+    color: var(--text-muted, #9ca3af);
+}
+
+.duration-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.25rem 0.625rem;
+    background: var(--background-color, #f3f4f6);
+    border-radius: 6px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--text-secondary, #6b7280);
+}
+
+.empty-state {
+    padding: 2rem;
+}
+
+.empty-state .empty-icon {
+    width: 48px;
+    height: 48px;
+    color: var(--text-muted, #9ca3af);
+    margin-bottom: 1rem;
+}
+
+.empty-state p {
+    margin-bottom: 1rem;
+}
+</style>
+{% endblock %}

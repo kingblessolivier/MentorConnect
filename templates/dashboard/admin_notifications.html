@@ -1,0 +1,236 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% block title %}Notifications - Admin{% endblock %}
+{% block dashboard_content %}
+<div class="dashboard-header">
+    <div>
+        <h1><i data-feather="bell" class="header-icon"></i> Notifications Management</h1>
+        <p class="text-muted">View and manage all system notifications</p>
+    </div>
+    <div class="dashboard-header-actions">
+        <a href="{% url 'dashboard:admin_broadcast' %}" class="btn btn-primary">
+            <i data-feather="send"></i> Send Broadcast
+        </a>
+    </div>
+</div>
+
+<div class="dashboard-stats">
+    <div class="stat-card">
+        <div class="stat-card-icon">
+            <i data-feather="bell"></i>
+        </div>
+        <div class="stat-card-value">{{ total_notifications|default:0 }}</div>
+        <div class="stat-card-label">Total Notifications</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon" style="background:#fee2e2;color:#dc2626">
+            <i data-feather="bell-off"></i>
+        </div>
+        <div class="stat-card-value">{{ unread_count|default:0 }}</div>
+        <div class="stat-card-label">Unread</div>
+        <div class="stat-card-change">Pending</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon" style="background:#dbeafe;color:#2563eb">
+            <i data-feather="info"></i>
+        </div>
+        <div class="stat-card-value">{{ system_count|default:0 }}</div>
+        <div class="stat-card-label">System Alerts</div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="filters-form">
+            <div class="filters-row">
+                <div class="filter-group">
+                    <label>Search</label>
+                    <input type="text" name="search" class="form-control" placeholder="Search notifications..." value="{{ request.GET.search }}">
+                </div>
+                <div class="filter-group">
+                    <label>Type</label>
+                    <select name="type" class="form-control">
+                        <option value="">All Types</option>
+                        <option value="system" {% if request.GET.type == 'system' %}selected{% endif %}>System</option>
+                        <option value="message" {% if request.GET.type == 'message' %}selected{% endif %}>Message</option>
+                        <option value="request_approved" {% if request.GET.type == 'request_approved' %}selected{% endif %}>Request Approved</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Status</label>
+                    <select name="status" class="form-control">
+                        <option value="">All Status</option>
+                        <option value="read" {% if request.GET.status == 'read' %}selected{% endif %}>Read</option>
+                        <option value="unread" {% if request.GET.status == 'unread' %}selected{% endif %}>Unread</option>
+                    </select>
+                </div>
+                <div class="filter-group filter-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i data-feather="search"></i> Filter
+                    </button>
+                    <a href="{% url 'dashboard:admin_notifications' %}" class="btn btn-outline">Reset</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Recipient</th>
+                        <th>Type</th>
+                        <th>Message</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for notif in notifications %}
+                    <tr class="{% if not notif.is_read %}unread-row{% endif %}">
+                        <td>
+                            <div class="user-cell">
+                                <img src="{{ notif.recipient.get_avatar_url }}" class="avatar avatar-md">
+                                <div class="user-info">
+                                    <div class="user-name">{{ notif.recipient.get_full_name }}</div>
+                                    <div class="user-email text-xs">{{ notif.recipient.email|truncatechars:20 }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="notif-type-badge notif-type-{{ notif.notification_type }}">
+                                {% if notif.notification_type == 'message' %}
+                                <i data-feather="message-circle" style="width: 12px; height: 12px;"></i>
+                                {% elif notif.notification_type == 'system' %}
+                                <i data-feather="alert-circle" style="width: 12px; height: 12px;"></i>
+                                {% else %}
+                                <i data-feather="bell" style="width: 12px; height: 12px;"></i>
+                                {% endif %}
+                                {{ notif.get_notification_type_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="notif-message">{{ notif.message|truncatewords:12 }}</div>
+                        </td>
+                        <td>
+                            {% if notif.is_read %}
+                            <span class="badge badge-success">
+                                <i data-feather="check" style="width: 12px; height: 12px;"></i> Read
+                            </span>
+                            {% else %}
+                            <span class="badge badge-warning">
+                                <i data-feather="circle" style="width: 12px; height: 12px;"></i> Unread
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="date-info">
+                                <span class="date-value">{{ notif.created_at|date:"M d, Y" }}</span>
+                                <span class="date-time text-muted text-xs">{{ notif.created_at|date:"h:i A" }}</span>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4">
+                            <div class="empty-state">
+                                <i data-feather="bell" class="empty-icon"></i>
+                                <p class="text-muted">No notifications found</p>
+                                <a href="{% url 'dashboard:admin_notifications' %}" class="btn btn-outline btn-sm">Clear Filters</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if is_paginated %}
+        <div class="pagination-container">
+            <nav class="pagination">
+                {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.type %}&type={{ request.GET.type }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" class="pagination-btn">
+                    <i data-feather="chevron-left"></i>
+                </a>
+                {% endif %}
+                <span class="pagination-info">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if request.GET.type %}&type={{ request.GET.type }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" class="pagination-btn">
+                    <i data-feather="chevron-right"></i>
+                </a>
+                {% endif %}
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.header-icon {
+    width: 28px;
+    height: 28px;
+    vertical-align: middle;
+    margin-right: 0.5rem;
+    color: var(--primary-color, #4f46e5);
+}
+
+.unread-row {
+    background: #fffbeb;
+}
+
+.notif-type-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.notif-type-message {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.notif-type-system {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.notif-type-request_approved {
+    background: #d1fae5;
+    color: #059669;
+}
+
+.notif-message {
+    max-width: 300px;
+    font-size: 0.875rem;
+    color: var(--text-secondary, #6b7280);
+    line-height: 1.5;
+}
+
+.date-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+}
+
+.date-value {
+    font-weight: 500;
+    color: var(--text-primary, #111827);
+}
+
+.empty-state {
+    padding: 2rem;
+}
+
+.empty-state .empty-icon {
+    width: 48px;
+    height: 48px;
+    color: var(--text-muted, #9ca3af);
+    margin-bottom: 1rem;
+}
+</style>
+{% endblock %}
