@@ -46,97 +46,112 @@ def site_settings(request):
 def language_settings(request):
     """
     Add language settings to template context
+    Provides translations dictionary for common UI elements
     """
-    from django.utils import translation
+    try:
+        from django.utils import translation
 
-    current_language = getattr(request, 'LANGUAGE_CODE', settings.LANGUAGE_CODE)
+        current_language = getattr(request, 'LANGUAGE_CODE', settings.LANGUAGE_CODE)
 
-    # Translations dictionary for common UI elements
-    translations = {
-        'en': {
-            'home': 'Home',
-            'about': 'About Us',
-            'mentors': 'Mentors',
-            'login': 'Login',
-            'signup': 'Sign Up',
-            'logout': 'Logout',
-            'dashboard': 'Dashboard',
-            'profile': 'Profile',
-            'settings': 'Settings',
-            'search': 'Search',
-            'feed': 'Feed',
-            'chat': 'Chat',
-            'notifications': 'Notifications',
-            'sessions': 'Sessions',
-            'welcome': 'Welcome',
-            'find_mentor': 'Find a Mentor',
-            'become_mentor': 'Become a Mentor',
-            'get_started': 'Get Started',
-            'learn_more': 'Learn More',
-            'contact_us': 'Contact Us',
-            'follow': 'Follow',
-            'unfollow': 'Unfollow',
-            'book_session': 'Book Session',
-            'send_message': 'Send Message',
-            'view_profile': 'View Profile',
-            'edit_profile': 'Edit Profile',
-            'save': 'Save',
-            'cancel': 'Cancel',
-            'delete': 'Delete',
-            'confirm': 'Confirm',
-            'loading': 'Loading...',
-            'no_results': 'No results found',
-            'error': 'Error',
-            'success': 'Success',
-            'warning': 'Warning',
-            'info': 'Information',
-        },
-        'rw': {
-            'home': 'Ahabanza',
-            'about': 'Abo Turibo',
-            'mentors': 'Abayobozi',
-            'login': 'Kwinjira',
-            'signup': 'Kwiyandikisha',
-            'logout': 'Gusohoka',
-            'dashboard': 'Ikibaho',
-            'profile': 'Umwirondoro',
-            'settings': 'Igenamiterere',
-            'search': 'Gushakisha',
-            'feed': 'Amakuru',
-            'chat': 'Kuganira',
-            'notifications': 'Amakuru mashya',
-            'sessions': 'Ibyiciro',
-            'welcome': 'Murakaza neza',
-            'find_mentor': 'Shakisha Umuyobozi',
-            'become_mentor': 'Ba Umuyobozi',
-            'get_started': 'Tangira',
-            'learn_more': 'Menya Byinshi',
-            'contact_us': 'Twandikire',
-            'follow': 'Kurikira',
-            'unfollow': 'Kureka Gukurikira',
-            'book_session': 'Gufata Igihe',
-            'send_message': 'Ohereza Ubutumwa',
-            'view_profile': 'Reba Umwirondoro',
-            'edit_profile': 'Hindura Umwirondoro',
-            'save': 'Bika',
-            'cancel': 'Hagarika',
-            'delete': 'Siba',
-            'confirm': 'Emeza',
-            'loading': 'Gutegereza...',
-            'no_results': 'Nta bisubizo byabonetse',
-            'error': 'Ikosa',
-            'success': 'Byagenze neza',
-            'warning': 'Umuburo',
-            'info': 'Amakuru',
+        # Ensure current_language is valid
+        valid_languages = [lang[0] for lang in settings.LANGUAGES]
+        if current_language not in valid_languages:
+            current_language = settings.LANGUAGE_CODE
+
+        # Translations dictionary for common UI elements
+        translations = {
+            'en': {
+                'home': 'Home',
+                'about': 'About Us',
+                'mentors': 'Mentors',
+                'login': 'Login',
+                'signup': 'Sign Up',
+                'logout': 'Logout',
+                'dashboard': 'Dashboard',
+                'profile': 'Profile',
+                'settings': 'Settings',
+                'search': 'Search',
+                'feed': 'Feed',
+                'chat': 'Chat',
+                'notifications': 'Notifications',
+                'sessions': 'Sessions',
+                'welcome': 'Welcome',
+                'find_mentor': 'Find a Mentor',
+                'become_mentor': 'Become a Mentor',
+                'get_started': 'Get Started',
+                'learn_more': 'Learn More',
+                'contact_us': 'Contact Us',
+                'follow': 'Follow',
+                'unfollow': 'Unfollow',
+                'book_session': 'Book Session',
+                'send_message': 'Send Message',
+                'view_profile': 'View Profile',
+                'edit_profile': 'Edit Profile',
+                'save': 'Save',
+                'cancel': 'Cancel',
+                'delete': 'Delete',
+                'confirm': 'Confirm',
+                'loading': 'Loading...',
+                'no_results': 'No results found',
+                'error': 'Error',
+                'success': 'Success',
+                'warning': 'Warning',
+                'info': 'Information',
+            },
+            'rw': {
+                'home': 'Ahabanza',
+                'about': 'Abo Turibo',
+                'mentors': 'Abayobozi',
+                'login': 'Kwinjira',
+                'signup': 'Kwiyandikisha',
+                'logout': 'Gusohoka',
+                'dashboard': 'Ikibaho',
+                'profile': 'Umwirondoro',
+                'settings': 'Igenamiterere',
+                'search': 'Gushakisha',
+                'feed': 'Amakuru',
+                'chat': 'Kuganira',
+                'notifications': 'Amakuru mashya',
+                'sessions': 'Ibyiciro',
+                'welcome': 'Murakaza neza',
+                'find_mentor': 'Shakisha Umuyobozi',
+                'become_mentor': 'Ba Umuyobozi',
+                'get_started': 'Tangira',
+                'learn_more': 'Menya Byinshi',
+                'contact_us': 'Twandikire',
+                'follow': 'Kurikira',
+                'unfollow': 'Kureka Gukurikira',
+                'book_session': 'Gufata Igihe',
+                'send_message': 'Ohereza Ubutumwa',
+                'view_profile': 'Reba Umwirondoro',
+                'edit_profile': 'Hindura Umwirondoro',
+                'save': 'Bika',
+                'cancel': 'Hagarika',
+                'delete': 'Siba',
+                'confirm': 'Emeza',
+                'loading': 'Gutegereza...',
+                'no_results': 'Nta bisubizo byabonetse',
+                'error': 'Ikosa',
+                'success': 'Byagenze neza',
+                'warning': 'Umuburo',
+                'info': 'Amakuru',
+            }
         }
-    }
 
-    return {
-        'current_language': current_language,
-        'available_languages': settings.LANGUAGES,
-        'translations': translations.get(current_language, translations['en']),
-        't': translations.get(current_language, translations['en']),  # Shorthand
-    }
+        return {
+            'current_language': current_language,
+            'available_languages': settings.LANGUAGES,
+            'translations': translations.get(current_language, translations['en']),
+            't': translations.get(current_language, translations['en']),  # Shorthand
+        }
+    except Exception:
+        # Fallback if something goes wrong
+        return {
+            'current_language': settings.LANGUAGE_CODE,
+            'available_languages': settings.LANGUAGES,
+            'translations': {},
+            't': {},
+        }
 
 
 def accessibility_settings(request):

@@ -15,31 +15,42 @@ class LanguageMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        # Get language from session, cookie, or default
-        # Check custom site_language cookie first, then django_language
-        language = request.session.get('django_language')
+        try:
+            # Get language from session, cookie, or default
+            # Check custom site_language cookie first, then django_language
+            language = request.session.get('django_language')
 
-        if not language:
-            language = request.COOKIES.get('site_language')
+            if not language:
+                language = request.COOKIES.get('site_language')
 
-        if not language:
-            language = request.COOKIES.get('django_language', settings.LANGUAGE_CODE)
+            if not language:
+                language = request.COOKIES.get('django_language', settings.LANGUAGE_CODE)
 
-        # Validate language is supported
-        if language not in [lang[0] for lang in settings.LANGUAGES]:
-            language = settings.LANGUAGE_CODE
+            # Validate language is supported
+            if language not in [lang[0] for lang in settings.LANGUAGES]:
+                language = settings.LANGUAGE_CODE
 
-        # Activate the language
-        translation.activate(language)
-        request.LANGUAGE_CODE = language
+            # Activate the language
+            try:
+                translation.activate(language)
+            except Exception:
+                # If translation activation fails, fall back to default
+                translation.activate(settings.LANGUAGE_CODE)
+                language = settings.LANGUAGE_CODE
 
-        response = self.get_response(request)
+            request.LANGUAGE_CODE = language
 
-        # Set language cookies if not set
-        if 'site_language' not in request.COOKIES:
-            response.set_cookie('site_language', language, max_age=365*24*60*60)
+            response = self.get_response(request)
 
-        return response
+            # Set language cookies if not set
+            if 'site_language' not in request.COOKIES:
+                response.set_cookie('site_language', language, max_age=365*24*60*60)
+
+            return response
+        except Exception as e:
+            # If anything fails, just pass through without translation
+            request.LANGUAGE_CODE = settings.LANGUAGE_CODE
+            return self.get_response(request)
 
 
 class ThemeMiddleware:

@@ -1001,20 +1001,27 @@
     color: var(--text-muted);
 }
 
-/* Modal Styles */
 .modal-overlay {
-    position: fixed;
-    inset: 0;
+    position: fixed; /* ← REQUIRED */
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
     background: rgba(0, 0, 0, 0.5);
     display: flex;
     align-items: center;
     justify-content: center;
+
     z-index: 1000;
+
     opacity: 0;
     visibility: hidden;
     transition: all 0.3s;
     padding: 1rem;
+    overflow-y: auto; /* ← allows whole modal scrolling */
 }
+
 
 .modal-overlay.active {
     opacity: 1;
@@ -1026,7 +1033,7 @@
     border-radius: var(--card-radius);
     width: 100%;
     max-width: 500px;
-    max-height: 90vh;
+    /*max-height: 90vh;*/
     display: flex;
     flex-direction: column;
     transform: translateY(-20px);
@@ -1043,6 +1050,7 @@
     justify-content: space-between;
     padding: 1rem 1.5rem;
     border-bottom: 1px solid var(--border-color, #e5e7eb);
+    flex-shrink: 0;
 }
 
 .modal-header h3 {
@@ -1065,6 +1073,8 @@
 .modal-body {
     padding: 1.5rem;
     overflow-y: auto;
+    flex: 1;
+    min-height: 0;
 }
 
 .modal-footer {
@@ -1073,6 +1083,7 @@
     gap: 0.75rem;
     padding: 1rem 1.5rem;
     border-top: 1px solid var(--border-color, #e5e7eb);
+    flex-shrink: 0;
 }
 
 .form-row {
@@ -1178,10 +1189,12 @@
 // Modal functions
 function openEditModal(modalId) {
     document.getElementById(modalId).classList.add('active');
+    document.body.style.overflow = 'hidden';
 }
 
 function closeEditModal(modalId) {
     document.getElementById(modalId).classList.remove('active');
+    document.body.style.overflow = 'auto';
 }
 
 // Close modal on overlay click
@@ -1189,6 +1202,7 @@ document.querySelectorAll('.modal-overlay').forEach(modal => {
     modal.addEventListener('click', function(e) {
         if (e.target === this) {
             this.classList.remove('active');
+            document.body.style.overflow = 'auto';
         }
     });
 });
@@ -1198,6 +1212,7 @@ document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
         document.querySelectorAll('.modal-overlay.active').forEach(modal => {
             modal.classList.remove('active');
+            document.body.style.overflow = 'auto';
         });
     }
 });

@@ -1,0 +1,602 @@
+/*
+ * Custom Django Admin Styles
+ * Modern, beautiful admin interface
+ */
+
+:root {
+    --primary-color: #3B82F6;
+    --primary-light: #DBEAFE;
+    --primary-dark: #1E40AF;
+    --secondary: #8B5CF6;
+    --success: #10B981;
+    --warning: #F59E0B;
+    --danger: #EF4444;
+    --bg-light: #F8FAFC;
+    --bg-white: #FFFFFF;
+    --text-primary: #1E293B;
+    --text-secondary: #64748B;
+    --border-color: #E2E8F0;
+}
+
+/* ============================================
+   OVERALL STYLES
+   ============================================ */
+
+body {
+    background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    color: var(--text-primary);
+}
+
+/* ============================================
+   HEADER & BRANDING
+   ============================================ */
+
+#header {
+    background: linear-gradient(135deg, var(--bg-white) 0%, #F8FAFC 100%);
+    border-bottom: 2px solid var(--border-color);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    padding: 1.5rem 2rem;
+}
+
+#header h1, #header h1 a {
+    color: var(--primary-dark);
+    font-weight: 800;
+    font-size: 1.5rem;
+}
+
+#header a:link, #header a:visited {
+    color: var(--primary-color);
+}
+
+/* ============================================
+   SIDEBAR
+   ============================================ */
+
+#sidebar {
+    background: linear-gradient(180deg, var(--bg-white) 0%, #F8FAFC 100%);
+    border-right: 2px solid var(--border-color);
+}
+
+#sidebar h2 {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary));
+    color: white;
+    padding: 1rem 1.5rem;
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+    border-radius: 0;
+}
+
+#sidebar ul {
+    padding: 1rem 0;
+}
+
+#sidebar li {
+    margin: 0;
+    padding: 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+#sidebar a {
+    display: block;
+    color: var(--text-secondary);
+    padding: 0.75rem 1.5rem;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+#sidebar a:hover {
+    background: var(--primary-light);
+    color: var(--primary-dark);
+    padding-left: 2rem;
+}
+
+#sidebar a.active {
+    background: linear-gradient(90deg, var(--primary-color), transparent);
+    color: white;
+    font-weight: 600;
+    border-left: 4px solid var(--primary-dark);
+    padding-left: calc(1.5rem - 4px);
+}
+
+/* ============================================
+   MAIN CONTENT
+   ============================================ */
+
+#content {
+    background: transparent;
+    padding: 2rem;
+}
+
+/* ============================================
+   BREADCRUMBS
+   ============================================ */
+
+.breadcrumbs {
+    background: var(--bg-white);
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    border: 1px solid var(--border-color);
+}
+
+.breadcrumbs a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.breadcrumbs a:hover {
+    text-decoration: underline;
+}
+
+/* ============================================
+   FORMS & FIELDSETS
+   ============================================ */
+
+fieldset {
+    background: var(--bg-white);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+fieldset.wide {
+    width: 100%;
+}
+
+legend {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary));
+    color: white;
+    padding: 0.75rem 1.5rem;
+    margin-left: -1.5rem;
+    margin-right: -1.5rem;
+    margin-bottom: 1.5rem;
+    border-radius: 8px 8px 0 0;
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+/* ============================================
+   LABELS
+   ============================================ */
+
+label {
+    color: var(--text-primary);
+    font-weight: 600;
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.9375rem;
+}
+
+/* ============================================
+   INPUT FIELDS
+   ============================================ */
+
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="url"],
+input[type="number"],
+input[type="date"],
+input[type="datetime"],
+input[type="time"],
+textarea,
+select {
+    background: var(--bg-white);
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-size: 0.9375rem;
+    color: var(--text-primary);
+    transition: all 0.2s ease;
+    width: 100%;
+    font-family: inherit;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="email"]:focus,
+input[type="url"]:focus,
+input[type="number"]:focus,
+input[type="date"]:focus,
+input[type="datetime"]:focus,
+input[type="time"]:focus,
+textarea:focus,
+select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px var(--primary-light);
+    background: var(--bg-white);
+}
+
+textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+/* ============================================
+   BUTTONS
+   ============================================ */
+
+.submit-row {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 2px solid var(--border-color);
+}
+
+input[type="submit"],
+.button,
+.addlink,
+.historylink,
+.deletelink {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-block;
+}
+
+input[type="submit"]:hover,
+.button:hover,
+.addlink:hover,
+.historylink:hover,
+.deletelink:hover {
+    background: linear-gradient(135deg, var(--primary-dark), #1d3a8a);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.deletelink,
+.deletelink:hover {
+    background: linear-gradient(135deg, var(--danger), #dc2626);
+}
+
+.addlink {
+    background: linear-gradient(135deg, var(--success), #047857);
+}
+
+.addlink:hover {
+    background: linear-gradient(135deg, #047857, #065f46);
+}
+
+/* ============================================
+   TABLES
+   ============================================ */
+
+table {
+    background: var(--bg-white);
+    border-collapse: collapse;
+    width: 100%;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+thead {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary));
+    color: white;
+}
+
+th {
+    padding: 1rem 1.5rem;
+    text-align: left;
+    font-weight: 700;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+td {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+tbody tr {
+    transition: all 0.2s ease;
+}
+
+tbody tr:hover {
+    background: var(--primary-light);
+}
+
+tbody tr:nth-child(even) {
+    background: var(--bg-light);
+}
+
+tbody tr:nth-child(even):hover {
+    background: var(--primary-light);
+}
+
+/* ============================================
+   ACTIONS
+   ============================================ */
+
+.actions {
+    background: var(--bg-white);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.actions select {
+    width: auto;
+    margin-right: 1rem;
+}
+
+.actions button {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.actions button:hover {
+    background: linear-gradient(135deg, var(--primary-dark), #1d3a8a);
+    transform: translateY(-2px);
+}
+
+/* ============================================
+   MESSAGES
+   ============================================ */
+
+.messagelist {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 2rem 0;
+}
+
+.messagelist li {
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    border-left: 4px solid;
+    background: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.messagelist .success {
+    background: linear-gradient(135deg, #DCFCE7, #BBFBD0);
+    border-left-color: var(--success);
+    color: #166534;
+}
+
+.messagelist .error {
+    background: linear-gradient(135deg, #FEE2E2, #FECACA);
+    border-left-color: var(--danger);
+    color: #991B1B;
+}
+
+.messagelist .warning {
+    background: linear-gradient(135deg, #FEF3C7, #FDE68A);
+    border-left-color: var(--warning);
+    color: #92400E;
+}
+
+.messagelist .info {
+    background: linear-gradient(135deg, #DBEAFE, #BFDBFE);
+    border-left-color: var(--primary-color);
+    color: #1E40AF;
+}
+
+/* ============================================
+   PAGINATOR
+   ============================================ */
+
+.paginator {
+    background: var(--bg-white);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-top: 2rem;
+    text-align: center;
+}
+
+.paginator a, .paginator span {
+    display: inline-block;
+    padding: 0.5rem 0.75rem;
+    margin: 0 0.25rem;
+    border-radius: 6px;
+    text-decoration: none;
+    color: var(--primary-color);
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.paginator a:hover {
+    background: var(--primary-light);
+}
+
+.paginator span.step-links {
+    margin: 0 1rem;
+}
+
+.paginator .this-page {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary));
+    color: white;
+    padding: 0.5rem 1rem;
+}
+
+/* ============================================
+   ERRORS
+   ============================================ */
+
+.errornote {
+    background: linear-gradient(135deg, #FEE2E2, #FECACA);
+    border: 2px solid var(--danger);
+    border-radius: 12px;
+    color: #991B1B;
+    padding: 1rem 1.5rem;
+    margin-bottom: 2rem;
+    font-weight: 500;
+}
+
+.errorlist {
+    background: linear-gradient(135deg, #FEE2E2, #FECACA);
+    border: 1px solid var(--danger);
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 1rem 0;
+    list-style: none;
+}
+
+.errorlist li {
+    color: #991B1B;
+    font-weight: 500;
+    margin: 0.5rem 0;
+}
+
+/* ============================================
+   FILTERS
+   ============================================ */
+
+#changelist-filter {
+    background: var(--bg-white);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-left: 2rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+#changelist-filter h2 {
+    color: var(--text-primary);
+    font-weight: 700;
+    margin-top: 0;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+#changelist-filter ul {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0 2rem 0;
+}
+
+#changelist-filter li {
+    margin: 0.5rem 0;
+}
+
+#changelist-filter a {
+    color: var(--primary-color);
+    text-decoration: none;
+    display: block;
+    padding: 0.5rem;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+#changelist-filter a:hover {
+    background: var(--primary-light);
+    color: var(--primary-dark);
+}
+
+#changelist-filter a.selected {
+    background: linear-gradient(135deg, var(--primary-light), #E0E7FF);
+    color: var(--primary-dark);
+    font-weight: 600;
+    border-left: 4px solid var(--primary-color);
+    padding-left: calc(0.5rem - 4px);
+}
+
+/* ============================================
+   SEARCH BOX
+   ============================================ */
+
+#toolbar {
+    background: var(--bg-white);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    display: flex;
+    gap: 1rem;
+}
+
+#searchbar {
+    flex: 1;
+}
+
+#searchbar input {
+    width: 100%;
+    max-width: 400px;
+}
+
+/* ============================================
+   INLINE EDITING
+   ============================================ */
+
+.inline-group {
+    background: var(--bg-white);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.inline-group h2 {
+    color: var(--text-primary);
+    font-weight: 700;
+    margin-top: 0;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+    body {
+        font-size: 0.9rem;
+    }
+
+    #sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: 2px solid var(--border-color);
+    }
+
+    #content {
+        padding: 1rem;
+    }
+
+    table {
+        font-size: 0.8rem;
+    }
+
+    th, td {
+        padding: 0.75rem 1rem;
+    }
+
+    fieldset {
+        padding: 1rem;
+    }
+
+    .actions {
+        flex-direction: column;
+    }
+
+    .actions select,
+    .actions button {
+        width: 100%;
+    }
+}

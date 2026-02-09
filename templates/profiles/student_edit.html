@@ -642,12 +642,12 @@
 .modal-overlay.active { opacity: 1; visibility: visible; }
 .modal-container { background: var(--surface-color); border-radius: var(--card-radius); width: 100%; max-width: 500px; max-height: 90vh; display: flex; flex-direction: column; transform: translateY(-20px); transition: transform 0.3s; }
 .modal-overlay.active .modal-container { transform: translateY(0); }
-.modal-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color, #e5e7eb); }
+.modal-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color, #e5e7eb); flex-shrink: 0; }
 .modal-header h3 { margin: 0; }
 .modal-close { background: none; border: none; padding: 0.5rem; cursor: pointer; color: var(--text-secondary); border-radius: var(--button-radius); }
 .modal-close:hover { background: var(--background-color); }
-.modal-body { padding: 1.5rem; overflow-y: auto; }
-.modal-footer { display: flex; justify-content: flex-end; gap: 0.75rem; padding: 1rem 1.5rem; border-top: 1px solid var(--border-color, #e5e7eb); }
+.modal-body { padding: 1.5rem; overflow-y: auto; flex: 1; min-height: 0; }
+.modal-footer { display: flex; justify-content: flex-end; gap: 0.75rem; padding: 1rem 1.5rem; border-top: 1px solid var(--border-color, #e5e7eb); flex-shrink: 0; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 .photo-upload-preview { text-align: center; margin-bottom: 1rem; }
 .avatar-large { width: 150px; height: 150px; border-radius: 50%; object-fit: cover; }
@@ -667,10 +667,30 @@
 
 {% block extra_js %}
 <script>
-function openEditModal(modalId) { document.getElementById(modalId).classList.add('active'); }
-function closeEditModal(modalId) { document.getElementById(modalId).classList.remove('active'); }
-document.querySelectorAll('.modal-overlay').forEach(modal => { modal.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('active'); }); });
-document.addEventListener('keydown', function(e) { if (e.key === 'Escape') document.querySelectorAll('.modal-overlay.active').forEach(modal => modal.classList.remove('active')); });
+function openEditModal(modalId) {
+    document.getElementById(modalId).classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+function closeEditModal(modalId) {
+    document.getElementById(modalId).classList.remove('active');
+    document.body.style.overflow = 'auto';
+}
+document.querySelectorAll('.modal-overlay').forEach(modal => {
+    modal.addEventListener('click', function(e) {
+        if (e.target === this) {
+            this.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+    });
+});
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-overlay.active').forEach(modal => {
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        });
+    }
+});
 function previewPhoto(input, previewId) { if (input.files && input.files[0]) { const reader = new FileReader(); reader.onload = function(e) { document.getElementById(previewId).src = e.target.result; }; reader.readAsDataURL(input.files[0]); } }
 if (typeof feather !== 'undefined') feather.replace();
 </script>

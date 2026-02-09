@@ -205,14 +205,25 @@ class CommunityView(TemplateView):
 def set_language(request):
     """
     View to switch language
+    Handles both GET (?lang=en) and POST (from form) methods
     """
-    language = request.GET.get('lang', 'en')
+    # Try to get language from POST first, then GET
+    language = request.POST.get('language') or request.GET.get('lang', 'en')
 
     if language in dict(settings.LANGUAGES):
         translation.activate(language)
         request.session['django_language'] = language
 
-        response = redirect(request.META.get('HTTP_REFERER', '/'))
+        # Get next URL from POST/GET or use referer or home
+        next_url = request.POST.get('next') or request.GET.get('next') or request.META.get('HTTP_REFERER', '/')
+
+        # Make sure we redirect to a safe URL (not external)
+        if next_url.startswith('/'):
+            response = redirect(next_url)
+        else:
+            response = redirect('/')
+
+        response.set_cookie('site_language', language, max_age=365*24*60*60)
         response.set_cookie('django_language', language, max_age=365*24*60*60)
         return response
 

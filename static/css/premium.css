@@ -400,91 +400,419 @@
    PREMIUM MENTOR CARDS
    ============================================ */
 
+
+/* ============================================
+   MENTOR CARD PREMIUM - ENHANCED DESIGN
+   ============================================ */
+
 .mentor-card-premium {
     background: white;
-    border-radius: 24px;
-    overflow: visible; /* allow avatar to overlap card visually */
-    border: 1px solid #e2e8f0;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative; /* ensure absolutely-positioned avatar is positioned inside the card */
-
-    /* New: use column flex so footer sits consistently at bottom */
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     flex-direction: column;
+    height: 100%;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    position: relative;
 }
 
-/* Ensure cover doesn't flex */
-.mentor-card-cover {
-    position: relative; /* avatar inside will be absolute relative to this */
-    height: 100px;
-    background: linear-gradient(135deg, #1e3a5f 0%, #3b7fb8 100%);
-    border-bottom: 1px solid rgba(0,0,0,0.02);
-    flex: 0 0 100px; /* prevent flex growth/shrink */
-}
-
-/* Body grows to fill available space so footer can be pinned to bottom */
-.mentor-card-body {
-    padding: 4.5rem 1.5rem 1.5rem; /* increased top padding to match avatar top */
-    text-align: center;
-    flex: 1 1 auto; /* allow grow */
-    display: flex;
-    flex-direction: column;
-}
-
-/* Push footer to bottom of card-body container */
-.mentor-card-footer {
-    margin-top: auto; /* push to bottom */
-    padding: 0 1.5rem 1.25rem;
-}
-
-/* Ensure footer button stretches nicely */
-.btn-mentor-view {
-    width: 100%;
-}
-
-/* Ensure grid items stretch to equal heights per row so mentor cards align */
-.grid {
-    display: grid;
-    gap: 1.5rem;
-    align-items: stretch; /* ensure children stretch vertically */
-}
-
-/* Minimum card height to keep consistent layout when content is missing */
-.mentor-card-premium {
-    min-height: 360px;
-}
-
-/* Mentor card avatar styling */
-.mentor-card-avatar {
+.mentor-card-premium::before {
+    content: '';
     position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    bottom: -40px; /* overlaps the cover */
-    width: auto;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 50%, #10b981 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.mentor-card-premium:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    border-color: rgba(59, 130, 246, 0.2);
+}
+
+.mentor-card-premium:hover::before {
+    opacity: 1;
+}
+
+/* Mentor Card Cover - Background with Gradient */
+.mentor-card-cover {
+    position: relative;
+    height: 140px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    overflow: hidden;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 20px;
+}
+
+.mentor-card-cover::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+        radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 50%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+    pointer-events: none;
+}
+
+/* Mentor Card Avatar */
+.mentor-card-avatar {
+    position: relative;
+    width: 110px;
+    height: 110px;
+    border-radius: 20px;
+    border: 5px solid white;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
     z-index: 5;
+    transition: transform 0.3s ease;
+}
+
+.mentor-card-premium:hover .mentor-card-avatar {
+    transform: scale(1.05);
+}
+
+.mentor-card-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Verified Badge */
+.mentor-card-verified {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
+    color: white;
+    border: 3px solid white;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    animation: pulse-verified 2s ease-in-out infinite;
 }
 
-.mentor-card-avatar img.avatar {
-    width: 96px;
-    height: 96px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 4px solid white;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
-    display: block;
+@keyframes pulse-verified {
+    0%, 100% { box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); }
+    50% { box-shadow: 0 4px 20px rgba(16, 185, 129, 0.6); }
 }
 
-/* Adjust cover to be positioning context */
-.mentor-card-cover {
-    position: relative;
-    overflow: visible;
+/* Mentor Card Body */
+.mentor-card-body {
+    padding: 1.75rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
 }
 
-/* Reduce top padding of body to account for avatar overlap */
-.mentor-card-body { padding-top: 56px; }
+/* Mentor Name */
+.mentor-card-name {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0.75rem 0 0.375rem;
+    transition: color 0.3s ease;
+}
+
+.mentor-card-premium:hover .mentor-card-name {
+    color: #3b82f6;
+}
+
+/* Mentor Title */
+.mentor-card-title {
+    font-size: 0.9375rem;
+    color: #64748b;
+    margin-bottom: 0.75rem;
+    font-weight: 500;
+}
+
+/* Location Badge */
+.mentor-card-location {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    font-size: 0.8125rem;
+    color: #475569;
+    margin-bottom: 1rem;
+    font-weight: 500;
+}
+
+.mentor-card-location svg,
+.mentor-card-location i {
+    width: 14px;
+    height: 14px;
+    color: #3b82f6;
+}
+
+/* Mentor Type Badges */
+.mentor-type-badges {
+    display: flex;
+    justify-content: center;
+    gap: 0.625rem;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+}
+
+.mentor-type-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.875rem;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.mentor-type-badge.in-person {
+    background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+    color: #15803d;
+    border: 1px solid #86efac;
+}
+
+.mentor-type-badge.virtual {
+    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+    color: #1e40af;
+    border: 1px solid #93c5fd;
+}
+
+.mentor-type-badge:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Mentor Skills Tags */
+.mentor-card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+}
+
+.mentor-tag {
+    display: inline-block;
+    padding: 0.375rem 0.75rem;
+    background: linear-gradient(135deg, #f0f4ff 0%, #f5f3ff 100%);
+    color: #6366f1;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+.mentor-tag:hover {
+    background: linear-gradient(135deg, #e0e7ff 0%, #ede9fe 100%);
+    border-color: rgba(99, 102, 241, 0.4);
+}
+
+/* Mentor Stats */
+.mentor-card-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0.75rem;
+    padding: 1.25rem;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border-radius: 12px;
+    margin-bottom: 1.25rem;
+    margin: 1.25rem -1.75rem -1.75rem;
+}
+
+.mentor-stat {
+    text-align: center;
+    padding: 0.75rem 0;
+    transition: transform 0.2s ease;
+}
+
+.mentor-card-premium:hover .mentor-stat {
+    transform: translateY(-2px);
+}
+
+.mentor-stat-value {
+    font-size: 1.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.25rem;
+}
+
+.mentor-stat-label {
+    font-size: 0.75rem;
+    color: #64748b;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Mentor Card Footer */
+.mentor-card-footer {
+    margin-top: auto;
+}
+
+.btn-mentor-view {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.875rem 1.25rem;
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    border-radius: 12px;
+    text-decoration: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 2px solid transparent;
+    cursor: pointer;
+}
+
+.btn-mentor-view:hover {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+}
+
+.btn-mentor-view:active {
+    transform: translateY(0);
+}
+
+.btn-mentor-view svg,
+.btn-mentor-view i {
+    width: 18px;
+    height: 18px;
+}
+
+/* ============================================
+   RESPONSIVE MENTOR CARDS
+   ============================================ */
+
+@media (max-width: 1024px) {
+    .mentor-card-premium {
+        border-radius: 16px;
+    }
+
+    .mentor-card-cover {
+        height: 120px;
+    }
+
+    .mentor-card-avatar {
+        width: 100px;
+        height: 100px;
+        border-width: 4px;
+    }
+
+    .mentor-card-body {
+        padding: 1.5rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .mentor-card-premium {
+        border-radius: 12px;
+    }
+
+    .mentor-card-cover {
+        height: 100px;
+        padding-bottom: 15px;
+    }
+
+    .mentor-card-avatar {
+        width: 90px;
+        height: 90px;
+        border-width: 3px;
+    }
+
+    .mentor-card-body {
+        padding: 1.25rem 1rem;
+    }
+
+    .mentor-card-name {
+        font-size: 1.1rem;
+    }
+
+    .mentor-card-stats {
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 0.5rem;
+        padding: 1rem;
+    }
+
+    .mentor-stat-value {
+        font-size: 1.25rem;
+    }
+
+    .mentor-stat-label {
+        font-size: 0.7rem;
+    }
+}
+
+/* Grid Layout for Mentor Cards */
+.grid-3 {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 2rem;
+}
+
+@media (max-width: 1024px) {
+    .grid-3 {
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 1.5rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .grid-3 {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+}
+
+/* ============================================
+   MENTOR LIST ANIMATIONS
+   ============================================ */
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.mentor-card-premium {
+    animation: fadeInUp 0.5s ease-out forwards;
+}
+
+.mentor-card-premium:nth-child(1) { animation-delay: 0.05s; }
+.mentor-card-premium:nth-child(2) { animation-delay: 0.1s; }
+.mentor-card-premium:nth-child(3) { animation-delay: 0.15s; }
+.mentor-card-premium:nth-child(4) { animation-delay: 0.2s; }
+.mentor-card-premium:nth-child(5) { animation-delay: 0.25s; }
+.mentor-card-premium:nth-child(6) { animation-delay: 0.3s; }
+.mentor-card-premium:nth-child(n+7) { animation-delay: 0.35s; }
 
 /* ============================================
    PREMIUM AUTH PAGES

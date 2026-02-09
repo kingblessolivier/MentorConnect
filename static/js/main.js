@@ -12,6 +12,10 @@ document.addEventListener('DOMContentLoaded', function() {
     initAccessibility();
     initNotifications();
     initForms();
+
+    // Initialize mobile navbar enhancements
+    enhanceMobileNavbar();
+    enhanceMobileDropdowns();
 });
 
 /**
@@ -651,6 +655,88 @@ function initInfiniteScroll(containerSelector, loadMoreCallback) {
     });
 }
 
+/**
+ * Enhanced Mobile Navbar
+ */
+function enhanceMobileNavbar() {
+    const navbarToggle = document.getElementById('navbarToggle');
+    const navbarMenu = document.getElementById('navbarMenu');
+    const navItems = document.querySelectorAll('.nav-link');
+
+    if (!navbarToggle || !navbarMenu) return;
+
+    // Toggle menu
+    navbarToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        navbarMenu.classList.toggle('active');
+        navbarToggle.setAttribute('aria-expanded', navbarMenu.classList.contains('active'));
+    });
+
+    // Close menu when nav item clicked
+    navItems.forEach(item => {
+        item.addEventListener('click', () => {
+            navbarMenu.classList.remove('active');
+            navbarToggle.setAttribute('aria-expanded', 'false');
+        });
+    });
+
+    // Close menu when clicking outside
+    document.addEventListener('click', (e) => {
+        const isClickInsideMenu = navbarMenu.contains(e.target);
+        const isClickOnToggle = navbarToggle.contains(e.target);
+
+        if (!isClickInsideMenu && !isClickOnToggle && navbarMenu.classList.contains('active')) {
+            navbarMenu.classList.remove('active');
+            navbarToggle.setAttribute('aria-expanded', 'false');
+        }
+    });
+
+    // Handle escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && navbarMenu.classList.contains('active')) {
+            navbarMenu.classList.remove('active');
+            navbarToggle.setAttribute('aria-expanded', 'false');
+        }
+    });
+}
+
+/**
+ * Enhanced Mobile Dropdowns
+ */
+function enhanceMobileDropdowns() {
+    const dropdowns = document.querySelectorAll('.dropdown');
+
+    dropdowns.forEach(dropdown => {
+        const toggle = dropdown.querySelector('button');
+        const menu = dropdown.querySelector('.dropdown-menu');
+
+        if (!toggle || !menu) return;
+
+        // Prevent dropdown closing on mobile when clicking inside
+        menu.addEventListener('click', (e) => e.stopPropagation());
+
+        toggle.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const isActive = dropdown.classList.contains('active');
+
+            // Close all other dropdowns
+            dropdowns.forEach(d => {
+                if (d !== dropdown) d.classList.remove('active');
+            });
+
+            // Toggle current dropdown
+            dropdown.classList.toggle('active');
+        });
+    });
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', () => {
+        dropdowns.forEach(d => d.classList.remove('active'));
+    });
+}
+
 // Export for global use
 window.MentorConnect = {
     showToast,
@@ -663,3 +749,4 @@ window.MentorConnect = {
     speak,
     fetchAPI
 };
+

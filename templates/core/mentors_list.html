@@ -113,12 +113,18 @@
                     {% endif %}
 
                     <!-- Type Badges -->
-                    <div style="display: flex; justify-content: center; gap: 0.5rem; margin-bottom: 1rem;">
+                    <div class="mentor-type-badges">
                         {% if mentor.accepts_in_person %}
-                        <span style="padding: 0.25rem 0.625rem; background: #dcfce7; color: #16a34a; font-size: 0.6875rem; font-weight: 500; border-radius: 50px;">In-Person</span>
+                        <span class="mentor-type-badge in-person">
+                            <i data-feather="map-pin"></i>
+                            In-Person
+                        </span>
                         {% endif %}
                         {% if mentor.accepts_virtual %}
-                        <span style="padding: 0.25rem 0.625rem; background: #dbeafe; color: #2563eb; font-size: 0.6875rem; font-weight: 500; border-radius: 50px;">Virtual</span>
+                        <span class="mentor-type-badge virtual">
+                            <i data-feather="video"></i>
+                            Virtual
+                        </span>
                         {% endif %}
                     </div>
 

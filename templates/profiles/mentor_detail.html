@@ -4,1014 +4,1128 @@
 {% block title %}{{ profile.user.get_full_name }} - Mentor Profile{% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/premium.css' %}">
 <style>
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
+/* Mentor Profile Premium Styles */
+.mentor-profile-hero {
+    position: relative;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+    padding: 4rem 0;
+    min-height: 400px;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+}
 
-    :root {
-        --primary: #3b82f6;
-        --primary-light: #60a5fa;
-        --primary-dark: #1e40af;
-        --secondary: #8b5cf6;
-        --secondary-light: #a78bfa;
-        --success: #10b981;
-        --success-light: #34d399;
-        --warning: #f59e0b;
-        --dark-bg: #0f172a;
-        --dark-bg-2: #1e293b;
-        --gray-50: #f9fafb;
-        --gray-100: #f3f4f6;
-        --gray-200: #e2e8f0;
-        --gray-300: #cbd5e1;
-        --gray-400: #94a3b8;
-        --gray-500: #64748b;
-        --gray-600: #475569;
-        --gray-700: #334155;
-        --gray-900: #0f172a;
-        --white: #ffffff;
-    }
+.mentor-hero-bg {
+    position: absolute;
+    inset: 0;
+    background-image:
+        radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 50%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 50% 100%, rgba(16, 185, 129, 0.1) 0%, transparent 50%);
+}
 
-    body {
-        background: var(--gray-50);
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    }
+.mentor-hero-content {
+    position: relative;
+    z-index: 2;
+}
 
-    /* ========== HERO BANNER ========== */
-    .hero-banner {
-        background: linear-gradient(135deg, var(--dark-bg) 0%, var(--dark-bg-2) 100%);
-        color: var(--white);
-        padding: 3rem 2rem;
-        margin-bottom: 3rem;
-        position: relative;
-        overflow: hidden;
-    }
+.mentor-profile-card {
+    background: white;
+    border-radius: 24px;
+    padding: 3rem;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 2rem;
+    align-items: start;
+}
 
-    .hero-banner::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background:
-            radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
-            radial-gradient(circle at 80% 50%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
-            radial-gradient(circle at 50% 100%, rgba(16, 185, 129, 0.1) 0%, transparent 50%);
-        z-index: 0;
-    }
+.mentor-profile-avatar-container {
+    position: relative;
+}
 
-    .hero-content {
-        max-width: 1400px;
-        margin: 0 auto;
-        display: grid;
-        grid-template-columns: auto 1fr auto;
-        gap: 3rem;
-        align-items: start;
-        position: relative;
-        z-index: 1;
-    }
+.mentor-profile-avatar {
+    width: 160px;
+    height: 160px;
+    border-radius: 20px;
+    object-fit: cover;
+    border: 5px solid white;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+}
 
-    .mentor-avatar-large {
-        width: 160px;
-        height: 160px;
-        border-radius: 1.5rem;
-        border: 5px solid var(--white);
-        object-fit: cover;
-        box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-    }
+.mentor-profile-verified-badge {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 44px;
+    height: 44px;
+    background: linear-gradient(135deg, #10b981, #059669);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    border: 4px solid white;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
 
-    .hero-info h1 {
-        font-size: 2.5rem;
-        margin-bottom: 0.5rem;
-        font-weight: 800;
-        letter-spacing: -0.5px;
-    }
+.mentor-profile-name {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #1e293b;
+    margin: 0 0 0.5rem 0;
+}
 
-    .hero-subtitle {
-        font-size: 1.15rem;
-        font-weight: 500;
-        background: linear-gradient(135deg, var(--primary-light) 0%, var(--secondary-light) 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        margin-bottom: 1.5rem;
-        opacity: 0.95;
-    }
+.mentor-profile-title {
+    font-size: 1.25rem;
+    color: #64748b;
+    margin: 0 0 1.5rem 0;
+    font-weight: 600;
+}
 
-    .hero-meta {
-        display: flex;
-        flex-direction: column;
-        gap: 0.75rem;
-        font-size: 0.95rem;
-    }
+.mentor-profile-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
 
-    .hero-meta-item {
-        display: flex;
-        gap: 0.75rem;
-        align-items: center;
-        color: var(--gray-400);
-    }
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #64748b;
+    font-weight: 500;
+}
 
-    .hero-meta-item svg {
-        width: 18px;
-        height: 18px;
-        color: var(--primary-light);
-        flex-shrink: 0;
-    }
+.meta-item svg,
+.meta-item i {
+    width: 18px;
+    height: 18px;
+    color: #3b82f6;
+}
 
-    .rating-card {
-        background: var(--white);
-        color: var(--gray-900);
-        padding: 2rem;
-        border-radius: 1.5rem;
-        text-align: center;
-        min-width: 160px;
-        box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-        border: 1px solid var(--gray-200);
-    }
+.mentor-profile-rating {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 0;
+    border-top: 1px solid #e2e8f0;
+}
 
-    .rating-number {
-        font-size: 3rem;
-        font-weight: 800;
-        background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        line-height: 1;
-    }
+.rating-stars {
+    font-size: 1.5rem;
+    color: #f59e0b;
+    letter-spacing: 4px;
+}
 
-    .rating-stars {
-        color: var(--warning);
-        font-size: 1.1rem;
-        margin: 0.5rem 0;
-        letter-spacing: 3px;
-    }
+.star-full {
+    color: #f59e0b;
+}
 
-    .rating-reviews {
-        font-size: 0.85rem;
-        color: var(--gray-500);
-        font-weight: 600;
-    }
+.star-empty {
+    color: #e5e7eb;
+}
 
-    /* ========== MAIN CONTAINER ========== */
-    .main-wrapper {
-        max-width: 1400px;
-        margin: 0 auto;
-        padding: 0 2rem 3rem;
-        display: grid;
-        grid-template-columns: 1fr 350px;
-        gap: 3rem;
-    }
+.rating-value {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #1e293b;
+}
 
-    /* ========== CARD STYLES ========== */
-    .card {
-        background: var(--white);
-        border-radius: 1.25rem;
-        padding: 2rem;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-        margin-bottom: 2rem;
-        border: 1px solid var(--gray-200);
-        transition: all 0.3s ease;
-    }
+.rating-count {
+    font-size: 0.875rem;
+    color: #94a3b8;
+}
 
-    .card:hover {
-        box-shadow: 0 10px 30px rgba(0,0,0,0.12);
-        border-color: var(--primary-light);
-    }
+.mentor-profile-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
 
-    .card-header {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        margin-bottom: 1.5rem;
-        padding-bottom: 1.5rem;
-        border-bottom: 2px solid var(--gray-200);
-    }
+.btn-action {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.875rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    white-space: nowrap;
+}
 
-    .card-header svg {
-        width: 26px;
-        height: 26px;
-        color: var(--primary);
-        flex-shrink: 0;
-    }
+.btn-action.primary {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+}
 
-    .card-header h2 {
-        font-size: 1.35rem;
-        font-weight: 700;
-        color: var(--gray-900);
-        margin: 0;
-    }
+.btn-action.primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+}
 
-    /* ========== CONTENT SECTIONS ========== */
-    .section-text {
-        color: var(--gray-700);
-        line-height: 1.8;
-        font-size: 0.95rem;
-    }
+.btn-action.secondary {
+    background: #f1f5f9;
+    color: #1e293b;
+    border: 1px solid #e2e8f0;
+}
 
-    .tags-container {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.75rem;
-    }
+.btn-action.secondary:hover {
+    background: #e2e8f0;
+    color: #3b82f6;
+}
 
-    .tag {
-        display: inline-block;
-        background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
-        color: var(--primary);
-        padding: 0.6rem 1.2rem;
-        border-radius: 0.75rem;
-        font-size: 0.9rem;
-        font-weight: 600;
-        border: 1px solid var(--primary);
-        transition: all 0.3s ease;
-    }
+.btn-action.following {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+}
 
-    .tag:hover {
-        background: linear-gradient(135deg, var(--primary), var(--secondary));
-        color: var(--white);
-        border-color: transparent;
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
-    }
+.btn-action.disabled {
+    background: #f1f5f9;
+    color: #64748b;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
 
-    /* ========== STATS GRID ========== */
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+.btn-action svg,
+.btn-action i {
+    width: 18px;
+    height: 18px;
+}
+
+/* Main Content */
+.mentor-profile-content {
+    background: #f8fafc;
+    padding: 4rem 0;
+    min-height: calc(100vh - 600px);
+}
+
+.mentor-content-grid {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 2rem;
+}
+
+.mentor-main-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.mentor-content-card {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.mentor-content-card:hover {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    border-color: rgba(59, 130, 246, 0.2);
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #f1f5f9;
+}
+
+.card-header svg,
+.card-header i {
+    width: 24px;
+    height: 24px;
+    color: #3b82f6;
+}
+
+.card-header h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+}
+
+.card-body {
+    margin: 0;
+}
+
+.section-text {
+    color: #475569;
+    line-height: 1.8;
+    font-size: 1rem;
+}
+
+/* Stats Grid */
+.mentor-stats-section {
+    margin: 0;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+}
+
+.stat-box {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-start;
+    transition: all 0.3s ease;
+}
+
+.stat-box:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+}
+
+.stat-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    flex-shrink: 0;
+}
+
+.stat-icon svg,
+.stat-icon i {
+    width: 28px;
+    height: 28px;
+}
+
+.stat-info {
+    flex: 1;
+}
+
+.stat-label {
+    font-size: 0.875rem;
+    color: #64748b;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.25rem;
+}
+
+.stat-value {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: #1e293b;
+}
+
+/* Skills */
+.skills-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.skill-tag {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background: linear-gradient(135deg, #f0f4ff, #f5f3ff);
+    color: #6366f1;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    transition: all 0.2s ease;
+}
+
+.skill-tag:hover {
+    background: linear-gradient(135deg, #e0e7ff, #ede9fe);
+    border-color: rgba(99, 102, 241, 0.4);
+    transform: translateY(-2px);
+}
+
+.expertise-item {
+    margin-bottom: 1rem;
+}
+
+.expertise-label {
+    font-size: 0.875rem;
+    color: #64748b;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.expertise-value {
+    font-size: 1rem;
+    color: #1e293b;
+    margin-top: 0.25rem;
+}
+
+/* Details */
+.details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.detail-label {
+    font-size: 0.875rem;
+    color: #64748b;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.detail-value {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+/* Education */
+.education-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.education-item {
+    display: flex;
+    gap: 1rem;
+}
+
+.education-icon {
+    width: 24px;
+    height: 24px;
+    color: #10b981;
+    flex-shrink: 0;
+    margin-top: 0.25rem;
+}
+
+.education-title {
+    font-size: 0.875rem;
+    color: #64748b;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.education-detail {
+    font-size: 1rem;
+    color: #1e293b;
+    font-weight: 600;
+    margin-top: 0.25rem;
+}
+
+/* Reviews */
+.reviews-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.review-item-card {
+    padding: 1.5rem;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(139, 92, 246, 0.05));
+    border-radius: 12px;
+    border: 1px solid rgba(59, 130, 246, 0.1);
+    border-left: 4px solid #3b82f6;
+    transition: all 0.3s ease;
+}
+
+.review-item-card:hover {
+    border-color: #3b82f6;
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.1);
+}
+
+.review-header {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.review-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.review-author {
+    flex: 1;
+}
+
+.review-name {
+    font-weight: 700;
+    color: #1e293b;
+    font-size: 0.95rem;
+}
+
+.review-date {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    margin-top: 0.2rem;
+}
+
+.review-rating-stars {
+    color: #f59e0b;
+    font-size: 1rem;
+    white-space: nowrap;
+}
+
+.review-comment {
+    color: #475569;
+    line-height: 1.6;
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+/* Sidebar */
+.mentor-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.sidebar-card {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.sidebar-card:hover {
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    border-color: rgba(59, 130, 246, 0.2);
+}
+
+.sidebar-card.premium-card {
+    background: linear-gradient(135deg, #f8fafc, #f0f4ff);
+    border: 2px solid rgba(59, 130, 246, 0.2);
+}
+
+.sidebar-title {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 1rem 0;
+}
+
+.contact-methods {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.contact-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: white;
+    border-radius: 10px;
+    text-decoration: none;
+    color: #64748b;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    transition: all 0.2s ease;
+    border: 1px solid #e2e8f0;
+}
+
+.contact-link:hover {
+    background: #f1f5f9;
+    color: #3b82f6;
+    border-color: #3b82f6;
+    transform: translateX(4px);
+}
+
+.contact-link svg,
+.contact-link i {
+    width: 18px;
+    height: 18px;
+}
+
+.availability-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.availability-item {
+    padding: 0.75rem;
+    background: #f8fafc;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.day-name {
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 0.9375rem;
+}
+
+.time-range {
+    color: #64748b;
+    font-size: 0.8125rem;
+}
+
+.session-types {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.session-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.9375rem;
+}
+
+.session-badge.in-person {
+    background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+    color: #15803d;
+    border: 1px solid #86efac;
+}
+
+.session-badge.virtual {
+    background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+    color: #1e40af;
+    border: 1px solid #93c5fd;
+}
+
+.session-badge svg,
+.session-badge i {
+    width: 18px;
+    height: 18px;
+}
+
+.stats-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.stat-row:last-child {
+    border-bottom: none;
+}
+
+.stat-name {
+    color: #64748b;
+    font-weight: 500;
+    font-size: 0.9375rem;
+}
+
+.stat-num {
+    font-weight: 800;
+    color: #1e293b;
+    font-size: 1.25rem;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .mentor-profile-card {
+        grid-template-columns: 1fr;
         gap: 1.5rem;
     }
 
-    .stat-item {
-        background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(139, 92, 246, 0.05));
-        padding: 1.5rem;
-        border-radius: 1rem;
-        text-align: center;
-        border: 1px solid var(--gray-200);
-        transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .stat-item::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(135deg, var(--primary-light), var(--secondary-light));
-        opacity: 0;
-        transition: opacity 0.3s;
-    }
-
-    .stat-item:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 12px 30px rgba(59, 130, 246, 0.2);
-        border-color: var(--primary);
-    }
-
-    .stat-item:hover::before {
-        opacity: 0.1;
-    }
-
-    .stat-number {
-        font-size: 2.2rem;
-        font-weight: 800;
-        background: linear-gradient(135deg, var(--primary), var(--secondary));
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        position: relative;
-        z-index: 1;
-        line-height: 1;
-    }
-
-    .stat-label {
-        font-size: 0.8rem;
-        color: var(--gray-500);
-        font-weight: 700;
-        text-transform: uppercase;
-        margin-top: 0.5rem;
-        letter-spacing: 0.5px;
-        position: relative;
-        z-index: 1;
-    }
-
-    /* ========== INFO LIST ========== */
-    .info-list {
-        list-style: none;
-        padding: 0;
-    }
-
-    .info-item {
-        display: flex;
-        gap: 1rem;
-        padding: 1.25rem 0;
-        border-bottom: 1px solid var(--gray-200);
-        align-items: flex-start;
-    }
-
-    .info-item:last-child {
-        border-bottom: none;
-    }
-
-    .info-icon {
-        width: 22px;
-        height: 22px;
-        color: var(--primary);
-        flex-shrink: 0;
-        margin-top: 0.25rem;
-    }
-
-    .info-content {
-        flex: 1;
-    }
-
-    .info-label {
-        font-size: 0.8rem;
-        font-weight: 700;
-        color: var(--gray-500);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 0.3rem;
-    }
-
-    .info-value {
-        font-size: 1rem;
-        color: var(--gray-900);
-        font-weight: 500;
-    }
-
-    /* ========== REVIEW ITEMS ========== */
-    .review-item {
-        padding: 1.5rem;
-        background: linear-gradient(135deg, rgba(96, 165, 250, 0.05), rgba(167, 139, 250, 0.05));
-        border-radius: 1rem;
-        margin-bottom: 1.25rem;
-        border: 1px solid rgba(59, 130, 246, 0.2);
-        border-left: 4px solid var(--primary);
-    }
-
-    .review-header {
-        display: flex;
-        gap: 1rem;
-        margin-bottom: 1rem;
-        align-items: flex-start;
-    }
-
-    .review-avatar {
-        width: 48px;
-        height: 48px;
-        border-radius: 50%;
-        object-fit: cover;
-        border: 3px solid var(--white);
-        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    }
-
-    .review-author-info {
-        flex: 1;
-    }
-
-    .review-author-name {
-        font-weight: 700;
-        color: var(--gray-900);
-        font-size: 0.95rem;
-    }
-
-    .review-author-date {
-        font-size: 0.8rem;
-        color: var(--gray-500);
-        margin-top: 0.2rem;
-    }
-
-    .review-rating {
-        color: var(--warning);
-        font-size: 0.9rem;
-        white-space: nowrap;
-    }
-
-    .review-text {
-        color: var(--gray-700);
-        font-size: 0.95rem;
-        line-height: 1.6;
-    }
-
-    /* ========== POST ITEMS ========== */
-    .post-item {
-        padding: 1.5rem;
-        background: linear-gradient(135deg, rgba(245, 158, 11, 0.05), rgba(251, 146, 60, 0.05));
-        border-radius: 1rem;
-        margin-bottom: 1.25rem;
-        border: 1px solid rgba(245, 158, 11, 0.2);
-        border-left: 4px solid var(--warning);
-        transition: all 0.3s ease;
-    }
-
-    .post-item:hover {
-        transform: translateX(4px);
-        box-shadow: 0 8px 20px rgba(245, 158, 11, 0.15);
-        border-color: var(--warning);
-    }
-
-    .post-title {
-        font-weight: 700;
-        color: var(--gray-900);
-        margin-bottom: 0.75rem;
-        font-size: 1rem;
-    }
-
-    .post-excerpt {
-        color: var(--gray-600);
-        font-size: 0.9rem;
-        margin-bottom: 0.75rem;
-        line-height: 1.5;
-    }
-
-    .post-date {
-        font-size: 0.8rem;
-        color: var(--gray-500);
-    }
-
-    /* ========== SIDEBAR ========== */
-    .sidebar {
-        display: flex;
-        flex-direction: column;
-        gap: 2rem;
-    }
-
-    .sidebar-card {
-        background: var(--white);
-        border-radius: 1.25rem;
-        padding: 1.75rem;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-        border: 1px solid var(--gray-200);
-        transition: all 0.3s ease;
-    }
-
-    .sidebar-card:hover {
-        box-shadow: 0 8px 20px rgba(0,0,0,0.12);
-        border-color: var(--primary-light);
-    }
-
-    .sidebar-title {
-        font-size: 1.1rem;
-        font-weight: 700;
-        color: var(--gray-900);
-        margin-bottom: 1.25rem;
-    }
-
-    /* ========== BUTTONS ========== */
-    .btn {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.75rem;
-        padding: 0.95rem 1.5rem;
-        border: none;
-        border-radius: 0.75rem;
-        font-weight: 600;
-        font-size: 0.95rem;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        text-decoration: none;
-        width: 100%;
-        margin-bottom: 0.75rem;
-        text-align: center;
-    }
-
-    .btn-primary {
-        background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-        color: var(--white);
-        box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
-    }
-
-    .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
-    }
-
-    .btn-secondary {
-        background: var(--gray-100);
-        color: var(--gray-700);
-        border: 2px solid var(--gray-300);
-    }
-
-    .btn-secondary:hover {
-        background: var(--gray-200);
-        border-color: var(--primary);
-        color: var(--primary);
-    }
-
-    .btn-disabled {
-        background: var(--gray-200);
-        color: var(--gray-500);
-        cursor: not-allowed;
-        opacity: 0.6;
-        pointer-events: none;
-    }
-
-    /* ========== SOCIAL LINKS ========== */
-    .social-links {
-        display: flex;
-        gap: 0.75rem;
+    .mentor-profile-actions {
+        flex-direction: row;
         flex-wrap: wrap;
     }
 
-    .social-btn {
-        width: 44px;
-        height: 44px;
-        border-radius: 0.75rem;
-        background: var(--gray-100);
-        border: 1px solid var(--gray-300);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: var(--primary);
-        cursor: pointer;
-        transition: all 0.3s ease;
-        text-decoration: none;
+    .btn-action {
+        flex: 1;
+        min-width: 150px;
     }
 
-    .social-btn:hover {
-        background: linear-gradient(135deg, var(--primary), var(--secondary));
-        color: var(--white);
-        border-color: transparent;
-        transform: translateY(-3px);
-        box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+    .mentor-content-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .mentor-profile-hero {
+        padding: 2rem 0;
     }
 
-    .social-btn svg {
-        width: 20px;
-        height: 20px;
+    .mentor-profile-card {
+        padding: 1.5rem;
     }
 
-    /* ========== RESPONSIVE ========== */
-    @media (max-width: 1024px) {
-        .main-wrapper {
-            grid-template-columns: 1fr;
-        }
-
-        .hero-content {
-            grid-template-columns: 1fr;
-            gap: 1.5rem;
-        }
+    .mentor-profile-avatar {
+        width: 120px;
+        height: 120px;
     }
 
-    @media (max-width: 768px) {
-        .hero-banner {
-            padding: 2rem 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .main-wrapper {
-            padding: 0 1.5rem 2rem;
-            gap: 1.5rem;
-        }
-
-        .hero-content {
-            grid-template-columns: auto 1fr;
-            align-items: center;
-        }
-
-        .mentor-avatar-large {
-            width: 120px;
-            height: 120px;
-        }
-
-        .hero-info h1 {
-            font-size: 1.5rem;
-        }
-
-        .hero-subtitle {
-            font-size: 1rem;
-        }
-
-        .rating-card {
-            justify-self: center;
-            min-width: 140px;
-            padding: 2rem 1.5rem;
-        }
-
-        .rating-number {
-            font-size: 2.5rem;
-        }
-
-        .stats-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-
-        .card {
-            padding: 1.5rem;
-        }
+    .mentor-profile-name {
+        font-size: 1.75rem;
     }
 
-    @media (max-width: 480px) {
-        .hero-banner {
-            padding: 1.5rem 1rem;
-        }
-
-        .hero-content {
-            grid-template-columns: 1fr;
-            text-align: center;
-            gap: 1rem;
-        }
-
-        .mentor-avatar-large {
-            width: 100px;
-            height: 100px;
-            margin: 0 auto;
-        }
-
-        .hero-info h1 {
-            font-size: 1.5rem;
-        }
-
-        .hero-subtitle {
-            font-size: 0.95rem;
-        }
-
-        .hero-meta {
-            align-items: center;
-        }
-
-        .hero-meta-item {
-            justify-content: center;
-        }
-
-        .rating-card {
-            grid-column: 1;
-            padding: 1.5rem 1rem;
-            margin-top: 1rem;
-        }
-
-        .rating-number {
-            font-size: 2rem;
-        }
-
-        .rating-stars {
-            font-size: 1rem;
-            letter-spacing: 2px;
-        }
-
-        .main-wrapper {
-            padding: 0 1rem 1.5rem;
-        }
-
-        .stats-grid {
-            grid-template-columns: 1fr;
-        }
+    .stats-grid {
+        grid-template-columns: 1fr;
     }
+}
 </style>
 {% endblock %}
 
 {% block content %}
 
-<!-- HERO SECTION -->
-<section class="hero-banner">
-    <div class="hero-content">
-        <!-- Avatar -->
-        <div>
-            <img src="{% if profile.user.avatar %}{{ profile.user.avatar.url }}{% else %}{% static 'images/default-avatar.svg' %}{% endif %}" alt="{{ profile.user.get_full_name }}" class="mentor-avatar-large">
-        </div>
+<!-- PREMIUM HERO BANNER -->
+<section class="mentor-profile-hero">
+    <div class="mentor-hero-bg"></div>
 
-        <!-- Info -->
-        <div class="hero-info">
-            <h1>{{ profile.user.get_full_name }}</h1>
-            <p class="hero-subtitle">{{ profile.headline|default:profile.expertise }}</p>
-            <div class="hero-meta">
-                {% if profile.company and profile.job_title %}
-                <div class="hero-meta-item">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.256V20a1 1 0 01-1 1H4a1 1 0 01-1-1v-6.744m17-5V3a1 1 0 00-1-1H4a1 1 0 00-1 1v8.256" />
-                    </svg>
-                    <span>{{ profile.job_title }} at {{ profile.company }}</span>
+    <div class="container">
+        <div class="mentor-hero-content">
+            <!-- Mentor Card -->
+            <div class="mentor-profile-card">
+                <!-- Avatar -->
+                <div class="mentor-profile-avatar-container">
+                    <img src="{% if profile.user.avatar %}{{ profile.user.avatar.url }}{% else %}{% static 'images/default-avatar.png' %}{% endif %}" alt="{{ profile.user.get_full_name }}" class="mentor-profile-avatar">
+                    {% if profile.is_verified %}
+                    <div class="mentor-profile-verified-badge">
+                        <i data-feather="check"></i>
+                    </div>
+                    {% endif %}
                 </div>
-                {% endif %}
-                {% if profile.experience_years %}
-                <div class="hero-meta-item">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span>{{ profile.experience_years }} years of experience</span>
+
+                <!-- Basic Info -->
+                <div class="mentor-profile-info">
+                    <h1 class="mentor-profile-name">{{ profile.user.get_full_name }}</h1>
+                    <p class="mentor-profile-title">{{ profile.job_title }}{% if profile.company %} at {{ profile.company }}{% endif %}</p>
+
+                    <!-- Meta Information -->
+                    <div class="mentor-profile-meta">
+                        {% if profile.city %}
+                        <div class="meta-item">
+                            <i data-feather="map-pin"></i>
+                            {{ profile.city }}{% if profile.country %}, {{ profile.country }}{% endif %}
+                        </div>
+                        {% endif %}
+
+                        {% if profile.experience_years %}
+                        <div class="meta-item">
+                            <i data-feather="briefcase"></i>
+                            {{ profile.experience_years }} years
+                        </div>
+                        {% endif %}
+
+                        <div class="meta-item">
+                            <i data-feather="heart"></i>
+                            {{ followers_count }} followers
+                        </div>
+                    </div>
+
+                    <!-- Rating Display -->
+                    <div class="mentor-profile-rating">
+                        <div class="rating-stars">
+                            {% for i in "12345" %}
+                            {% if forloop.counter <= profile.rating %}
+                            <span class="star-full">★</span>
+                            {% else %}
+                            <span class="star-empty">☆</span>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                        <span class="rating-value">{{ profile.rating|floatformat:1 }}</span>
+                        <span class="rating-count">({{ total_reviews }} reviews)</span>
+                    </div>
                 </div>
-                {% endif %}
-                {% if profile.city %}
-                <div class="hero-meta-item">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    </svg>
-                    <span>{{ profile.city }}{% if profile.country %}, {{ profile.country }}{% endif %}</span>
+
+                <!-- Action Buttons -->
+                <div class="mentor-profile-actions">
+                    {% if user.is_authenticated and user != profile.user %}
+                        {% if is_following %}
+                        <a href="{% url 'profiles:unfollow' profile.user.id %}" class="btn-action following">
+                            <i data-feather="check"></i>
+                            Following
+                        </a>
+                        {% else %}
+                        <a href="{% url 'profiles:follow' profile.user.id %}" class="btn-action">
+                            <i data-feather="plus"></i>
+                            Follow
+                        </a>
+                        {% endif %}
+
+                        <a href="{% url 'chat:start' profile.user.id %}" class="btn-action secondary">
+                            <i data-feather="message-circle"></i>
+                            Message
+                        </a>
+
+                        {% if has_approved_request %}
+                        <button class="btn-action disabled">
+                            <i data-feather="check"></i>
+                            Mentoring Active
+                        </button>
+                        {% elif has_pending_request %}
+                        <button class="btn-action disabled">
+                            <i data-feather="clock"></i>
+                            Request Pending
+                        </button>
+                        {% else %}
+                        <a href="{% url 'mentorship:create_request' profile.user.id %}" class="btn-action primary">
+                            <i data-feather="star"></i>
+                            Request Mentorship
+                        </a>
+                        {% endif %}
+                    {% else %}
+                        <a href="{% url 'accounts:login' %}?next={{ request.path }}" class="btn-action primary">
+                            <i data-feather="log-in"></i>
+                            Sign In to Connect
+                        </a>
+                    {% endif %}
                 </div>
-                {% endif %}
             </div>
-        </div>
-
-        <!-- Rating Card -->
-        <div class="rating-card">
-            <div class="rating-number">{{ profile.rating|floatformat:1 }}</div>
-            <div class="rating-stars">★★★★★</div>
-            <div class="rating-reviews">{{ total_reviews }} reviews</div>
         </div>
     </div>
 </section>
 
-<!-- MAIN CONTENT -->
-<div class="main-wrapper">
-    <main>
-        <!-- ABOUT SECTION -->
-        {% if profile.bio %}
-        <div class="card">
-            <div class="card-header">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <h2>About</h2>
-            </div>
-            <p class="section-text">{{ profile.bio|linebreaks }}</p>
-        </div>
-        {% endif %}
+<!-- MAIN CONTENT AREA -->
+<section class="mentor-profile-content">
+    <div class="container">
+        <div class="mentor-content-grid">
+            <!-- Main Content Column -->
+            <main class="mentor-main-content">
 
-        <!-- EXPERTISE & SKILLS -->
-        {% if profile.expertise or profile.skills %}
-        <div class="card">
-            <div class="card-header">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5.36 4.24l-.707.707M5.05 6.05l.707-.707" />
-                </svg>
-                <h2>Expertise & Skills</h2>
-            </div>
-            {% if profile.expertise %}
-            <div style="margin-bottom: 1.5rem;">
-                <div class="info-label">Primary Expertise</div>
-                <div style="color: var(--gray-900); font-weight: 600; font-size: 1rem;">{{ profile.expertise }}</div>
-            </div>
-            {% endif %}
-            {% if profile.skills %}
-            <div class="tags-container">
-                {% for skill in profile.get_skills_list %}
-                <span class="tag">{{ skill }}</span>
-                {% endfor %}
-            </div>
-            {% endif %}
-        </div>
-        {% endif %}
-
-        <!-- KEY STATISTICS -->
-        <div class="card">
-            <div class="card-header">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-                <h2>Key Statistics</h2>
-            </div>
-            <div class="stats-grid">
-                <div class="stat-item">
-                    <div class="stat-number">{{ profile.experience_years|default:0 }}</div>
-                    <div class="stat-label">Years Experience</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number">{{ total_reviews|default:0 }}</div>
-                    <div class="stat-label">Reviews</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number">{{ completed_mentorships|default:0 }}</div>
-                    <div class="stat-label">Completed</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number">{{ active_mentees|default:0 }}</div>
-                    <div class="stat-label">Active Mentees</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- EDUCATION -->
-        {% if profile.diploma or profile.educational_institution %}
-        <div class="card">
-            <div class="card-header">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C6.228 6.228 2 10.428 2 15.5c0 5.072 4.228 9.272 10 9.272s10-4.2 10-9.272c0-5.072-4.228-9.247-10-9.247z" />
-                </svg>
-                <h2>Education</h2>
-            </div>
-            <ul class="info-list">
-                {% if profile.diploma %}
-                <li class="info-item">
-                    <svg class="info-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <div class="info-content">
-                        <div class="info-label">Degree</div>
-                        <div class="info-value">{{ profile.diploma }}</div>
+                <!-- ABOUT SECTION -->
+                {% if profile.bio %}
+                <div class="mentor-content-card">
+                    <div class="card-header">
+                        <i data-feather="info"></i>
+                        <h2>About</h2>
                     </div>
-                </li>
-                {% endif %}
-                {% if profile.educational_institution %}
-                <li class="info-item">
-                    <svg class="info-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C6.228 6.228 2 10.428 2 15.5c0 5.072 4.228 9.272 10 9.272s10-4.2 10-9.272c0-5.072-4.228-9.247-10-9.247z" />
-                    </svg>
-                    <div class="info-content">
-                        <div class="info-label">Institution</div>
-                        <div class="info-value">{{ profile.educational_institution }}</div>
-                    </div>
-                </li>
-                {% endif %}
-            </ul>
-        </div>
-        {% endif %}
-
-        <!-- MENTORSHIP DETAILS -->
-        <div class="card">
-            <div class="card-header">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
-                </svg>
-                <h2>Mentorship Details</h2>
-            </div>
-            <ul class="info-list">
-                <li class="info-item">
-                    <svg class="info-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 01118 0z" />
-                    </svg>
-                    <div class="info-content">
-                        <div class="info-label">Session Duration</div>
-                        <div class="info-value">{{ profile.session_duration }} minutes</div>
-                    </div>
-                </li>
-                {% if profile.min_internship_days %}
-                <li class="info-item">
-                    <svg class="info-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    <div class="info-content">
-                        <div class="info-label">Observation Days</div>
-                        <div class="info-value">{{ profile.min_internship_days }} - {{ profile.max_internship_days }} days</div>
-                    </div>
-                </li>
-                {% endif %}
-                <li class="info-item">
-                    <svg class="info-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <div class="info-content">
-                        <div class="info-label">Hourly Rate</div>
-                        <div class="info-value">{% if profile.hourly_rate > 0 %}${{ profile.hourly_rate }}/hour{% else %}Free Mentoring{% endif %}</div>
-                    </div>
-                </li>
-            </ul>
-        </div>
-
-        <!-- SESSION TYPES -->
-        {% if profile.accepts_in_person or profile.accepts_virtual %}
-        <div class="card">
-            <div class="card-header">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                </svg>
-                <h2>Session Types</h2>
-            </div>
-            <div class="tags-container">
-                {% if profile.accepts_in_person %}<span class="tag">📍 In-Person Shadowing</span>{% endif %}
-                {% if profile.accepts_virtual %}<span class="tag">💻 Virtual Sessions</span>{% endif %}
-            </div>
-        </div>
-        {% endif %}
-
-        <!-- REVIEWS -->
-        {% if recent_reviews %}
-        <div class="card">
-            <div class="card-header">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-                </svg>
-                <h2>Student Reviews</h2>
-            </div>
-            {% for review in recent_reviews %}
-            <div class="review-item">
-                <div class="review-header">
-                    <img src="{% if review.student.avatar %}{{ review.student.avatar.url }}{% else %}{% static 'images/default-avatar.svg' %}{% endif %}" alt="{{ review.student.get_full_name }}" class="review-avatar">
-                    <div class="review-author-info">
-                        <div class="review-author-name">{{ review.student.get_full_name }}</div>
-                        <div class="review-author-date">{{ review.created_at|date:"M d, Y" }}</div>
-                    </div>
-                    <div class="review-rating">
-                        {% for i in "12345" %}{% if forloop.counter <= review.rating %}★{% else %}☆{% endif %}{% endfor %}
+                    <div class="card-body">
+                        <p class="section-text">{{ profile.bio|linebreaks }}</p>
                     </div>
                 </div>
-                <p class="review-text">{{ review.comment }}</p>
-            </div>
-            {% endfor %}
-        </div>
-        {% endif %}
-
-        <!-- POSTS -->
-        {% if mentor_posts %}
-        <div class="card">
-            <div class="card-header">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v10a2 2 0 002 2a2 2 0 002-2V6a4 4 0 00-4-4H5a4 4 0 00-4 4v12a4 4 0 004 4h14a4 4 0 004-4z" />
-                </svg>
-                <h2>Latest Posts</h2>
-            </div>
-            {% for post in mentor_posts %}
-            <div class="post-item">
-                <div class="post-title">{{ post.title }}</div>
-                <div class="post-excerpt">{{ post.content|truncatewords:20 }}</div>
-                <div class="post-date">{{ post.created_at|date:"M d, Y" }}</div>
-            </div>
-            {% endfor %}
-        </div>
-        {% endif %}
-
-    </main>
-
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
-
-        <!-- ACTION BUTTONS -->
-        <div class="sidebar-card">
-            {% if user.is_authenticated and user != profile.user %}
-                {% if is_following %}
-                <a href="{% url 'profiles:unfollow' profile.user.id %}" class="btn btn-secondary">✓ Following</a>
-                {% else %}
-                <a href="{% url 'profiles:follow' profile.user.id %}" class="btn btn-secondary">+ Follow</a>
                 {% endif %}
 
-                {% if has_approved_request %}
-                <button class="btn btn-disabled" disabled>✓ Active Mentorship</button>
-                {% elif has_pending_request %}
-                <button class="btn btn-disabled" disabled>⏳ Request Pending</button>
-                {% else %}
-                <a href="{% url 'mentorship:create_request' profile.user.id %}" class="btn btn-primary">📋 Request Now</a>
-                {% endif %}
+                <!-- KEY STATS GRID -->
+                <div class="mentor-stats-section">
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div class="stat-icon" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">
+                                <i data-feather="briefcase"></i>
+                            </div>
+                            <div class="stat-info">
+                                <div class="stat-label">Experience</div>
+                                <div class="stat-value">{{ profile.experience_years|default:0 }} Years</div>
+                            </div>
+                        </div>
 
-                <a href="{% url 'chat:start' profile.user.id %}" class="btn btn-secondary">💬 Message</a>
-            {% else %}
-                <a href="{% url 'accounts:login' %}?next={{ request.path }}" class="btn btn-primary">🔐 Sign In</a>
-            {% endif %}
-        </div>
+                        <div class="stat-box">
+                            <div class="stat-icon" style="background: linear-gradient(135deg, #10b981, #059669);">
+                                <i data-feather="users"></i>
+                            </div>
+                            <div class="stat-info">
+                                <div class="stat-label">Active Mentees</div>
+                                <div class="stat-value">{{ active_mentees|default:0 }}</div>
+                            </div>
+                        </div>
 
-        <!-- QUICK INFO -->
-        <div class="sidebar-card">
-            <div class="sidebar-title">Quick Info</div>
-            <ul class="info-list">
-                <li class="info-item">
-                    <svg class="info-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <div class="info-content">
-                        <div class="info-label">Expertise</div>
-                        <div class="info-value">{{ profile.expertise }}</div>
+                        <div class="stat-box">
+                            <div class="stat-icon" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
+                                <i data-feather="check-circle"></i>
+                            </div>
+                            <div class="stat-info">
+                                <div class="stat-label">Completed</div>
+                                <div class="stat-value">{{ completed_mentorships|default:0 }}</div>
+                            </div>
+                        </div>
+
+                        <div class="stat-box">
+                            <div class="stat-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                                <i data-feather="star"></i>
+                            </div>
+                            <div class="stat-info">
+                                <div class="stat-label">Reviews</div>
+                                <div class="stat-value">{{ total_reviews|default:0 }}</div>
+                            </div>
+                        </div>
                     </div>
-                </li>
-                <li class="info-item">
-                    <svg class="info-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.856-1.487M15 10h.01M11 10h.01M7 10h.01M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    <div class="info-content">
-                        <div class="info-label">Mentees</div>
-                        <div class="info-value">{{ active_mentees|default:0 }} Active</div>
-                    </div>
-                </li>
-                <li class="info-item">
-                    <svg class="info-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-2a6 6 0 0112 0v2zm0 0h6v-2a6 6 0 00-9-5.697M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <div class="info-content">
-                        <div class="info-label">Followers</div>
-                        <div class="info-value">{{ followers_count|default:0 }}</div>
-                    </div>
-                </li>
-            </ul>
-        </div>
+                </div>
 
-        <!-- SOCIAL LINKS -->
-        {% if profile.linkedin_url or profile.twitter_url or profile.website_url or profile.github_url %}
-        <div class="sidebar-card">
-            <div class="sidebar-title">Connect</div>
-            <div class="social-links">
-                {% if profile.linkedin_url %}
-                <a href="{{ profile.linkedin_url }}" target="_blank" rel="noopener noreferrer" class="social-btn" title="LinkedIn">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
-                </a>
-                {% endif %}
-                {% if profile.twitter_url %}
-                <a href="{{ profile.twitter_url }}" target="_blank" rel="noopener noreferrer" class="social-btn" title="Twitter">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2s9 5 20 5a9.5 9.5 0 00-9-5.5c4.75-2.35 6-7 6-7-2.72 2-5.66 2.46-9 1.24.79-1.31 4-4 9-4-1 .5-2 1.5-2 1.5z"/></svg>
-                </a>
-                {% endif %}
-                {% if profile.website_url %}
-                <a href="{{ profile.website_url }}" target="_blank" rel="noopener noreferrer" class="social-btn" title="Website">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
-                </a>
-                {% endif %}
-                {% if profile.github_url %}
-                <a href="{{ profile.github_url }}" target="_blank" rel="noopener noreferrer" class="social-btn" title="GitHub">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
-                </a>
-                {% endif %}
-            </div>
-        </div>
-        {% endif %}
+                <!-- EXPERTISE & SKILLS -->
+                {% if profile.expertise or profile.skills %}
+                <div class="mentor-content-card">
+                    <div class="card-header">
+                        <i data-feather="zap"></i>
+                        <h2>Expertise & Skills</h2>
+                    </div>
+                    <div class="card-body">
+                        {% if profile.expertise %}
+                        <div class="expertise-item">
+                            <span class="expertise-label">Primary Expertise</span>
+                            <p class="expertise-value">{{ profile.expertise }}</p>
+                        </div>
+                        {% endif %}
 
-    </aside>
-</div>
+                        {% if profile.skills %}
+                        <div class="skills-container">
+                            {% for skill in profile.get_skills_list %}
+                            <span class="skill-tag">{{ skill }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- MENTORSHIP DETAILS -->
+                <div class="mentor-content-card">
+                    <div class="card-header">
+                        <i data-feather="book-open"></i>
+                        <h2>Mentorship Details</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="details-grid">
+                            <div class="detail-item">
+                                <span class="detail-label">Session Duration</span>
+                                <span class="detail-value">{{ profile.session_duration|default:60 }} minutes</span>
+                            </div>
+
+                            {% if profile.min_internship_days %}
+                            <div class="detail-item">
+                                <span class="detail-label">Observation Period</span>
+                                <span class="detail-value">{{ profile.min_internship_days }}-{{ profile.max_internship_days }} days</span>
+                            </div>
+                            {% endif %}
+
+                            <div class="detail-item">
+                                <span class="detail-label">Availability</span>
+                                <span class="detail-value">
+                                    {% if profile.accepts_in_person and profile.accepts_virtual %}
+                                    In-Person & Virtual
+                                    {% elif profile.accepts_in_person %}
+                                    In-Person Only
+                                    {% elif profile.accepts_virtual %}
+                                    Virtual Only
+                                    {% else %}
+                                    Availability pending
+                                    {% endif %}
+                                </span>
+                            </div>
+
+                            <div class="detail-item">
+                                <span class="detail-label">Rate</span>
+                                <span class="detail-value">
+                                    {% if profile.hourly_rate > 0 %}
+                                    ${{ profile.hourly_rate }}/hour
+                                    {% else %}
+                                    Free Mentoring
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- EDUCATION -->
+                {% if profile.diploma or profile.educational_institution %}
+                <div class="mentor-content-card">
+                    <div class="card-header">
+                        <i data-feather="award"></i>
+                        <h2>Education & Credentials</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="education-list">
+                            {% if profile.diploma %}
+                            <div class="education-item">
+                                <i data-feather="check-circle" class="education-icon"></i>
+                                <div>
+                                    <div class="education-title">Degree/Certification</div>
+                                    <div class="education-detail">{{ profile.diploma }}</div>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            {% if profile.educational_institution %}
+                            <div class="education-item">
+                                <i data-feather="book" class="education-icon"></i>
+                                <div>
+                                    <div class="education-title">Institution</div>
+                                    <div class="education-detail">{{ profile.educational_institution }}</div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- REVIEWS SECTION -->
+                {% if recent_reviews %}
+                <div class="mentor-content-card">
+                    <div class="card-header">
+                        <i data-feather="star"></i>
+                        <h2>Student Reviews</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="reviews-list">
+                            {% for review in recent_reviews %}
+                            <div class="review-item-card">
+                                <div class="review-header">
+                                    <img src="{% if review.student.avatar %}{{ review.student.avatar.url }}{% else %}{% static 'images/default-avatar.png' %}{% endif %}" alt="{{ review.student.get_full_name }}" class="review-avatar">
+                                    <div class="review-author">
+                                        <div class="review-name">{{ review.student.get_full_name }}</div>
+                                        <div class="review-date">{{ review.created_at|date:"M d, Y" }}</div>
+                                    </div>
+                                    <div class="review-rating-stars">
+                                        {% for i in "12345" %}
+                                        {% if forloop.counter <= review.rating %}
+                                        ★
+                                        {% else %}
+                                        ☆
+                                        {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <p class="review-comment">{{ review.comment }}</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+            </main>
+
+            <!-- SIDEBAR -->
+            <aside class="mentor-sidebar">
+
+                <!-- QUICK CONTACT CARD -->
+                <div class="sidebar-card premium-card">
+                    <h3 class="sidebar-title">Connect with {{ profile.user.first_name }}</h3>
+                    <div class="contact-methods">
+                        {% if profile.linkedin_url %}
+                        <a href="{{ profile.linkedin_url }}" target="_blank" class="contact-link linkedin">
+                            <i data-feather="link"></i>
+                            LinkedIn
+                        </a>
+                        {% endif %}
+
+                        {% if profile.twitter_url %}
+                        <a href="{{ profile.twitter_url }}" target="_blank" class="contact-link twitter">
+                            <i data-feather="link"></i>
+                            Twitter
+                        </a>
+                        {% endif %}
+
+                        {% if profile.website_url %}
+                        <a href="{{ profile.website_url }}" target="_blank" class="contact-link website">
+                            <i data-feather="globe"></i>
+                            Website
+                        </a>
+                        {% endif %}
+
+                        {% if profile.github_url %}
+                        <a href="{{ profile.github_url }}" target="_blank" class="contact-link github">
+                            <i data-feather="link"></i>
+                            GitHub
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- AVAILABILITY CARD -->
+                {% if availabilities %}
+                <div class="sidebar-card">
+                    <h3 class="sidebar-title">Availability</h3>
+                    <div class="availability-list">
+                        {% for availability in availabilities %}
+                        <div class="availability-item">
+                            <span class="day-name">{{ availability.get_day_of_week_display }}</span>
+                            <span class="time-range">
+                                {{ availability.start_time|time:"h:i A" }} - {{ availability.end_time|time:"h:i A" }}
+                            </span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- SESSION TYPES CARD -->
+                {% if profile.accepts_in_person or profile.accepts_virtual %}
+                <div class="sidebar-card">
+                    <h3 class="sidebar-title">Session Types</h3>
+                    <div class="session-types">
+                        {% if profile.accepts_in_person %}
+                        <div class="session-badge in-person">
+                            <i data-feather="map-pin"></i>
+                            In-Person
+                        </div>
+                        {% endif %}
+
+                        {% if profile.accepts_virtual %}
+                        <div class="session-badge virtual">
+                            <i data-feather="video"></i>
+                            Virtual
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- STATS SIDEBAR -->
+                <div class="sidebar-card">
+                    <h3 class="sidebar-title">Profile Stats</h3>
+                    <div class="stats-sidebar">
+                        <div class="stat-row">
+                            <span class="stat-name">Followers</span>
+                            <span class="stat-num">{{ followers_count|default:0 }}</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-name">Mentorships</span>
+                            <span class="stat-num">{{ completed_mentorships|default:0 }}</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-name">Rating</span>
+                            <span class="stat-num">{{ profile.rating|floatformat:1 }}</span>
+                        </div>
+                    </div>
+                </div>
+
+            </aside>
+        </div>
+    </div>
+</section>
+
 {% endblock %}

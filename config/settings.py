@@ -54,13 +54,13 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.locale.LocaleMiddleware',  # For multilingual support
+    'django.middleware.locale.LocaleMiddleware',  # Handles language switching
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'core.middleware.LanguageMiddleware',  # Custom language middleware
+    'core.middleware.LanguageMiddleware',  # Custom language persistence
     'core.middleware.ThemeMiddleware',  # Custom theme middleware
 ]
 
@@ -171,7 +171,7 @@ LOCALE_PATHS = [
 
 TIME_ZONE = 'Africa/Kigali'
 
-USE_I18N = True
+USE_I18N = True  # Enable internationalization
 USE_L10N = True
 USE_TZ = True
 
