@@ -230,9 +230,9 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # Dev
 # EMAIL_PORT = 587
 # EMAIL_USE_TLS = True
 # EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
-# EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', 'Queen+2003@1')
 
-DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@mentorconnect.local')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'nsengimanaolivier100@gmail.com')
 
 # =============================================================================
 # SITE CONFIGURATION (Customizable by Admin)

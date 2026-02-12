@@ -666,6 +666,7 @@
 {% endblock %}
 
 {% block extra_js %}
+{{ block.super }}
 <script>
 function openEditModal(modalId) {
     document.getElementById(modalId).classList.add('active');

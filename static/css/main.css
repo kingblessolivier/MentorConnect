@@ -278,6 +278,8 @@ a:hover {
 
     .navbar-menu.active {
         display: flex !important;
+          z-index: 1000;
+    background-color: var(--navbar-bg, #ffffff);
     }
 
     .navbar-nav {

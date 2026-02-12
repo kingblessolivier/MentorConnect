@@ -7,6 +7,8 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.urls import reverse
 from django.utils import timezone
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
 
 
 def send_approval_email(application):
@@ -27,29 +29,23 @@ def send_approval_email(application):
     path = reverse('applications:register_with_token', kwargs={'token': token_obj.token})
     registration_url = f"{scheme}://{domain}{path}"
 
-    subject = f"Your application has been approved - {getattr(settings, 'SITE_NAME', 'MentorConnect')}"
-    message = f"""Hello {application.name},
+    site_name = getattr(settings, 'SITE_NAME', 'MentorConnect')
+    subject = f"Your application has been approved - {site_name}"
 
-Great news! Your application to mentor {application.mentor.get_full_name()} has been approved.
+    context = {
+        'application': application,
+        'registration_url': registration_url,
+        'site_name': site_name,
+    }
 
-{f'Mentor feedback: {application.mentor_feedback}' if application.mentor_feedback else ''}
+    html_message = render_to_string('emails/approval_email.html', context)
+    message = strip_tags(html_message)
 
-To continue and create your account, please click the link below. This link will expire in 7 days.
-
-{registration_url}
-
-After registering, you'll be able to:
-- View mentor feedback
-- Schedule sessions
-- Continue your mentorship journey
-
-Best regards,
-{getattr(settings, 'SITE_NAME', 'MentorConnect')} Team
-"""
     send_mail(
         subject=subject,
         message=message,
         from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@mentorconnect.local'),
         recipient_list=[application.email],
         fail_silently=True,
+        html_message=html_message,
     )

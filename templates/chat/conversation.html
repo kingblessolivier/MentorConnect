@@ -534,6 +534,7 @@
 {% endblock %}
 
 {% block extra_js %}
+{{ block.super }}
 <script>
 // Auto-scroll to bottom
 const chatMessages = document.getElementById('chatMessages');
