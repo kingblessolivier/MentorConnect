@@ -47,10 +47,10 @@
 <div class="card mb-4">
     <div class="card-body">
         <form method="get" class="filters-form">
-            <div class="filters-row">
+            <div class="filters-row" style="flex-wrap: wrap;">
                 <div class="filter-group">
                     <label>Search</label>
-                    <input type="text" name="search" class="form-control" placeholder="Search by title, student or mentor..." value="{{ request.GET.search }}">
+                    <input type="text" name="search" class="form-control" placeholder="Title, student, mentor..." value="{{ request.GET.search }}">
                 </div>
                 <div class="filter-group">
                     <label>Status</label>
@@ -62,10 +62,24 @@
                         <option value="cancelled" {% if request.GET.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
                     </select>
                 </div>
+                <div class="filter-group">
+                    <label>Type</label>
+                    <select name="type" class="form-control">
+                        <option value="">All Types</option>
+                        <option value="online" {% if request.GET.type == 'online' %}selected{% endif %}>Online</option>
+                        <option value="physical" {% if request.GET.type == 'physical' %}selected{% endif %}>Physical</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Date From</label>
+                    <input type="date" name="date_from" class="form-control" value="{{ request.GET.date_from }}">
+                </div>
+                <div class="filter-group">
+                    <label>Date To</label>
+                    <input type="date" name="date_to" class="form-control" value="{{ request.GET.date_to }}">
+                </div>
                 <div class="filter-group filter-actions">
-                    <button type="submit" class="btn btn-primary">
-                        <i data-feather="search"></i> Filter
-                    </button>
+                    <button type="submit" class="btn btn-primary"><i data-feather="search"></i> Filter</button>
                     <a href="{% url 'dashboard:admin_sessions' %}" class="btn btn-outline">Reset</a>
                 </div>
             </div>
@@ -82,8 +96,9 @@
                         <th>Session</th>
                         <th>Student</th>
                         <th>Mentor</th>
+                        <th>Type</th>
+                        <th>Location</th>
                         <th>Scheduled</th>
-                        <th>Duration</th>
                         <th>Status</th>
                     </tr>
                 </thead>
@@ -122,16 +137,20 @@
                             </div>
                         </td>
                         <td>
-                            <div class="schedule-info">
-                                <div class="schedule-date">{{ session.scheduled_time|date:"M d, Y" }}</div>
-                                <div class="schedule-time text-muted text-xs">{{ session.scheduled_time|date:"h:i A" }}</div>
-                            </div>
+                            <span class="badge badge-{{ session.session_type|default:'online' }}">{{ session.get_session_type_display|default:'Online' }}</span>
                         </td>
                         <td>
-                            <span class="duration-badge">
-                                <i data-feather="clock" style="width: 12px; height: 12px;"></i>
-                                {{ session.duration }} min
-                            </span>
+                            {% if session.session_type == 'physical' and session.address %}
+                            <span class="text-xs" title="{{ session.address }}">{{ session.location_name|default:session.address|truncatechars:25 }}</span>
+                            {% else %}
+                            <span class="text-muted text-xs">—</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="schedule-info">
+                                <div class="schedule-date">{{ session.scheduled_time|date:"M d, Y" }}</div>
+                                <div class="schedule-time text-muted text-xs">{{ session.scheduled_time|date:"h:i A" }} • {{ session.duration }} min</div>
+                            </div>
                         </td>
                         <td>
                             <span class="badge badge-{{ session.status }}">
@@ -150,7 +169,7 @@
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="6" class="text-center py-4">
+                        <td colspan="8" class="text-center py-4">
                             <div class="empty-state">
                                 <i data-feather="calendar" class="empty-icon"></i>
                                 <p class="text-muted">No sessions found</p>

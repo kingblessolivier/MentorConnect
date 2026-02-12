@@ -4,72 +4,21 @@
  */
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize all components
-    initNavbar();
-    initDropdowns();
+    // Initialize navbar and dropdowns first for best mobile UX
+    try {
+        enhanceMobileNavbar();
+        enhanceMobileDropdowns();
+    } catch (error) {
+        console.error('Navbar initialization error:', error);
+    }
+
+    // Initialize all other components
     initToasts();
     initModals();
     initAccessibility();
     initNotifications();
     initForms();
-
-    // Initialize mobile navbar enhancements
-    enhanceMobileNavbar();
-    enhanceMobileDropdowns();
 });
-
-/**
- * Navbar Toggle for Mobile
- */
-function initNavbar() {
-    const toggle = document.getElementById('navbarToggle');
-    const menu = document.getElementById('navbarMenu');
-
-    if (toggle && menu) {
-        toggle.addEventListener('click', function() {
-            menu.classList.toggle('active');
-            const isExpanded = menu.classList.contains('active');
-            toggle.setAttribute('aria-expanded', isExpanded);
-        });
-
-        // Close menu when clicking outside
-        document.addEventListener('click', function(e) {
-            if (!toggle.contains(e.target) && !menu.contains(e.target)) {
-                menu.classList.remove('active');
-                toggle.setAttribute('aria-expanded', 'false');
-            }
-        });
-    }
-}
-
-/**
- * Dropdown Menus
- */
-function initDropdowns() {
-    const dropdowns = document.querySelectorAll('.dropdown');
-
-    dropdowns.forEach(dropdown => {
-        const toggle = dropdown.querySelector('.dropdown-toggle');
-
-        if (toggle) {
-            toggle.addEventListener('click', function(e) {
-                e.stopPropagation();
-
-                // Close other dropdowns
-                dropdowns.forEach(d => {
-                    if (d !== dropdown) d.classList.remove('active');
-                });
-
-                dropdown.classList.toggle('active');
-            });
-        }
-    });
-
-    // Close dropdowns when clicking outside
-    document.addEventListener('click', function() {
-        dropdowns.forEach(d => d.classList.remove('active'));
-    });
-}
 
 /**
  * Toast Notifications
@@ -665,29 +614,60 @@ function enhanceMobileNavbar() {
 
     if (!navbarToggle || !navbarMenu) return;
 
-    // Toggle menu
-    navbarToggle.addEventListener('click', (e) => {
-        e.stopPropagation();
-        navbarMenu.classList.toggle('active');
-        navbarToggle.setAttribute('aria-expanded', navbarMenu.classList.contains('active'));
-    });
+    // Toggle menu function
+    const toggleMenu = (e) => {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        const isActive = navbarMenu.classList.toggle('active');
+        navbarToggle.setAttribute('aria-expanded', isActive);
+        
+        // Toggle icon if needed
+        const icon = navbarToggle.querySelector('i');
+        if (icon && typeof feather !== 'undefined') {
+            icon.setAttribute('data-feather', isActive ? 'x' : 'menu');
+            feather.replace();
+        }
+    };
+
+    // Toggle menu on click
+    navbarToggle.addEventListener('click', toggleMenu);
 
     // Close menu when nav item clicked
     navItems.forEach(item => {
         item.addEventListener('click', () => {
-            navbarMenu.classList.remove('active');
-            navbarToggle.setAttribute('aria-expanded', 'false');
+            if (navbarMenu.classList.contains('active')) {
+                navbarMenu.classList.remove('active');
+                navbarToggle.setAttribute('aria-expanded', 'false');
+                
+                // Reset icon
+                const icon = navbarToggle.querySelector('i');
+                if (icon && typeof feather !== 'undefined') {
+                    icon.setAttribute('data-feather', 'menu');
+                    feather.replace();
+                }
+            }
         });
     });
 
     // Close menu when clicking outside
     document.addEventListener('click', (e) => {
+        if (!navbarMenu.classList.contains('active')) return;
+
         const isClickInsideMenu = navbarMenu.contains(e.target);
         const isClickOnToggle = navbarToggle.contains(e.target);
 
-        if (!isClickInsideMenu && !isClickOnToggle && navbarMenu.classList.contains('active')) {
+        if (!isClickInsideMenu && !isClickOnToggle) {
             navbarMenu.classList.remove('active');
             navbarToggle.setAttribute('aria-expanded', 'false');
+            
+            // Reset icon
+            const icon = navbarToggle.querySelector('i');
+            if (icon && typeof feather !== 'undefined') {
+                icon.setAttribute('data-feather', 'menu');
+                feather.replace();
+            }
         }
     });
 
@@ -696,6 +676,13 @@ function enhanceMobileNavbar() {
         if (e.key === 'Escape' && navbarMenu.classList.contains('active')) {
             navbarMenu.classList.remove('active');
             navbarToggle.setAttribute('aria-expanded', 'false');
+            
+            // Reset icon
+            const icon = navbarToggle.querySelector('i');
+            if (icon && typeof feather !== 'undefined') {
+                icon.setAttribute('data-feather', 'menu');
+                feather.replace();
+            }
         }
     });
 }

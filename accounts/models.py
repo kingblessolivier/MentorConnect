@@ -5,7 +5,6 @@ Custom User model with role-based authentication (Student, Mentor, Admin)
 
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
-from django.utils.translation import gettext_lazy as _
 
 
 class UserManager(BaseUserManager):
@@ -14,7 +13,7 @@ class UserManager(BaseUserManager):
     """
     def create_user(self, email, password=None, **extra_fields):
         if not email:
-            raise ValueError(_('Email is required'))
+            raise ValueError('Email is required')
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
@@ -27,9 +26,9 @@ class UserManager(BaseUserManager):
         extra_fields.setdefault('role', User.Role.ADMIN)
 
         if extra_fields.get('is_staff') is not True:
-            raise ValueError(_('Superuser must have is_staff=True.'))
+            raise ValueError('Superuser must have is_staff=True.')
         if extra_fields.get('is_superuser') is not True:
-            raise ValueError(_('Superuser must have is_superuser=True.'))
+            raise ValueError('Superuser must have is_superuser=True.')
 
         return self.create_user(email, password, **extra_fields)
 
@@ -40,31 +39,31 @@ class User(AbstractUser):
     Supports: Student, Mentor, Admin roles
     """
     class Role(models.TextChoices):
-        STUDENT = 'student', _('Student')
-        MENTOR = 'mentor', _('Mentor')
-        ADMIN = 'admin', _('Admin')
+        STUDENT = 'student', 'Student'
+        MENTOR = 'mentor', 'Mentor'
+        ADMIN = 'admin', 'Admin'
 
     # Remove username field, use email for authentication
     username = None
-    email = models.EmailField(_('Email Address'), unique=True)
+    email = models.EmailField('Email Address', unique=True)
 
     # Role field
     role = models.CharField(
         max_length=20,
         choices=Role.choices,
         default=Role.STUDENT,
-        verbose_name=_('Role')
+        verbose_name='Role'
     )
 
     # Profile fields
-    first_name = models.CharField(_('First Name'), max_length=100)
-    last_name = models.CharField(_('Last Name'), max_length=100)
-    phone = models.CharField(_('Phone Number'), max_length=20, blank=True)
+    first_name = models.CharField('First Name', max_length=100)
+    last_name = models.CharField('Last Name', max_length=100)
+    phone = models.CharField('Phone Number', max_length=20, blank=True)
     avatar = models.ImageField(
         upload_to='avatars/',
         blank=True,
         null=True,
-        verbose_name=_('Profile Photo')
+        verbose_name='Profile Photo'
     )
 
     # Status fields
@@ -89,8 +88,8 @@ class User(AbstractUser):
     objects = UserManager()
 
     class Meta:
-        verbose_name = _('User')
-        verbose_name_plural = _('Users')
+        verbose_name = 'User'
+        verbose_name_plural = 'Users'
         ordering = ['-date_joined']
 
     def __str__(self):

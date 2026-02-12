@@ -10,7 +10,6 @@ from django.contrib.auth.views import LoginView, LogoutView, PasswordResetView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.urls import reverse_lazy
-from django.utils.translation import gettext_lazy as _
 from django.http import JsonResponse
 
 from .forms import (
@@ -59,7 +58,7 @@ class CustomLoginView(LoginView):
         except Exception:
             pass
 
-        messages.success(self.request, _('Welcome back, %(name)s!') % {'name': self.request.user.first_name})
+        messages.success(self.request, f"Welcome back, {self.request.user.first_name}!")
         return response
 
     def get_client_ip(self):
@@ -88,7 +87,7 @@ class CustomLogoutView(LogoutView):
                 )
             except Exception:
                 pass
-            messages.info(request, _('You have been logged out successfully.'))
+            messages.info(request, 'You have been logged out successfully.')
         return super().dispatch(request, *args, **kwargs)
 
 
@@ -128,7 +127,7 @@ class StudentSignupView(CreateView):
         except Exception:
             pass
 
-        messages.success(self.request, _('Welcome to MentorConnect! Your account has been created.'))
+        messages.success(self.request, 'Welcome to MentorConnect! Your account has been created.')
         return response
 
 
@@ -174,7 +173,7 @@ class MentorSignupView(CreateView):
         except Exception:
             pass
 
-        messages.success(self.request, _('Welcome to MentorConnect! Your mentor account has been created.'))
+        messages.success(self.request, 'Welcome to MentorConnect! Your mentor account has been created.')
         return response
 
 
@@ -205,7 +204,7 @@ class ProfileSettingsView(LoginRequiredMixin, FormView):
 
     def form_valid(self, form):
         form.save()
-        messages.success(self.request, _('Your profile has been updated successfully.'))
+        messages.success(self.request, 'Your profile has been updated successfully.')
         return super().form_valid(form)
 
 

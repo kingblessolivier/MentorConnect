@@ -13,7 +13,7 @@
         <!-- Top Navigation Bar -->
         <div class="dashboard-topnav">
             <div class="topnav-left">
-                <button class="sidebar-toggle-btn" onclick="toggleMobileSidebar()">
+                <button class="sidebar-toggle-btn" onclick="toggleMobileSidebar(event)">
                     <i data-feather="menu"></i>
                 </button>
                 <span class="topnav-title">{% block topnav_title %}Dashboard{% endblock %}</span>
@@ -26,7 +26,7 @@
 
                 <!-- Messages -->
                 <div class="topnav-item">
-                    <button class="topnav-btn" onclick="toggleDropdown('messagesDropdown')" title="Messages">
+                    <button class="topnav-btn" onclick="toggleDropdown(event, 'messagesDropdown')" title="Messages">
                         <i data-feather="message-circle"></i>
                         {% if unread_messages_count %}<span class="topnav-badge">{{ unread_messages_count }}</span>{% endif %}
                     </button>
@@ -65,7 +65,7 @@
 
                 <!-- Notifications -->
                 <div class="topnav-item">
-                    <button class="topnav-btn" onclick="toggleDropdown('notificationsDropdown')" title="Notifications">
+                    <button class="topnav-btn" onclick="toggleDropdown(event, 'notificationsDropdown')" title="Notifications">
                         <i data-feather="bell"></i>
                         {% if unread_notifications_count %}<span class="topnav-badge">{{ unread_notifications_count }}</span>{% endif %}
                     </button>
@@ -102,7 +102,7 @@
 
                 <!-- Profile -->
                 <div class="topnav-item">
-                    <button class="topnav-btn profile-btn" onclick="toggleDropdown('profileDropdown')" title="Profile">
+                    <button class="topnav-btn profile-btn" onclick="toggleDropdown(event, 'profileDropdown')" title="Profile">
                         <img src="{{ user.get_avatar_url }}" alt="" class="avatar avatar-sm">
                         <span class="profile-name">{{ user.first_name }}</span>
                         <i data-feather="chevron-down" class="chevron-icon"></i>
@@ -151,7 +151,7 @@
 </div>
 
 <!-- Mobile Sidebar Toggle Button -->
-<button class="sidebar-toggle-mobile" onclick="toggleMobileSidebar()">
+<button class="sidebar-toggle-mobile" onclick="toggleMobileSidebar(event)">
     <i data-feather="menu"></i>
 </button>
 
@@ -2153,8 +2153,8 @@ body.sidebar-open {
 {% block extra_js %}
 <script>
 // Dropdown toggle function
-function toggleDropdown(dropdownId) {
-    event.stopPropagation();
+function toggleDropdown(event, dropdownId) {
+    if (event) event.stopPropagation();
     const dropdown = document.getElementById(dropdownId);
     const allDropdowns = document.querySelectorAll('.topnav-dropdown');
 
@@ -2181,7 +2181,8 @@ document.addEventListener('click', function(e) {
 });
 
 // Mobile sidebar functions
-function toggleMobileSidebar() {
+function toggleMobileSidebar(event) {
+    if (event) event.stopPropagation();
     const sidebar = document.getElementById('dashboardSidebar');
     const overlay = document.getElementById('sidebarOverlay');
 

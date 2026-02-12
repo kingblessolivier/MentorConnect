@@ -38,6 +38,10 @@
             <i data-feather="file-text"></i> <span>Internship Requests</span>
             {% if pending_requests_count %}<span class="sidebar-badge">{{ pending_requests_count }}</span>{% endif %}
         </a>
+        <a href="{% url 'applications:mentor_applications' %}" class="sidebar-link {% if 'applications' in request.path %}active{% endif %}">
+            <i data-feather="user-plus"></i> <span>Guest Applications</span>
+            {% if guest_applications_pending_count %}<span class="sidebar-badge">{{ guest_applications_pending_count }}</span>{% endif %}
+        </a>
         <a href="{% url 'sessions_app:list' %}" class="sidebar-link {% if 'sessions' in request.path %}active{% endif %}">
             <i data-feather="calendar"></i> <span>Sessions</span>
         </a>
@@ -61,6 +65,9 @@
         </a>
         <a href="{% url 'dashboard:admin_requests' %}" class="sidebar-link {% if request.resolver_match.url_name == 'admin_requests' or request.resolver_match.url_name == 'admin_request_detail' %}active{% endif %}">
             <i data-feather="file-text"></i> <span>Requests</span>
+        </a>
+        <a href="{% url 'dashboard:admin_applications' %}" class="sidebar-link {% if 'admin_application' in request.resolver_match.url_name %}active{% endif %}">
+            <i data-feather="user-plus"></i> <span>Applications</span>
         </a>
         <a href="{% url 'dashboard:admin_sessions' %}" class="sidebar-link {% if request.resolver_match.url_name == 'admin_sessions' %}active{% endif %}">
             <i data-feather="calendar"></i> <span>Sessions</span>

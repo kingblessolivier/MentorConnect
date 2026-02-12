@@ -32,6 +32,12 @@ urlpatterns = [
     path('admin/requests/', views.AdminRequestListView.as_view(), name='admin_requests'),
     path('admin/requests/<int:pk>/', views.AdminRequestDetailView.as_view(), name='admin_request_detail'),
 
+    # Admin Applications Management
+    path('admin/applications/', views.AdminApplicationListView.as_view(), name='admin_applications'),
+    path('admin/applications/<int:pk>/', views.AdminApplicationDetailView.as_view(), name='admin_application_detail'),
+    path('admin/applications/<int:pk>/approve/', views.admin_application_approve, name='admin_application_approve'),
+    path('admin/applications/<int:pk>/reject/', views.admin_application_reject, name='admin_application_reject'),
+
     # Admin Session Management
     path('admin/sessions/', views.AdminSessionListView.as_view(), name='admin_sessions'),
 

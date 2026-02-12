@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Apply to Mentor - {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="max-w-2xl mx-auto">
+        <div class="card">
+            <div class="card-body">
+                <h1 class="text-2xl font-bold mb-2">Apply as Guest Student</h1>
+                <p class="text-muted mb-6">No account needed. Fill the form below and the mentor will review your application.</p>
+
+                <form method="post" enctype="multipart/form-data" class="space-y-4">
+                    {% csrf_token %}
+                    {% for field in form %}
+                    <div class="form-group">
+                        <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.help_text %}
+                        <p class="form-help">{{ field.help_text }}</p>
+                        {% endif %}
+                        {% if field.errors %}
+                        <ul class="text-danger text-sm mt-1">
+                            {% for error in field.errors %}<li>{{ error }}</li>{% endfor %}
+                        </ul>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+
+                    <div class="flex gap-3 pt-4">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i data-feather="send"></i> Submit Application
+                        </button>
+                        <a href="{% url 'core:mentors' %}" class="btn btn-outline">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.container { max-width: 1200px; margin: 0 auto; padding: 0 1rem; }
+.max-w-2xl { max-width: 42rem; }
+.space-y-4 > * + * { margin-top: 1rem; }
+.text-danger { color: var(--error-color, #ef4444); }
+</style>
+{% endblock %}

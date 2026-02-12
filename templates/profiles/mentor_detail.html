@@ -811,6 +811,10 @@
                             <i data-feather="log-in"></i>
                             Sign In to Connect
                         </a>
+                        <a href="{% url 'applications:apply_to_mentor' profile.user.id %}" class="btn-action secondary">
+                            <i data-feather="send"></i>
+                            Apply as Guest
+                        </a>
                     {% endif %}
                 </div>
             </div>

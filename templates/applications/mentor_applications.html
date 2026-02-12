@@ -1,0 +1,78 @@
+{% extends 'dashboard/base_dashboard.html' %}
+
+{% block title %}Guest Applications - {{ SITE_NAME }}{% endblock %}
+
+{% block dashboard_content %}
+<div class="dashboard-header">
+    <div>
+        <h1>Guest Applications</h1>
+        <p class="text-muted">Review and manage applications from students without accounts</p>
+    </div>
+</div>
+
+<div class="dashboard-stats">
+    <div class="stat-card">
+        <div class="stat-card-icon" style="background:#fef3c7;color:#d97706">
+            <i data-feather="clock"></i>
+        </div>
+        <div class="stat-card-value">{{ pending_count|default:0 }}</div>
+        <div class="stat-card-label">Pending</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon" style="background:#d1fae5;color:#059669">
+            <i data-feather="check-circle"></i>
+        </div>
+        <div class="stat-card-value">{{ approved_count|default:0 }}</div>
+        <div class="stat-card-label">Approved</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon" style="background:#fee2e2;color:#dc2626">
+            <i data-feather="x-circle"></i>
+        </div>
+        <div class="stat-card-value">{{ rejected_count|default:0 }}</div>
+        <div class="stat-card-label">Rejected</div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {% for app in applications %}
+        <div class="flex items-center gap-4 p-4 rounded-lg mb-3" style="background: var(--background-color);">
+            <div class="flex-1">
+                <div class="font-medium">{{ app.name }}</div>
+                <div class="text-sm text-muted">{{ app.email }} • {{ app.school }}</div>
+                <div class="text-sm mt-1">{{ app.interests|truncatewords:15 }}</div>
+            </div>
+            <span class="badge badge-{{ app.status }}">
+                {{ app.get_status_display }}
+            </span>
+            <div class="flex gap-2">
+                <a href="{% url 'applications:mentor_application_detail' app.pk %}" class="btn btn-sm btn-outline">View</a>
+                {% if app.status == 'pending' %}
+                <form method="post" action="{% url 'applications:mentor_application_action' app.pk %}" style="display:inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="approve">
+                    <button type="submit" class="btn btn-sm btn-primary">Approve</button>
+                </form>
+                <form method="post" action="{% url 'applications:mentor_application_action' app.pk %}" style="display:inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="reject">
+                    <button type="submit" class="btn btn-sm btn-outline" onclick="return confirm('Reject this application?')">Reject</button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <p class="text-muted text-center py-8">No applications yet.</p>
+        {% endfor %}
+    </div>
+</div>
+
+{% if page_obj.has_other_pages %}
+<div class="pagination mt-4">
+    {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}">&laquo;</a>{% endif %}
+    <span class="pagination-info">Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}">&raquo;</a>{% endif %}
+</div>
+{% endif %}
+{% endblock %}

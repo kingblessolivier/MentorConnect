@@ -14,6 +14,7 @@ urlpatterns = [
     path('book/<int:mentor_id>/', views.BookSessionView.as_view(), name='book'),
     path('<int:pk>/cancel/', views.cancel_session, name='cancel'),
     path('<int:pk>/complete/', views.complete_session, name='complete'),
+    path('<int:pk>/calendar/', views.session_ics_export, name='session_ics'),
 
     # Availability (for mentors)
     path('availability/', views.AvailabilityListView.as_view(), name='availability'),

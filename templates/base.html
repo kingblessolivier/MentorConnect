@@ -120,18 +120,22 @@
     <!-- Main JavaScript -->
     <script src="{% static 'js/main.js' %}"></script>
 
+    <!-- Google Translate Widget -->
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+                pageLanguage: 'en',
+                includedLanguages: 'en,rw,fr,es,sw',
+                layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+                autoDisplay: false
+            }, 'google_translate_element');
+        }
+    </script>
+    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
     <!-- Initialize Feather Icons -->
     <script>feather.replace();</script>
 
-    <!-- Language Switcher Function -->
-    <script>
-        function changeLanguage(lang) {
-            // Set language cookie
-            document.cookie = "site_language=" + lang + ";path=/;max-age=31536000";
-            // Reload to apply the new language
-            window.location.reload();
-        }
-    </script>
 
     <!-- Text-to-Speech (Accessibility) -->
     {% if site_settings.enable_text_to_speech %}

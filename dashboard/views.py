@@ -93,6 +93,13 @@ class StudentDashboardView(LoginRequiredMixin, StudentRequiredMixin, TemplateVie
         except Exception:
             context['unread_notifications'] = 0
 
+        try:
+            from applications.models import GuestApplication
+            linked = GuestApplication.objects.filter(student=user, status='approved').order_by('-approved_at')[:3]
+            context['linked_applications_with_feedback'] = [a for a in linked if a.mentor_feedback]
+        except Exception:
+            context['linked_applications_with_feedback'] = []
+
         return context
 
 
@@ -117,12 +124,16 @@ class MentorDashboardView(LoginRequiredMixin, MentorRequiredMixin, TemplateView)
 
         try:
             from mentorship.models import MentorshipRequest
+            from applications.models import GuestApplication
             context['pending_requests'] = MentorshipRequest.objects.filter(
                 mentor=user, status='pending'
             ).select_related('student')[:10]
             context['total_pending'] = MentorshipRequest.objects.filter(
                 mentor=user, status='pending'
             ).count()
+            context['guest_applications_pending'] = GuestApplication.objects.filter(
+                mentor=user, status='pending'
+            ).order_by('-created_at')[:5]
             context['total_approved'] = MentorshipRequest.objects.filter(
                 mentor=user, status='approved'
             ).count()
@@ -632,6 +643,93 @@ class AdminRequestDetailView(LoginRequiredMixin, AdminRequiredMixin, DetailView)
         return get_object_or_404(MentorshipRequest, pk=self.kwargs['pk'])
 
 
+# ==================== GUEST APPLICATIONS MANAGEMENT ====================
+
+class AdminApplicationListView(LoginRequiredMixin, AdminRequiredMixin, ListView):
+    """Admin view to list all guest applications"""
+    template_name = 'dashboard/admin_applications.html'
+    context_object_name = 'applications'
+    paginate_by = 20
+
+    def get_queryset(self):
+        from applications.models import GuestApplication
+        queryset = GuestApplication.objects.select_related('mentor', 'student').order_by('-created_at')
+
+        search = self.request.GET.get('search', '')
+        if search:
+            queryset = queryset.filter(
+                Q(name__icontains=search) |
+                Q(email__icontains=search) |
+                Q(school__icontains=search) |
+                Q(mentor__email__icontains=search)
+            )
+
+        status = self.request.GET.get('status', '')
+        if status:
+            queryset = queryset.filter(status=status)
+
+        mentor_id = self.request.GET.get('mentor', '')
+        if mentor_id:
+            queryset = queryset.filter(mentor_id=mentor_id)
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        from applications.models import GuestApplication
+        context['total_applications'] = GuestApplication.objects.count()
+        context['pending_count'] = GuestApplication.objects.filter(status='pending').count()
+        context['approved_count'] = GuestApplication.objects.filter(status='approved').count()
+        context['rejected_count'] = GuestApplication.objects.filter(status='rejected').count()
+        return context
+
+
+class AdminApplicationDetailView(LoginRequiredMixin, AdminRequiredMixin, DetailView):
+    """Admin view to see application details"""
+    template_name = 'dashboard/admin_application_detail.html'
+    context_object_name = 'application'
+
+    def get_object(self):
+        from applications.models import GuestApplication
+        return get_object_or_404(GuestApplication, pk=self.kwargs['pk'])
+
+
+@login_required
+@user_passes_test(lambda u: u.is_admin_user)
+def admin_application_approve(request, pk):
+    """Admin approve application"""
+    from applications.models import GuestApplication
+    from applications.services import send_approval_email
+    application = get_object_or_404(GuestApplication, pk=pk)
+    feedback = request.POST.get('feedback', '')
+    application.approve(feedback=feedback)
+    send_approval_email(application)
+    ActivityLog.objects.create(
+        user=request.user,
+        action='admin_action',
+        description=f'Approved guest application #{pk} ({application.email})'
+    )
+    messages.success(request, f'Application approved. Invitation sent to {application.email}.')
+    return redirect('dashboard:admin_applications')
+
+
+@login_required
+@user_passes_test(lambda u: u.is_admin_user)
+def admin_application_reject(request, pk):
+    """Admin reject application"""
+    from applications.models import GuestApplication
+    application = get_object_or_404(GuestApplication, pk=pk)
+    feedback = request.POST.get('feedback', '')
+    application.reject(feedback=feedback)
+    ActivityLog.objects.create(
+        user=request.user,
+        action='admin_action',
+        description=f'Rejected guest application #{pk} ({application.email})'
+    )
+    messages.info(request, 'Application rejected.')
+    return redirect('dashboard:admin_applications')
+
+
 # ==================== SESSION MANAGEMENT ====================
 
 class AdminSessionListView(LoginRequiredMixin, AdminRequiredMixin, ListView):
@@ -656,15 +754,38 @@ class AdminSessionListView(LoginRequiredMixin, AdminRequiredMixin, ListView):
         if status:
             queryset = queryset.filter(status=status)
 
+        session_type = self.request.GET.get('type', '')
+        if session_type:
+            queryset = queryset.filter(session_type=session_type)
+
+        mentor_id = self.request.GET.get('mentor', '')
+        if mentor_id:
+            queryset = queryset.filter(mentor_id=mentor_id)
+
+        student_id = self.request.GET.get('student', '')
+        if student_id:
+            queryset = queryset.filter(student_id=student_id)
+
+        date_from = self.request.GET.get('date_from', '')
+        if date_from:
+            queryset = queryset.filter(scheduled_time__date__gte=date_from)
+
+        date_to = self.request.GET.get('date_to', '')
+        if date_to:
+            queryset = queryset.filter(scheduled_time__date__lte=date_to)
+
         return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         from sessions_app.models import Session
+        from accounts.models import User
         context['total_sessions'] = Session.objects.count()
         context['scheduled_count'] = Session.objects.filter(status='scheduled').count()
         context['completed_count'] = Session.objects.filter(status='completed').count()
         context['cancelled_count'] = Session.objects.filter(status='cancelled').count()
+        context['mentors_for_filter'] = User.objects.filter(role='mentor').order_by('first_name')
+        context['students_for_filter'] = User.objects.filter(role='student').order_by('first_name')
         return context
 
 

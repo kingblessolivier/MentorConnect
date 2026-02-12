@@ -8,6 +8,7 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, Pass
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
 
+
 User = get_user_model()
 
 
@@ -41,7 +42,7 @@ class LoginForm(BaseFormMixin, AuthenticationForm):
     Modern login form
     """
     username = forms.EmailField(
-        label=_('Email'),
+        label='Email',
         widget=forms.EmailInput(attrs={
             'autofocus': True,
             'autocomplete': 'email',
@@ -49,7 +50,7 @@ class LoginForm(BaseFormMixin, AuthenticationForm):
         })
     )
     password = forms.CharField(
-        label=_('Password'),
+        label='Password',
         widget=forms.PasswordInput(attrs={
             'autocomplete': 'current-password',
             'aria-label': 'Password',
@@ -57,13 +58,13 @@ class LoginForm(BaseFormMixin, AuthenticationForm):
     )
     remember_me = forms.BooleanField(
         required=False,
-        label=_('Remember me'),
+        label='Remember me',
         widget=forms.CheckboxInput()
     )
 
     error_messages = {
-        'invalid_login': _('Please enter a correct email and password.'),
-        'inactive': _('This account is inactive.'),
+        'invalid_login': 'Please enter a correct email and password.',
+        'inactive': 'This account is inactive.',
     }
 
 
@@ -72,14 +73,14 @@ class StudentRegistrationForm(BaseFormMixin, UserCreationForm):
     Registration form for students
     """
     email = forms.EmailField(
-        label=_('Email'),
+        label='Email',
         widget=forms.EmailInput(attrs={
             'autocomplete': 'email',
             'aria-label': 'Email address',
         })
     )
     first_name = forms.CharField(
-        label=_('First Name'),
+        label='First Name',
         max_length=100,
         widget=forms.TextInput(attrs={
             'autocomplete': 'given-name',
@@ -87,7 +88,7 @@ class StudentRegistrationForm(BaseFormMixin, UserCreationForm):
         })
     )
     last_name = forms.CharField(
-        label=_('Last Name'),
+        label='Last Name',
         max_length=100,
         widget=forms.TextInput(attrs={
             'autocomplete': 'family-name',
@@ -96,7 +97,7 @@ class StudentRegistrationForm(BaseFormMixin, UserCreationForm):
     )
     terms = forms.BooleanField(
         required=True,
-        label=_('I agree to the Terms of Service and Privacy Policy')
+        label='I agree to the Terms of Service and Privacy Policy'
     )
 
     class Meta:

@@ -18,6 +18,7 @@ urlpatterns = [
     path('profiles/', include('profiles.urls', namespace='profiles')),
     path('dashboard/', include('dashboard.urls', namespace='dashboard')),
     path('mentorship/', include('mentorship.urls', namespace='mentorship')),
+    path('applications/', include('applications.urls', namespace='applications')),
     path('feed/', include('feed.urls', namespace='feed')),
     path('sessions/', include('sessions_app.urls', namespace='sessions_app')),
     path('chat/', include('chat.urls', namespace='chat')),

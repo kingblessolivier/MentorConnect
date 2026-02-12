@@ -139,33 +139,28 @@
                             <div class="mentor-stat-value">{{ mentor.rating|floatformat:1 }}</div>
                             <div class="mentor-stat-label">Rating</div>
                         </div>
-                        <div class="mentor-stat">
-                            <div class="mentor-stat-value">{{ mentor.experience_years }}</div>
+                        <div class="mentor-stat-premium">
+                            <div class="mentor-stat-value">{{ mentor.experience_years }}+</div>
                             <div class="mentor-stat-label">Years</div>
                         </div>
-                        <div class="mentor-stat">
-                            <div class="mentor-stat-value">{{ mentor.min_internship_days|default:1 }}-{{ mentor.max_internship_days|default:5 }}</div>
+                        <div class="mentor-stat-premium">
+                            <div class="mentor-stat-value">1-{{ mentor.max_shadow_days|default:5 }}</div>
                             <div class="mentor-stat-label">Days</div>
                         </div>
                     </div>
-
-                    <div class="mentor-card-footer">
-                        <a href="{% url 'profiles:mentor_detail' mentor.user.id %}" class="btn-mentor-view">
-                            <i data-feather="eye"></i>
-                            View Profile
-                        </a>
-                    </div>
+                    <a href="{% url 'profiles:mentor_detail' mentor.user.id %}" class="btn-hero-primary" style="width: 100%; justify-content: center; margin-top: 1rem;">
+                        View Profile
+                    </a>
                 </div>
             </div>
             {% empty %}
-            <div style="grid-column: 1/-1; text-align: center; padding: 5rem 2rem;">
-                <div style="width: 100px; height: 100px; margin: 0 auto 1.5rem; background: #f1f5f9; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                    <i data-feather="users" style="width: 40px; height: 40px; color: #94a3b8;"></i>
+            <div style="grid-column: 1/-1; text-align: center; padding: 4rem 2rem; background: white; border-radius: 20px; border: 1px solid #e2e8f0; margin-top: 2rem;">
+                <div style="width: 80px; height: 80px; background: #f1f5f9; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+                    <i data-feather="search" style="width: 32px; height: 32px; color: #94a3b8;"></i>
                 </div>
                 <h3 style="font-size: 1.25rem; color: #475569; margin-bottom: 0.5rem;">No professionals found</h3>
                 <p style="color: #94a3b8; margin-bottom: 1.5rem;">Try adjusting your search criteria or browse all professions</p>
-                <a href="{% url 'core:mentors' %}" class="btn-hero-primary" style="background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%);">
-                    <i data-feather="refresh-cw"></i>
+                <a href="{% url 'core:mentors' %}" class="btn-hero-secondary" style="display: inline-flex; align-items: center; gap: 0.5rem;">
                     Clear Filters
                 </a>
             </div>
@@ -197,11 +192,11 @@
                 <i data-feather="award" style="width: 28px; height: 28px; color: white;"></i>
             </div>
             <h3 style="font-size: 1.5rem; font-weight: 700; color: #92400e; margin-bottom: 0.5rem;">Are You a Professional?</h3>
-            <p style="color: #a16207; margin-bottom: 1.5rem; max-width: 500px; margin-left: auto; margin-right: auto;">
+            <p style="color: #b45309; margin-bottom: 1.5rem; font-size: 1.0625rem; opacity: 0.9;">
                 Share your expertise and inspire the next generation by becoming a mentor on Mirror.
             </p>
-            <a href="{% url 'accounts:signup_mentor' %}" class="btn-hero-primary" style="background: linear-gradient(135deg, #92400e 0%, #78350f 100%);">
-                <i data-feather="user-plus"></i>
+            <a href="{% url 'accounts:signup_mentor' %}" class="btn-hero-primary" style="background: #92400e; border-color: #92400e;">
+                <i data-feather="award"></i>
                 Become a Mentor
             </a>
         </div>

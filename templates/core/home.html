@@ -97,7 +97,7 @@
                     <p style="font-size: 0.875rem; color: #64748b; margin: 0;">Watch & learn</p>
                 </div>
                 <div class="card-premium" style="text-align: center; padding: 1.5rem;">
-                    <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🎯</div>
+                    <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">👥</div>
                     <h4 style="margin-bottom: 0.25rem; font-size: 1rem;">Experience</h4>
                     <p style="font-size: 0.875rem; color: #64748b; margin: 0;">Real workplace</p>
                 </div>
@@ -457,32 +457,45 @@
 <section class="section-premium section-premium-white">
     <div class="container">
         <div class="grid grid-2" style="align-items: center; gap: 4rem;">
-            <div>
-                <div class="section-badge">
+            <div class="section-header-premium" style="text-align: left;">
+                <div class="section-badge" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6; margin-left: 0;">
                     <i data-feather="help-circle"></i>
                     FAQ
                 </div>
                 <h2 class="section-title-premium" style="text-align: left;">Common Questions</h2>
-                <p class="section-subtitle-premium" style="text-align: left;">
+                <p class="section-subtitle-premium" style="text-align: left; margin-left: 0;">
                     Everything you need to know about observation internships
                 </p>
             </div>
-            <div>
-                <div style="border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden;">
-                    <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e2e8f0;">
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <div class="faq-item-premium">
+                    <div class="faq-icon-premium">
+                        <i data-feather="clock"></i>
+                    </div>
+                    <div>
                         <h4 style="font-size: 1rem; font-weight: 600; color: #1e293b; margin-bottom: 0.5rem;">How long does an observation internship last?</h4>
                         <p style="color: #64748b; margin: 0; font-size: 0.9375rem;">Between 1 and 5 working days, giving you a realistic picture of the profession.</p>
                     </div>
-                    <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e2e8f0;">
+                </div>
+                <div class="faq-item-premium">
+                    <div class="faq-icon-premium">
+                        <i data-feather="book-open"></i>
+                    </div>
+                    <div>
                         <h4 style="font-size: 1rem; font-weight: 600; color: #1e293b; margin-bottom: 0.5rem;">Do I need prior knowledge?</h4>
                         <p style="color: #64748b; margin: 0; font-size: 0.9375rem;">No, you're there to observe and learn, always under the guidance of your mentor.</p>
                     </div>
-                    <div style="padding: 1.25rem 1.5rem;">
+                </div>
+                <div class="faq-item-premium">
+                    <div class="faq-icon-premium">
+                        <i data-feather="help-circle"></i>
+                    </div>
+                    <div>
                         <h4 style="font-size: 1rem; font-weight: 600; color: #1e293b; margin-bottom: 0.5rem;">What if the planned days don't fit?</h4>
                         <p style="color: #64748b; margin: 0; font-size: 0.9375rem;">We'll work together to find another time or an alternative mentor.</p>
                     </div>
                 </div>
-                <a href="{% url 'core:about' %}" style="display: inline-flex; align-items: center; gap: 0.5rem; margin-top: 1.5rem; color: #3b82f6; font-weight: 600;">
+                <a href="{% url 'core:home' %}" class="btn-hero-secondary" style="margin-top: 1rem;">
                     View all FAQs <i data-feather="arrow-right" style="width: 18px; height: 18px;"></i>
                 </a>
             </div>

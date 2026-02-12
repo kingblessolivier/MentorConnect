@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create Account - {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="max-w-xl mx-auto">
+        <div class="card">
+            <div class="card-body">
+                <h1 class="text-2xl font-bold mb-2">Create Your Account</h1>
+                <p class="text-muted mb-6">Your application was approved! Set a password to create your account and continue.</p>
+
+                {% if application.mentor_feedback %}
+                <div class="p-4 rounded-lg mb-6" style="background: var(--primary-light, #eef2ff);">
+                    <h3 class="font-medium mb-2">Mentor Feedback</h3>
+                    <p>{{ application.mentor_feedback }}</p>
+                </div>
+                {% endif %}
+
+                <form method="post" class="space-y-4">
+                    {% csrf_token %}
+                    {% for field in form %}
+                    <div class="form-group">
+                        <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.errors %}
+                        <ul class="text-danger text-sm mt-1">
+                            {% for error in field.errors %}<li>{{ error }}</li>{% endfor %}
+                        </ul>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+
+                    <button type="submit" class="btn btn-primary btn-lg w-full">Create Account</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+.container { max-width: 1200px; margin: 0 auto; padding: 0 1rem; }
+.max-w-xl { max-width: 36rem; }
+.space-y-4 > * + * { margin-top: 1rem; }
+.text-danger { color: var(--error-color, #ef4444); }
+.w-full { width: 100%; }
+</style>
+{% endblock %}

@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'mentorship.apps.MentorshipConfig',
     'feed.apps.FeedConfig',
     'sessions_app.apps.SessionsAppConfig',
+    'applications.apps.ApplicationsConfig',
     'chat.apps.ChatConfig',
     'notifications.apps.NotificationsConfig',
     'dashboard.apps.DashboardConfig',
@@ -54,13 +55,11 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.locale.LocaleMiddleware',  # Handles language switching
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'core.middleware.LanguageMiddleware',  # Custom language persistence
     'core.middleware.ThemeMiddleware',  # Custom theme middleware
 ]
 
@@ -155,23 +154,22 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 # =============================================================================
-# INTERNATIONALIZATION & LOCALIZATION (English/Kinyarwanda)
+# INTERNATIONALIZATION & LOCALIZATION
+# Using Google Translate for dynamic translation (replacing PO/MO files)
 # =============================================================================
 
 LANGUAGE_CODE = 'en'
 
 LANGUAGES = [
     ('en', 'English'),
-    ('rw', 'Kinyarwanda'),
 ]
 
-LOCALE_PATHS = [
-    BASE_DIR / 'locale',
-]
+# Disable LOCALE_PATHS as we are moving away from PO/MO files
+LOCALE_PATHS = []
 
 TIME_ZONE = 'Africa/Kigali'
 
-USE_I18N = True  # Enable internationalization
+USE_I18N = False  # Disable Django's built-in translation system
 USE_L10N = True
 USE_TZ = True
 
@@ -233,6 +231,8 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # Dev
 # EMAIL_USE_TLS = True
 # EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
 # EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
+
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@mentorconnect.local')
 
 # =============================================================================
 # SITE CONFIGURATION (Customizable by Admin)

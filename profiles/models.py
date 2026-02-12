@@ -9,6 +9,7 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils.translation import gettext_lazy as _
 
 
+
 class StudentProfile(models.Model):
     """
     Extended profile for students
@@ -23,43 +24,43 @@ class StudentProfile(models.Model):
     bio = models.TextField(
         blank=True,
         max_length=1000,
-        help_text=_('Tell us about yourself')
+        help_text='Tell us about yourself'
     )
     headline = models.CharField(
         max_length=200,
         blank=True,
-        help_text=_('e.g., Computer Science Student at University of Rwanda')
+        help_text='e.g., Computer Science Student at University of Rwanda'
     )
 
     # Education
     institution = models.CharField(
         max_length=200,
         blank=True,
-        verbose_name=_('School/University')
+        verbose_name='School/University'
     )
     field_of_study = models.CharField(
         max_length=200,
         blank=True,
-        verbose_name=_('Field of Study')
+        verbose_name='Field of Study'
     )
     graduation_year = models.PositiveIntegerField(
         null=True,
         blank=True,
-        verbose_name=_('Expected Graduation Year')
+        verbose_name='Expected Graduation Year'
     )
 
     # Skills and Interests
     skills = models.TextField(
         blank=True,
-        help_text=_('Comma-separated list of skills (e.g., Python, Data Analysis, Leadership)')
+        help_text='Comma-separated list of skills (e.g., Python, Data Analysis, Leadership)'
     )
     interests = models.TextField(
         blank=True,
-        help_text=_('What topics are you interested in learning about?')
+        help_text='What topics are you interested in learning about?'
     )
     goals = models.TextField(
         blank=True,
-        help_text=_('What are your career goals?')
+        help_text='What are your career goals?'
     )
 
     # CV/Resume
@@ -67,13 +68,13 @@ class StudentProfile(models.Model):
         upload_to='cvs/',
         blank=True,
         null=True,
-        verbose_name=_('CV/Resume')
+        verbose_name='CV/Resume'
     )
 
     # Social Links
-    linkedin_url = models.URLField(blank=True, verbose_name=_('LinkedIn'))
-    github_url = models.URLField(blank=True, verbose_name=_('GitHub'))
-    portfolio_url = models.URLField(blank=True, verbose_name=_('Portfolio'))
+    linkedin_url = models.URLField(blank=True, verbose_name='LinkedIn')
+    github_url = models.URLField(blank=True, verbose_name='GitHub')
+    portfolio_url = models.URLField(blank=True, verbose_name='Portfolio')
 
     # Profile Completion
     profile_completed = models.BooleanField(default=False)
@@ -83,8 +84,8 @@ class StudentProfile(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = _('Student Profile')
-        verbose_name_plural = _('Student Profiles')
+        verbose_name = 'Student Profile'
+        verbose_name_plural = 'Student Profiles'
 
     def __str__(self):
         return f"{self.user.get_full_name()} - Student Profile"
@@ -126,77 +127,77 @@ class MentorProfile(models.Model):
     bio = models.TextField(
         blank=True,
         max_length=2000,
-        help_text=_('Tell students about yourself and your experience')
+        help_text='Tell students about yourself and your experience'
     )
     headline = models.CharField(
         max_length=200,
         blank=True,
-        help_text=_('e.g., Senior Software Engineer at Google')
+        help_text='e.g., Senior Software Engineer at Google'
     )
 
     # Professional Details
     expertise = models.CharField(
         max_length=200,
-        help_text=_('Your main area of expertise')
+        help_text='Your main area of expertise'
     )
     skills = models.TextField(
-        help_text=_('Comma-separated list of skills you can teach')
+        help_text='Comma-separated list of skills you can teach'
     )
     experience_years = models.PositiveIntegerField(
         default=0,
-        verbose_name=_('Years of Experience')
+        verbose_name='Years of Experience'
     )
 
     # Current Position
     company = models.CharField(
         max_length=200,
         blank=True,
-        verbose_name=_('Company/Organization')
+        verbose_name='Company/Organization'
     )
     job_title = models.CharField(
         max_length=200,
         blank=True,
-        verbose_name=_('Job Title/Profession')
+        verbose_name='Job Title/Profession'
     )
 
     # Location (for physical observation internships)
     city = models.CharField(
         max_length=100,
         blank=True,
-        verbose_name=_('City/Region'),
-        help_text=_('e.g., Kigali, Nairobi, Lagos')
+        verbose_name='City/Region',
+        help_text='e.g., Kigali, Nairobi, Lagos'
     )
     country = models.CharField(
         max_length=100,
         blank=True,
         default='Rwanda',
-        verbose_name=_('Country')
+        verbose_name='Country'
     )
     workplace_address = models.TextField(
         blank=True,
-        verbose_name=_('Workplace Address'),
-        help_text=_('Where students will shadow you')
+        verbose_name='Workplace Address',
+        help_text='Where students will shadow you'
     )
 
     # Education Background
     diploma = models.CharField(
         max_length=200,
         blank=True,
-        verbose_name=_('Diploma/Degree'),
-        help_text=_('e.g., Master of Medicine, Bachelor of Engineering')
+        verbose_name='Diploma/Degree',
+        help_text='e.g., Master of Medicine, Bachelor of Engineering'
     )
     educational_institution = models.CharField(
         max_length=200,
         blank=True,
-        verbose_name=_('Educational Institution'),
-        help_text=_('e.g., University of Rwanda, MIT')
+        verbose_name='Educational Institution',
+        help_text='e.g., University of Rwanda, MIT'
     )
 
     # Observation Internship Settings
     accepts_in_person = models.BooleanField(
         default=True,
-        verbose_name=_('Accepts In-Person Shadowing'),
-        help_text=_('Allow students to shadow you at your workplace')
+        verbose_name='Accepts In-Person Shadowing',
+        help_text='Allow students to shadow you at your workplace'
     )
     accepts_virtual = models.BooleanField(
         default=False,
@@ -265,8 +266,8 @@ class MentorProfile(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = _('Mentor Profile')
-        verbose_name_plural = _('Mentor Profiles')
+        verbose_name = 'Mentor Profile'
+        verbose_name_plural = 'Mentor Profiles'
         ordering = ['-is_featured', '-rating', '-created_at']
 
     def __str__(self):
@@ -288,14 +289,14 @@ class MentorProfile(models.Model):
         filled = sum(1 for f in fields if f)
         return int((filled / len(fields)) * 100)
 
-    def update_rating(self):
-        """Recalculate average rating from reviews"""
-        from mentorship.models import Review
-        reviews = Review.objects.filter(mentor=self.user)
-        if reviews.exists():
-            self.rating = reviews.aggregate(models.Avg('rating'))['rating__avg']
-            self.total_reviews = reviews.count()
-            self.save()
+    # def update_rating(self):
+    #     """Recalculate average rating from reviews"""
+    #     from mentorship.models import Review
+    #     reviews = Review.objects.filter(mentor=self.user)
+    #     if reviews.exists():
+    #         self.rating = reviews.aggregate(models.Avg('rating'))['rating__avg']
+    #         self.total_reviews = reviews.count()
+    #         self.save()
 
 
 class Follow(models.Model):

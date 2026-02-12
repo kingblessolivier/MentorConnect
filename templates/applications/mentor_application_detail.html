@@ -1,0 +1,68 @@
+{% extends 'dashboard/base_dashboard.html' %}
+
+{% block title %}Application: {{ application.name }} - {{ SITE_NAME }}{% endblock %}
+
+{% block dashboard_content %}
+<div class="dashboard-header">
+    <div>
+        <a href="{% url 'applications:mentor_applications' %}" class="text-primary text-sm mb-2 inline-block">&larr; Back to Applications</a>
+        <h1>{{ application.name }}</h1>
+        <p class="text-muted">{{ application.email }} • {{ application.school }}</p>
+    </div>
+    <span class="badge badge-{{ application.status }}">{{ application.get_status_display }}</span>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <div class="card">
+        <div class="card-body">
+            <h3 class="mb-4">Application Details</h3>
+            <dl class="detail-list">
+                <dt>Name</dt>
+                <dd>{{ application.name }}</dd>
+                <dt>Email</dt>
+                <dd><a href="mailto:{{ application.email }}">{{ application.email }}</a></dd>
+                <dt>School</dt>
+                <dd>{{ application.school }}</dd>
+                <dt>Interests</dt>
+                <dd>{{ application.interests }}</dd>
+                <dt>Message</dt>
+                <dd>{{ application.message }}</dd>
+                {% if application.cv %}
+                <dt>CV</dt>
+                <dd><a href="{{ application.cv.url }}" target="_blank" class="text-primary">Download CV</a></dd>
+                {% endif %}
+            </dl>
+        </div>
+    </div>
+
+    {% if application.status == 'pending' %}
+    <div class="card">
+        <div class="card-body">
+            <h3 class="mb-4">Approve or Reject</h3>
+            <form method="post" action="{% url 'applications:mentor_application_action' application.pk %}">
+                {% csrf_token %}
+                <div class="form-group mb-4">
+                    <label class="form-label">Feedback (optional)</label>
+                    <textarea name="feedback" class="form-textarea w-full" rows="3" placeholder="Add feedback for the applicant..."></textarea>
+                </div>
+                <div class="flex gap-2">
+                    <button type="submit" name="action" value="approve" class="btn btn-primary">
+                        <i data-feather="check"></i> Approve & Send Invitation
+                    </button>
+                    <button type="submit" name="action" value="reject" class="btn btn-outline" onclick="return confirm('Reject this application?')">
+                        <i data-feather="x"></i> Reject
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% elif application.mentor_feedback %}
+    <div class="card">
+        <div class="card-body">
+            <h3 class="mb-4">Your Feedback</h3>
+            <p>{{ application.mentor_feedback }}</p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

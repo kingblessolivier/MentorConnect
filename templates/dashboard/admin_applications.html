@@ -1,0 +1,123 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% block title %}Applications - Admin{% endblock %}
+{% block dashboard_content %}
+<div class="dashboard-header">
+    <div>
+        <h1><i data-feather="user-plus" class="header-icon"></i> Guest Applications</h1>
+        <p class="text-muted">Manage applications from students without accounts</p>
+    </div>
+</div>
+
+<div class="dashboard-stats">
+    <div class="stat-card">
+        <div class="stat-card-icon"><i data-feather="inbox"></i></div>
+        <div class="stat-card-value">{{ total_applications|default:0 }}</div>
+        <div class="stat-card-label">Total</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon" style="background:#fef3c7;color:#d97706"><i data-feather="clock"></i></div>
+        <div class="stat-card-value">{{ pending_count|default:0 }}</div>
+        <div class="stat-card-label">Pending</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon" style="background:#d1fae5;color:#059669"><i data-feather="check"></i></div>
+        <div class="stat-card-value">{{ approved_count|default:0 }}</div>
+        <div class="stat-card-label">Approved</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon" style="background:#fee2e2;color:#dc2626"><i data-feather="x"></i></div>
+        <div class="stat-card-value">{{ rejected_count|default:0 }}</div>
+        <div class="stat-card-label">Rejected</div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="filters-form">
+            <div class="filters-row">
+                <div class="filter-group">
+                    <label>Search</label>
+                    <input type="text" name="search" class="form-control" placeholder="Name, email, school, mentor..." value="{{ request.GET.search }}">
+                </div>
+                <div class="filter-group">
+                    <label>Status</label>
+                    <select name="status" class="form-control">
+                        <option value="">All</option>
+                        <option value="pending" {% if request.GET.status == 'pending' %}selected{% endif %}>Pending</option>
+                        <option value="approved" {% if request.GET.status == 'approved' %}selected{% endif %}>Approved</option>
+                        <option value="rejected" {% if request.GET.status == 'rejected' %}selected{% endif %}>Rejected</option>
+                    </select>
+                </div>
+                <div class="filter-group filter-actions">
+                    <button type="submit" class="btn btn-primary"><i data-feather="search"></i> Filter</button>
+                    <a href="{% url 'dashboard:admin_applications' %}" class="btn btn-outline">Reset</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Applicant</th>
+                        <th>Mentor</th>
+                        <th>School</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for app in applications %}
+                    <tr>
+                        <td>
+                            <div class="user-cell">
+                                <div class="user-info">
+                                    <div class="user-name">{{ app.name }}</div>
+                                    <div class="user-email text-xs">{{ app.email }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ app.mentor.get_full_name }}</td>
+                        <td>{{ app.school|truncatechars:30 }}</td>
+                        <td><span class="badge badge-{{ app.status }}">{{ app.get_status_display }}</span></td>
+                        <td>{{ app.created_at|date:"M d, Y" }}</td>
+                        <td>
+                            <a href="{% url 'dashboard:admin_application_detail' app.pk %}" class="btn btn-sm btn-outline">View</a>
+                            {% if app.status == 'pending' %}
+                            <form method="post" action="{% url 'dashboard:admin_application_approve' app.pk %}" style="display:inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="feedback" value="">
+                                <button type="submit" class="btn btn-sm btn-primary">Approve</button>
+                            </form>
+                            <form method="post" action="{% url 'dashboard:admin_application_reject' app.pk %}" style="display:inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="feedback" value="">
+                                <button type="submit" class="btn btn-sm btn-outline" onclick="return confirm('Reject?')">Reject</button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6" class="text-center py-4 text-muted">No applications found</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if is_paginated %}
+        <div class="pagination-container">
+            <nav class="pagination">
+                {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}{% for k,v in request.GET.items %}{% if k != 'page' %}&{{ k }}={{ v }}{% endif %}{% endfor %}" class="pagination-btn"><i data-feather="chevron-left"></i></a>{% endif %}
+                <span class="pagination-info">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}{% for k,v in request.GET.items %}{% if k != 'page' %}&{{ k }}={{ v }}{% endif %}{% endfor %}" class="pagination-btn"><i data-feather="chevron-right"></i></a>{% endif %}
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+<style>.header-icon{width:28px;height:28px;vertical-align:middle;margin-right:0.5rem;color:var(--primary-color);}</style>
+{% endblock %}

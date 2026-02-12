@@ -119,20 +119,8 @@
                 <a href="{% url 'accounts:signup' %}" class="btn-nav-signup">{{ t.signup }}</a>
                 {% endif %}
 
-                <!-- Language Toggle -->
-                <div class="dropdown language-dropdown">
-                    <button class="btn btn-ghost btn-icon dropdown-toggle" id="languageToggle" aria-label="Change Language" title="Change Language" type="button">
-                        <i data-feather="globe"></i>
-                    </button>
-                    <div class="dropdown-menu dropdown-menu-right language-menu">
-                        <button class="dropdown-item {% if current_language == 'en' %}active{% endif %}" onclick="changeLanguage('en')" type="button">
-                            <span class="lang-flag">🇬🇧</span> English
-                        </button>
-                        <button class="dropdown-item {% if current_language == 'rw' %}active{% endif %}" onclick="changeLanguage('rw')" type="button">
-                            <span class="lang-flag">🇷🇼</span> Kinyarwanda
-                        </button>
-                    </div>
-                </div>
+                <!-- Google Translate Element -->
+                <div id="google_translate_element" class="google-translate-container"></div>
 
                 <!-- Accessibility Toggle -->
                 <button class="btn btn-ghost btn-icon accessibility-toggle-btn" id="accessibilityToggle" aria-label="Accessibility options" title="Accessibility Options" type="button">

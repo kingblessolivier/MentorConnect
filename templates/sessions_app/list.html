@@ -31,6 +31,7 @@
                         with {% if user.is_mentor %}{{ session.student.get_full_name }}{% else %}{{ session.mentor.get_full_name }}{% endif %}
                     </p>
                 </div>
+                <span class="badge badge-{{ session.session_type|default:'online' }}">{{ session.get_session_type_display|default:'Online' }}</span>
                 <span class="badge {% if session.status == 'scheduled' %}badge-warning{% elif session.status == 'completed' %}badge-success{% elif session.status == 'cancelled' %}badge-danger{% endif %}">
                     {{ session.get_status_display }}
                 </span>
@@ -49,6 +50,9 @@
                 </a>
                 {% endif %}
                 <a href="{% url 'sessions_app:detail' session.pk %}" class="btn btn-sm btn-outline">View Details</a>
+                <a href="{% url 'sessions_app:session_ics' session.pk %}" class="btn btn-sm btn-ghost">
+                    <i data-feather="calendar"></i> Add to Calendar
+                </a>
                 <form method="post" action="{% url 'sessions_app:cancel' session.pk %}" style="display:inline;">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-sm btn-ghost text-danger" onclick="return confirm('Cancel this session?')">Cancel</button>

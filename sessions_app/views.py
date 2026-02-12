@@ -122,6 +122,18 @@ def complete_session(request, pk):
     return redirect('sessions_app:list')
 
 
+@login_required
+def session_ics_export(request, pk):
+    """Export session to ICS calendar file"""
+    session = get_object_or_404(Session, pk=pk)
+    if session.mentor != request.user and session.student != request.user:
+        from django.http import HttpResponseForbidden
+        return HttpResponseForbidden()
+    from .calendar_utils import session_ics_response
+    filename = f'session-{session.pk}.ics'
+    return session_ics_response(session, filename)
+
+
 class AvailabilityListView(LoginRequiredMixin, ListView):
     """List mentor's availability"""
     template_name = 'sessions_app/availability.html'

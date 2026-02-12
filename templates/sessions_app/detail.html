@@ -1,0 +1,87 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Session: {{ session.title }} - {{ SITE_NAME }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="dashboard-header">
+    <div>
+        <a href="{% url 'sessions_app:list' %}" class="text-primary text-sm mb-2 inline-block">&larr; Back to Sessions</a>
+        <h1>{{ session.title }}</h1>
+        <p class="text-muted">
+            with {% if user.is_mentor %}{{ session.student.get_full_name }}{% else %}{{ session.mentor.get_full_name }}{% endif %}
+            •
+            <span class="badge badge-{{ session.session_type }}">
+                {{ session.get_session_type_display }}
+            </span>
+            <span class="badge badge-{{ session.status }}">{{ session.get_status_display }}</span>
+        </p>
+    </div>
+    <div class="flex gap-2">
+        <a href="{% url 'sessions_app:session_ics' session.pk %}" class="btn btn-outline">
+            <i data-feather="calendar"></i> Add to Calendar
+        </a>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <div class="card">
+        <div class="card-body">
+            <h3 class="mb-4">Session Details</h3>
+            <dl class="detail-list">
+                <dt>Date & Time</dt>
+                <dd>{{ session.scheduled_time|date:"l, F d, Y" }} at {{ session.scheduled_time|time:"H:i" }}</dd>
+                <dt>Duration</dt>
+                <dd>{{ session.duration }} minutes</dd>
+                <dt>Type</dt>
+                <dd>{{ session.get_session_type_display }}</dd>
+                {% if session.session_type == 'online' and session.meeting_link %}
+                <dt>Meeting Link</dt>
+                <dd><a href="{{ session.meeting_link }}" target="_blank" class="text-primary">Join Meeting</a></dd>
+                {% endif %}
+                {% if session.session_type == 'physical' and session.address %}
+                <dt>Location</dt>
+                <dd>{{ session.location_name|default:session.address }}<br>{{ session.address }}</dd>
+                {% endif %}
+                {% if session.description %}
+                <dt>Description</dt>
+                <dd>{{ session.description }}</dd>
+                {% endif %}
+            </dl>
+        </div>
+    </div>
+
+    {% if session.session_type == 'physical' and session.latitude and session.longitude %}
+    <div class="card">
+        <div class="card-body">
+            <h3 class="mb-4">Location Map</h3>
+            <div id="session-map" style="height: 300px; border-radius: 12px; overflow: hidden;"></div>
+            {% if session.address %}
+            <p class="mt-3 text-sm text-muted"><i data-feather="map-pin" style="width:14px;height:14px;display:inline;"></i> {{ session.address }}</p>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock dashboard_content %}
+
+{% block extra_js %}
+{{ block.super }}
+{% if session.session_type == 'physical' and session.latitude and session.longitude %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var map = L.map('session-map').setView([{{ session.latitude }}, {{ session.longitude }}], 15);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
+    L.marker([{{ session.latitude }}, {{ session.longitude }}]).addTo(map);
+});
+</script>
+{% endif %}
+{% endblock %}
