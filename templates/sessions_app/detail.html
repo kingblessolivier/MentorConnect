@@ -34,9 +34,9 @@
             <h3 class="mb-4">Session Details</h3>
             <dl class="detail-list">
                 <dt>Date & Time</dt>
-                <dd>{{ session.scheduled_time|date:"l, F d, Y" }} at {{ session.scheduled_time|time:"H:i" }}</dd>
+                <dd>{% if session.start %}{{ session.start|date:"l, F d, Y" }} at {{ session.start|time:"H:i" }}{% else %}—{% endif %}</dd>
                 <dt>Duration</dt>
-                <dd>{{ session.duration }} minutes</dd>
+                <dd>{% if session.end and session.start %}{{ ((session.end|date:"U")|int - (session.start|date:"U")|int)//60 }}{% else %}—{% endif %} minutes</dd>
                 <dt>Type</dt>
                 <dd>{{ session.get_session_type_display }}</dd>
                 {% if session.session_type == 'online' and session.meeting_link %}

@@ -1,3 +1,220 @@
+from django.shortcuts import get_object_or_404, redirect, render
+from django.views import View
+from django.views.generic import CreateView, TemplateView, ListView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import JsonResponse, HttpResponseForbidden
+from django.urls import reverse_lazy
+from django.contrib import messages
+from .models import Availability, Session
+from .forms import AvailabilityForm, SessionRequestForm
+from .forms import SessionCreateForm
+from django.contrib.auth import get_user_model
+User = get_user_model()
+from django.utils import timezone
+
+
+class AddAvailabilityView(LoginRequiredMixin, CreateView):
+    model = Availability
+    form_class = AvailabilityForm
+    template_name = 'sessions_app/add_availability.html'
+    success_url = reverse_lazy('sessions_app:mentor-schedule')
+
+    def form_valid(self, form):
+        av = form.save(commit=False)
+        av.mentor = self.request.user
+        av.save()
+        messages.success(self.request, 'Availability added.')
+        return super().form_valid(form)
+
+
+class MentorScheduleView(LoginRequiredMixin, TemplateView):
+    template_name = 'sessions_app/calendar.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        mentor_id = self.kwargs.get('mentor_id')
+        ctx['mentor_id'] = mentor_id
+        return ctx
+
+
+class EventsJsonView(View):
+    def get(self, request, mentor_id):
+        mentor_id = int(mentor_id)
+        # Pull availabilities and sessions for the mentor
+        avail_qs = Availability.objects.filter(mentor_id=mentor_id, is_active=True)
+        sessions_qs = Session.objects.filter(mentor_id=mentor_id)
+
+        events = []
+        for av in avail_qs:
+            if av.start and av.end:
+                events.append({
+                    'id': f"avail-{av.id}",
+                    'title': f"Available - {av.location_name or 'Online'}",
+                    'start': av.start.isoformat(),
+                    'end': av.end.isoformat(),
+                    'color': 'green',
+                    'extendedProps': {
+                        'type': 'availability',
+                        'availability_id': av.id,
+                        'location_name': av.location_name,
+                        'address': av.address,
+                        'session_type': av.session_type,
+                        'is_booked': av.is_booked,
+                    }
+                })
+
+        for s in sessions_qs:
+            if s.start and s.end:
+                events.append({
+                    'id': f"session-{s.id}",
+                    'title': f"{s.title or 'Booked'} - {s.location_name or s.session_type}",
+                    'start': s.start.isoformat(),
+                    'end': s.end.isoformat(),
+                    'color': 'blue' if s.status in ('approved', 'pending') else 'gray',
+                    'extendedProps': {
+                        'type': 'session',
+                        'session_id': s.id,
+                        'status': s.status,
+                        'student': s.student.get_full_name(),
+                        'location_name': s.location_name,
+                        'address': s.address,
+                    }
+                })
+
+        return JsonResponse(events, safe=False)
+
+
+class BookAvailabilityView(LoginRequiredMixin, View):
+    def post(self, request, availability_id):
+        av = get_object_or_404(Availability, id=availability_id, is_active=True)
+        # prevent booking if already booked
+        if av.is_booked:
+            messages.error(request, 'This slot is already booked.')
+            return redirect(request.META.get('HTTP_REFERER', '/'))
+
+        form = SessionRequestForm(request.POST)
+        if form.is_valid():
+            s = form.save(commit=False)
+            s.student = request.user
+            s.mentor = av.mentor
+            s.availability = av
+            s.start = av.start
+            s.end = av.end
+            s.session_type = av.session_type or 'online'
+            s.location_name = av.location_name
+            s.address = av.address
+            s.status = 'pending'
+            s.save()
+            messages.success(request, 'Session request sent to mentor.')
+            return redirect('sessions_app:student-schedule')
+        messages.error(request, 'Invalid request.')
+        return redirect(request.META.get('HTTP_REFERER', '/'))
+
+
+class ApproveSessionView(LoginRequiredMixin, View):
+    def post(self, request, session_id):
+        s = get_object_or_404(Session, id=session_id)
+        if request.user != s.mentor:
+            return HttpResponseForbidden()
+        try:
+            s.approve(by_user=request.user)
+            messages.success(request, 'Session approved — slot marked as booked.')
+        except Exception as e:
+            messages.error(request, str(e))
+        return redirect(request.META.get('HTTP_REFERER', '/'))
+
+
+class RejectSessionView(LoginRequiredMixin, View):
+    def post(self, request, session_id):
+        s = get_object_or_404(Session, id=session_id)
+        if request.user != s.mentor:
+            return HttpResponseForbidden()
+        s.reject()
+        messages.success(request, 'Session rejected.')
+        return redirect(request.META.get('HTTP_REFERER', '/'))
+
+
+class StartSessionView(LoginRequiredMixin, View):
+    def post(self, request, session_id):
+        s = get_object_or_404(Session, id=session_id)
+        if request.user != s.mentor:
+            return HttpResponseForbidden()
+        # Only allow starting for physical sessions
+        if s.session_type != 'physical':
+            messages.error(request, 'Only in-person sessions can be started this way.')
+            return redirect(request.META.get('HTTP_REFERER', '/'))
+        if s.status != 'approved':
+            messages.error(request, 'Session must be approved to start.')
+            return redirect(request.META.get('HTTP_REFERER', '/'))
+        s.status = 'in_progress'
+        s.save()
+        messages.success(request, 'Session marked as in progress.')
+        return redirect(request.META.get('HTTP_REFERER', '/'))
+
+
+class CompleteSessionView(LoginRequiredMixin, View):
+    def post(self, request, session_id):
+        s = get_object_or_404(Session, id=session_id)
+        if request.user != s.mentor:
+            return HttpResponseForbidden()
+        if s.session_type != 'physical':
+            messages.error(request, 'Only in-person sessions can be completed this way.')
+            return redirect(request.META.get('HTTP_REFERER', '/'))
+        if s.status not in ('approved', 'in_progress'):
+            messages.error(request, 'Session must be approved or in progress to complete.')
+            return redirect(request.META.get('HTTP_REFERER', '/'))
+        s.status = 'completed'
+        s.save()
+        # mark availability booked if present
+        if s.availability:
+            s.availability.is_booked = True
+            s.availability.save()
+        messages.success(request, 'Session marked as completed.')
+        return redirect(request.META.get('HTTP_REFERER', '/'))
+
+
+class StudentScheduleView(LoginRequiredMixin, TemplateView):
+    template_name = 'sessions_app/student_schedule.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['sessions'] = Session.objects.filter(student=self.request.user).order_by('-start')
+        return ctx
+
+
+class MentorSessionsListView(LoginRequiredMixin, TemplateView):
+    template_name = 'sessions_app/mentor_sessions.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['sessions'] = Session.objects.filter(mentor=self.request.user).order_by('-start')
+        return ctx
+
+
+class MentorCreateSessionView(LoginRequiredMixin, View):
+    template_name = 'sessions_app/create_session.html'
+
+    def get(self, request, mentor_id):
+        # only allow creating sessions for yourself as mentor
+        if request.user.id != int(mentor_id):
+            return HttpResponseForbidden()
+        form = SessionCreateForm()
+        return render(request, self.template_name, {'form': form})
+
+    def post(self, request, mentor_id):
+        if request.user.id != int(mentor_id):
+            return HttpResponseForbidden()
+        form = SessionCreateForm(request.POST)
+        if form.is_valid():
+            s = form.save(commit=False)
+            s.mentor = request.user
+            # ensure availability not set; this is an ad-hoc session
+            s.availability = None
+            s.status = 'approved'
+            s.save()
+            messages.success(request, 'Session created.')
+            return redirect('sessions_app:mentor-sessions')
+        return render(request, self.template_name, {'form': form})
 """
 Sessions App Views
 """
@@ -44,7 +261,7 @@ class BookSessionView(LoginRequiredMixin, CreateView):
     """Book a session with a mentor"""
     model = Session
     template_name = 'sessions_app/book.html'
-    fields = ['title', 'description', 'scheduled_time']
+    fields = ['title', 'description', 'start', 'end']
     success_url = reverse_lazy('sessions_app:list')
 
     def dispatch(self, request, *args, **kwargs):
@@ -62,11 +279,14 @@ class BookSessionView(LoginRequiredMixin, CreateView):
     def form_valid(self, form):
         form.instance.student = self.request.user
         form.instance.mentor = self.mentor
-        
+        # Ensure start/end are set; default duration from mentor profile if end missing
         try:
-            form.instance.duration = self.mentor.mentor_profile.session_duration
+            default_minutes = self.mentor.mentor_profile.session_duration
         except Exception:
-            form.instance.duration = 60
+            default_minutes = 60
+        if not form.instance.end and form.instance.start:
+            from datetime import timedelta
+            form.instance.end = form.instance.start + timedelta(minutes=default_minutes)
         
         response = super().form_valid(form)
         
@@ -144,10 +364,10 @@ class AvailabilityListView(LoginRequiredMixin, ListView):
 
 
 class AddAvailabilityView(LoginRequiredMixin, CreateView):
-    """Add availability slot"""
+    """Add availability slot (uses `AvailabilityForm` with datetime ranges)"""
     model = Availability
+    form_class = AvailabilityForm
     template_name = 'sessions_app/add_availability.html'
-    fields = ['day_of_week', 'start_time', 'end_time']
     success_url = reverse_lazy('sessions_app:availability')
 
     def form_valid(self, form):
@@ -166,20 +386,83 @@ def delete_availability(request, pk):
 
 
 class MentorCalendarView(TemplateView):
-    """View mentor's calendar/availability"""
-    template_name = 'sessions_app/calendar.html'
+    """View mentor's calendar/availability (month grid) - reuses mentorship template."""
+    template_name = 'mentorship/mentor_calendar.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         mentor = get_object_or_404(User, pk=kwargs['mentor_id'], role='mentor')
-        context['mentor'] = mentor
-        context['availabilities'] = Availability.objects.filter(mentor=mentor, is_active=True)
-        
-        # Get upcoming sessions
+
+        # month/year from query params or current
+        year = int(self.request.GET.get('year', timezone.now().year))
+        month = int(self.request.GET.get('month', timezone.now().month))
+
+        import calendar as _calendar
+        from datetime import datetime, date
+
+        cal = _calendar.Calendar(firstweekday=0)
+        month_days = cal.monthdayscalendar(year, month)
+
+        # date range for the month
+        start_date = date(year, month, 1)
+        if month == 12:
+            end_date = date(year + 1, 1, 1)
+        else:
+            end_date = date(year, month + 1, 1)
+
+        # Query availabilities whose start date is within month
+        avail_qs = Availability.objects.filter(
+            mentor=mentor,
+            start__date__gte=start_date,
+            start__date__lt=end_date,
+            is_active=True,
+        ).order_by('start')
+
+        availability_by_date = {}
+        for av in avail_qs:
+            d = av.start.date()
+            key = d.isoformat()
+            slot = {
+                'id': av.id,
+                'date': d,
+                'start_time': av.start.time(),
+                'end_time': av.end.time() if av.end else None,
+                'title': av.title if hasattr(av, 'title') and av.title else 'Available',
+                'description': getattr(av, 'description', ''),
+                'is_available': not av.is_booked,
+                'spots_left': getattr(av, 'spots_left', 1),
+                'max_bookings': getattr(av, 'max_bookings', 1),
+                'current_bookings': getattr(av, 'current_bookings', 0),
+            }
+            availability_by_date.setdefault(key, []).append(slot)
+
+        # navigation months
+        prev_month = month - 1 if month > 1 else 12
+        prev_year = year if month > 1 else year - 1
+        next_month = month + 1 if month < 12 else 1
+        next_year = year if month < 12 else year + 1
+
+        context.update({
+            'mentor': mentor,
+            'year': year,
+            'month': month,
+            'month_name': _calendar.month_name[month],
+            'month_days': month_days,
+            'availability_by_date': availability_by_date,
+            'today': timezone.now().date(),
+            'prev_month': prev_month,
+            'prev_year': prev_year,
+            'next_month': next_month,
+            'next_year': next_year,
+            'weekdays': ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+        })
+
+        # upcoming booked sessions for the mentor
         if self.request.user.is_authenticated:
             context['booked_sessions'] = Session.objects.filter(
                 mentor=mentor,
-                status='scheduled',
-                scheduled_time__gte=timezone.now()
-            )
+                status__in=['approved', 'pending', 'in_progress'],
+                start__gte=timezone.now()
+            ).order_by('start')
+
         return context

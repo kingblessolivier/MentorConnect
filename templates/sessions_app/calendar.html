@@ -1,69 +1,107 @@
 {% extends 'dashboard/base_dashboard.html' %}
+{% load static %}
 
 {% block title %}Mentor Calendar - {{ mentor.get_full_name }}{% endblock %}
 
-{% block dashboard_content %}
-<div class="dashboard-header">
-    <div>
-        <h1>Mentor Schedule</h1>
-        <p class="text-muted">View available slots and booked sessions for {{ mentor.get_full_name }}</p>
-    </div>
-</div>
+{% block extra_css %}
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" rel="stylesheet">
+  <style>
+    /* Match profile tweaks: rounded events, smaller toolbar */
+    .fc-toolbar-title { font-size: 1.6rem; font-weight:700; color:#0f172a; }
+    .fc .fc-button { padding: 6px 10px; border-radius:8px; background:#eef2ff; color:#1e293b; border:0; }
+    .fc .fc-button:hover { background:#e0e7ff; }
+    .fc .fc-daygrid-event { border-radius:10px; padding:6px 10px; font-size:0.95rem; box-shadow:none; }
+    .fc .fc-daygrid-event { background:#0ea5a4 !important; border-color:#0ea5a4 !important; color:#ffffff !important; }
+    .fc .fc-daygrid-block-event { min-height:34px; }
+  </style>
+{% endblock %}
 
-<div class="card">
-    <div class="card-body">
-        <h3>Available Slots</h3>
-        {% regroup availabilities by get_day_of_week_display as day_list %}
-        {% for day in day_list %}
-        <div class="mb-4">
-            <h4 class="mb-2">{{ day.grouper }}</h4>
-            {% for slot in day.list %}
-            <div class="p-3 mb-2 rounded" style="background: var(--background-color);">
-                <div class="flex items-center gap-3">
-                    <i data-feather="clock" class="text-primary"></i>
-                    <span>{{ slot.start_time|time:"H:i" }} - {{ slot.end_time|time:"H:i" }}</span>
-                </div>
-                {% if slot.location_name or slot.address %}
-                <div class="text-muted mt-1" style="font-size: 0.95em;">
-                    <i data-feather="map-pin" style="width:14px;"></i>
-                    {{ slot.location_name }}{% if slot.location_name and slot.address %}, {% endif %}{{ slot.address }}
-                </div>
-                {% endif %}
-            </div>
-            {% endfor %}
-        </div>
-        {% empty %}
-        <div class="text-center py-5">
-            <i data-feather="clock" style="width: 48px; height: 48px; color: var(--text-muted);"></i>
-            <h3 class="mt-3">No availability set</h3>
-        </div>
-        {% endfor %}
-        <hr>
-        <h3>Upcoming Booked Sessions</h3>
-        {% if booked_sessions %}
-        <ul class="list-group">
-            {% for session in booked_sessions %}
-            <li class="list-group-item">
-                <div class="flex items-center gap-3">
-                    <i data-feather="calendar"></i>
-                    <span>{{ session.scheduled_time|date:"M d, Y H:i" }}</span>
-                    <span class="ml-2">{{ session.title }}</span>
-                </div>
-                {% if session.location_name or session.address %}
-                <div class="text-muted mt-1" style="font-size: 0.95em;">
-                    <i data-feather="map-pin" style="width:14px;"></i>
-                    {{ session.location_name }}{% if session.location_name and session.address %}, {% endif %}{{ session.address }}
-                </div>
-                {% endif %}
-                {% if session.description %}
-                <div class="mt-1">{{ session.description }}</div>
-                {% endif %}
-            </li>
-            {% endfor %}
-        </ul>
-        {% else %}
-        <div class="text-center py-4 text-muted">No upcoming sessions.</div>
-        {% endif %}
+{% block dashboard_content %}
+  <div class="flex items-center justify-between mb-4">
+    <div>
+      <h1 class="text-2xl font-semibold">Mentor Schedule</h1>
+      <p class="text-muted">View available slots and booked sessions for {{ mentor.get_full_name }}</p>
     </div>
-</div>
+    {% if request.user.is_authenticated and request.user.id == mentor.id %}
+      <a href="{% url 'sessions_app:add-availability' %}" class="bg-blue-600 text-white px-3 py-2 rounded">Add Availability</a>
+    {% endif %}
+  </div>
+
+  <div id="calendar" class="bg-white p-4 shadow rounded" style="min-height: 600px;"></div>
+
+  <hr class="my-6">
+
+  <h3>Upcoming Booked Sessions</h3>
+  {% if booked_sessions %}
+    <ul class="list-group">
+      {% for session in booked_sessions %}
+        <li class="list-group-item">
+          <div class="flex items-center gap-3">
+            <i data-feather="calendar"></i>
+            <span>{{ session.start|date:"M d, Y H:i" }}</span>
+            <span class="ml-2">{{ session.title }}</span>
+          </div>
+          {% if session.location_name or session.address %}
+          <div class="text-muted mt-1" style="font-size: 0.95em;">
+            <i data-feather="map-pin" style="width:14px;"></i>
+            {{ session.location_name }}{% if session.location_name and session.address %}, {% endif %}{{ session.address }}
+          </div>
+          {% endif %}
+          {% if session.description %}
+          <div class="mt-1">{{ session.description }}</div>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <div class="text-center py-4 text-muted">No upcoming sessions.</div>
+  {% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const mentorId = {{ mentor.id }};
+      const calendarEl = document.getElementById('calendar');
+      const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'timeGridWeek',
+        headerToolbar: { left: 'prev,next today', center: 'title', right: 'timeGridWeek,dayGridMonth' },
+        events: {
+          url: '{% url "sessions_app:mentor-events-json" 0 %}'.replace('/0/', '/' + mentorId + '/'),
+        },
+        eventClick: function(info) {
+          const props = info.event.extendedProps || {};
+          if (props.type === 'availability') {
+            if (props.is_booked) {
+              alert('This availability is already booked.');
+              return;
+            }
+            const title = prompt('Enter a short title for your session request', 'Mentorship Session');
+            if (!title) return;
+            const csrftoken = document.cookie.split('; ').find(r=>r.startsWith('csrftoken='))?.split('=')[1];
+            fetch('{% url "sessions_app:book-availability" 0 %}'.replace('/0/', '/' + props.availability_id + '/'), {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': csrftoken
+              },
+              body: new URLSearchParams({ title: title })
+            }).then(r => {
+              if (r.redirected) window.location = r.url;
+              else location.reload();
+            });
+          } else if (props.type === 'session') {
+            let detail = info.event.title + '\nStatus: ' + props.status;
+            if (props.location_name) detail += '\nLocation: ' + props.location_name;
+            if (props.address) detail += '\nAddress: ' + props.address;
+            alert(detail);
+          }
+        }
+      });
+      calendar.render();
+    });
+  </script>
 {% endblock %}

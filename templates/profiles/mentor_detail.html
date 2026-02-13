@@ -773,6 +773,14 @@
                 <!-- Action Buttons -->
                 <div class="mentor-profile-actions">
                     {% if user.is_authenticated and user != profile.user %}
+                                <a href="{% url 'sessions_app:mentor_calendar' profile.user.id %}" class="btn-action secondary" style="margin-top:8px;">
+                                    <i data-feather="calendar"></i>
+                                    View Schedule
+                                </a>
+                                <a href="{% url 'sessions_app:mentor-create-session' profile.user.id %}" class="btn-action secondary" style="margin-top:8px;">
+                                    <i data-feather="plus-circle"></i>
+                                    Create Session
+                                </a>
                         {% if is_following %}
                         <a href="{% url 'profiles:unfollow' profile.user.id %}" class="btn-action following">
                             <i data-feather="check"></i>
@@ -912,6 +920,93 @@
                     </div>
                 </div>
                 {% endif %}
+
+                <!-- SCHEDULE PREVIEW -->
+                <div class="mentor-content-card">
+                    <div class="card-header">
+                        <i data-feather="calendar"></i>
+                        <h2>Schedule</h2>
+                    </div>
+                    <div class="card-body">
+                        <p class="section-text">Quick view of this mentor's schedule. Click <a href="{% url 'mentorship:mentor_calendar' profile.user.id %}">View Full Calendar</a> to interact with availability and book a session.</p>
+                        <div style="margin-top:1rem;">
+                            <div id="mentor-calendar" style="width:100%;height:420px;border-radius:8px;overflow:hidden;background:#fff;padding:8px;box-sizing:border-box;"></div>
+                            <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" rel="stylesheet" />
+                            <style>
+                                /* Calendar visual tweaks: cleaner, rounded events, softer colors */
+                                .fc-toolbar-title { font-size: 1.6rem; font-weight:700; color:#0f172a; }
+                                .fc .fc-button { padding: 6px 10px; border-radius:8px; background:#eef2ff; color:#1e293b; border:0; }
+                                .fc .fc-button:hover { background:#e0e7ff; }
+                                .fc .fc-daygrid-event { border-radius:10px; padding:6px 10px; font-size:0.95rem; box-shadow:none; }
+                                .fc .fc-daygrid-event .fc-event-title { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+                                .fc .fc-daygrid-event { background:#0ea5a4 !important; border-color:#0ea5a4 !important; color:#ffffff !important; }
+                                .fc .fc-daygrid-block-event { min-height:34px; }
+                                .fc .fc-daygrid-day-number { color:#6b21a8; }
+                                #mentor-calendar { background:transparent; }
+                            </style>
+                            <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+                            <script>
+                                document.addEventListener('DOMContentLoaded', function() {
+                                    var mentorId = {{ profile.user.id|default:0 }};
+                                    var calendarEl = document.getElementById('mentor-calendar');
+                                    var calendar = new FullCalendar.Calendar(calendarEl, {
+                                        initialView: 'dayGridMonth',
+                                        headerToolbar: { left: 'prev,next today', center: 'title', right: '' },
+                                        height: 420,
+                                        events: '{% url "sessions_app:mentor-events-json" profile.user.id %}',
+                                        eventDidMount: function(info) {
+                                            // simple tooltip
+                                            info.el.title = info.event.title;
+                                        },
+                                        eventClick: function(info) {
+                                            var props = info.event.extendedProps || {};
+                                            if (props.availability_id) {
+                                                // redirect to booking page for this availability
+                                                var url = '{% url "sessions_app:book-availability" 0 %}'.replace('/0/', '/' + props.availability_id + '/');
+                                                window.location.href = url;
+                                            }
+                                        }
+                                    });
+                                    calendar.render();
+
+                                    // Debug: verify events endpoint returns JSON and surface friendly messages
+                                    (function(){
+                                        var eventsUrl = '{% url "sessions_app:mentor-events-json" profile.user.id %}';
+                                        fetch(eventsUrl, { credentials: 'same-origin' })
+                                            .then(function(resp){
+                                                if (!resp.ok) throw new Error('Network response not OK: ' + resp.status);
+                                                return resp.text();
+                                            })
+                                            .then(function(text){
+                                                try {
+                                                    var parsed = JSON.parse(text);
+                                                    console.log('Mentor events JSON:', parsed);
+                                                    if (!Array.isArray(parsed) || parsed.length === 0) {
+                                                        var hint = document.createElement('div');
+                                                        hint.style.padding = '1rem';
+                                                        hint.style.color = '#6b7280';
+                                                        hint.textContent = 'No availability or sessions to display.';
+                                                        calendarEl.appendChild(hint);
+                                                    }
+                                                } catch (e) {
+                                                    console.error('Events endpoint returned non-JSON (HTML?).', text.slice(0,200));
+                                                    calendarEl.innerHTML = '<div style="padding:1rem;color:#9ca3af;">Schedule preview unavailable — check console for details.</div>';
+                                                }
+                                            })
+                                            .catch(function(err){
+                                                console.error('Failed to fetch events URL', err);
+                                                calendarEl.innerHTML = '<div style="padding:1rem;color:#9ca3af;">Schedule preview unavailable — check console for details.</div>';
+                                            });
+                                    })();
+                                });
+                            </script>
+                        </div>
+                        <div style="margin-top:0.75rem;display:flex;gap:8px;">
+                            <a href="{% url 'mentorship:create_request' profile.user.id %}" class="btn-action primary">Request Mentorship</a>
+                            <a href="{% url 'sessions_app:mentor_calendar' profile.user.id %}" class="btn-action secondary">View Sessions (Detailed)</a>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- MENTORSHIP DETAILS -->
                 <div class="mentor-content-card">

@@ -1,0 +1,49 @@
+{% load static %}
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Create Session</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50">
+  <div class="max-w-2xl mx-auto py-8">
+    <h1 class="text-2xl font-semibold mb-4">Create Session</h1>
+    <form method="post" class="bg-white p-6 rounded shadow">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+      <div class="grid grid-cols-1 gap-4">
+        <label class="block">Student
+          {{ form.student }}
+        </label>
+        <label class="block">Title
+          {{ form.title }}
+        </label>
+        <label class="block">Start
+          {{ form.start }}
+        </label>
+        <label class="block">End
+          {{ form.end }}
+        </label>
+        <label class="block">Type
+          {{ form.session_type }}
+        </label>
+        <label class="block">Location name
+          {{ form.location_name }}
+        </label>
+        <label class="block">Address
+          {{ form.address }}
+        </label>
+        <label class="block">Description
+          {{ form.description }}
+        </label>
+      </div>
+      <div class="mt-4">
+        <button class="bg-green-600 text-white px-4 py-2 rounded">Create</button>
+        <a href="{% url 'sessions_app:mentor-sessions' %}" class="ml-2 text-gray-600">Cancel</a>
+      </div>
+    </form>
+  </div>
+</body>
+</html>

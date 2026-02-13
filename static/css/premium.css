@@ -2225,3 +2225,33 @@ main.main-content {
     padding-top: 0 !important;
     margin-top: 0 !important;
 }
+
+/* Extra small screens tweaks to prevent hero overflow and right-shift */
+@media (max-width: 480px) {
+    .hero-premium {
+        min-height: 60vh;
+    }
+    .hero-content-premium {
+        padding: 0 0.75rem;
+        grid-template-columns: 1fr;
+        gap: 1.25rem;
+        text-align: center;
+    }
+    .hero-text-premium h1 {
+        font-size: 1.6rem;
+        line-height: 1.15;
+        margin-bottom: 1rem;
+    }
+    .hero-text-premium p {
+        font-size: 1rem;
+        margin-bottom: 1rem;
+        max-width: none;
+    }
+    .hero-buttons-premium { gap: 0.75rem; }
+    .btn-hero-primary, .btn-hero-secondary { padding: 0.75rem 1rem; font-size: 0.95rem; }
+    /* shrink and reposition floating elements so they don't overlap content */
+    .floating-element-1 { width: 180px; height: 180px; top: -60px; right: -60px; }
+    .floating-element-2 { width: 120px; height: 120px; bottom: -30px; left: -30px; }
+    /* hide large visual card on very small screens to avoid horizontal overflow */
+    .hero-visual { display: none; }
+}

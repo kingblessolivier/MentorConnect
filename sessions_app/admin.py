@@ -10,13 +10,13 @@ class AvailabilityAdmin(admin.ModelAdmin):
     """
     list_display = (
         'mentor_display',
-        'day_display',
-        'time_display',
+        'range_display',
+        'session_type',
         'is_active_badge',
     )
-    list_filter = ('day_of_week', 'is_active')
+    list_filter = ('session_type', 'is_active')
     search_fields = ('mentor__first_name', 'mentor__last_name', 'mentor__email')
-    ordering = ('mentor', 'day_of_week', 'start_time')
+    ordering = ('mentor', 'start')
 
     fieldsets = (
         ('Mentor', {
@@ -24,7 +24,7 @@ class AvailabilityAdmin(admin.ModelAdmin):
             'classes': ('wide',)
         }),
         ('Availability Schedule', {
-            'fields': ('day_of_week', 'start_time', 'end_time'),
+            'fields': ('start', 'end', 'session_type'),
             'classes': ('wide',)
         }),
         ('Status', {
@@ -39,12 +39,17 @@ class AvailabilityAdmin(admin.ModelAdmin):
     mentor_display.admin_order_field = 'mentor__first_name'
 
     def day_display(self, obj):
-        return obj.get_day_of_week_display()
+        # legacy support; if using start/end show date
+        if obj.start:
+            return obj.start.strftime('%A')
+        return ''
     day_display.short_description = 'Day'
 
-    def time_display(self, obj):
-        return f"{obj.start_time.strftime('%H:%M')} - {obj.end_time.strftime('%H:%M')}"
-    time_display.short_description = 'Hours'
+    def range_display(self, obj):
+        if obj.start and obj.end:
+            return f"{obj.start.strftime('%b %d, %Y %H:%M')} - {obj.end.strftime('%b %d, %Y %H:%M')}"
+        return ''
+    range_display.short_description = 'Availability'
 
     def is_active_badge(self, obj):
         if obj.is_active:
@@ -65,18 +70,18 @@ class SessionAdmin(admin.ModelAdmin):
         'status_badge',
         'created_at_short',
     )
-    list_filter = ('status', 'scheduled_time', 'created_at')
+    list_filter = ('status', 'session_type', 'created_at')
     search_fields = ('student__first_name', 'student__last_name', 'mentor__first_name', 'mentor__last_name', 'mentor_notes', 'student_notes', 'title')
     readonly_fields = ('created_at', 'updated_at')
-    ordering = ('-scheduled_time',)
+    ordering = ('-start',)
 
     fieldsets = (
         ('Session Information', {
-            'fields': ('student', 'mentor', 'mentorship_request', 'title', 'description'),
+            'fields': ('student', 'mentor', 'availability', 'title', 'description'),
             'classes': ('wide',)
         }),
         ('Schedule', {
-            'fields': ('scheduled_time', 'duration'),
+            'fields': ('start', 'end'),
             'classes': ('wide',)
         }),
         ('Meeting', {
@@ -108,19 +113,26 @@ class SessionAdmin(admin.ModelAdmin):
     mentor_display.admin_order_field = 'mentor__first_name'
 
     def session_time(self, obj):
-        scheduled = obj.scheduled_time.strftime('%b %d, %Y %H:%M')
-        duration = f"{obj.duration} min" if obj.duration else '—'
-        return format_html('{} <br/> <small style="color: #9CA3AF;">{}</small>', scheduled, duration)
+        if obj.start:
+            start = obj.start.strftime('%b %d, %Y %H:%M')
+        else:
+            start = '—'
+        if obj.end:
+            end = obj.end.strftime('%b %d, %Y %H:%M')
+            when = f"{start} — {end}"
+        else:
+            when = start
+        return format_html('{}', when)
     session_time.short_description = 'When'
-    session_time.admin_order_field = 'scheduled_time'
+    session_time.admin_order_field = 'start'
 
     def status_badge(self, obj):
         colors = {
-            'scheduled': '#3B82F6',
-            'in_progress': '#F59E0B',
+            'pending': '#F59E0B',
+            'approved': '#3B82F6',
+            'rejected': '#EF4444',
             'completed': '#10B981',
-            'cancelled': '#EF4444',
-            'no_show': '#EC4899',
+            'cancelled': '#9CA3AF',
         }
         color = colors.get(obj.status, '#9CA3AF')
         label = obj.get_status_display()

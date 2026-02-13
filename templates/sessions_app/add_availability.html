@@ -1,57 +1,68 @@
 {% extends 'dashboard/base_dashboard.html' %}
+{% load static %}
 
 {% block title %}Add Availability - {{ SITE_NAME }}{% endblock %}
 
 {% block dashboard_content %}
 <div class="dashboard-header">
-    <div>
-        <h1>Add Availability Slot</h1>
-        <p class="text-muted">Set when you're available for sessions</p>
-    </div>
+  <div>
+    <h1>Add Availability Slot</h1>
+    <p class="text-muted">Set when you're available for sessions</p>
+  </div>
 </div>
 
-<div class="card" style="max-width: 500px;">
-    <div class="card-body">
-        <form method="post">
-            {% csrf_token %}
+<div class="card" style="max-width: 700px;">
+  <div class="card-body">
+    <form method="post">
+      {% csrf_token %}
 
-            <div class="form-group">
-                <label class="form-label">Day of Week</label>
-                <select name="day_of_week" class="form-select" required>
-                    <option value="0">Monday</option>
-                    <option value="1">Tuesday</option>
-                    <option value="2">Wednesday</option>
-                    <option value="3">Thursday</option>
-                    <option value="4">Friday</option>
-                    <option value="5">Saturday</option>
-                    <option value="6">Sunday</option>
-                </select>
-            </div>
+      {{ form.non_field_errors }}
 
-            <div class="grid grid-2" style="gap: 1rem;">
-                <div class="form-group">
-                    <label class="form-label">Start Time</label>
-                    <input type="time" name="start_time" class="form-input" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">End Time</label>
-                    <input type="time" name="end_time" class="form-input" required>
-                </div>
-            </div>
+      <div class="grid gap-4">
+        <div class="form-group">
+          <label class="form-label">Start</label>
+          {{ form.start }}
+        </div>
+        <div class="form-group">
+          <label class="form-label">End</label>
+          {{ form.end }}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Session Type</label>
+          {{ form.session_type }}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Location Name</label>
+          {{ form.location_name }}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Address</label>
+          {{ form.address }}
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="form-label">Latitude</label>
+            {{ form.latitude }}
+          </div>
+          <div>
+            <label class="form-label">Longitude</label>
+            {{ form.longitude }}
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Active</label>
+          {{ form.is_active }}
+        </div>
+      </div>
 
-            <div class="flex gap-3">
-                <button type="submit" class="btn btn-primary flex-1">
-                    <i data-feather="plus"></i> Add Slot
-                </button>
-                <a href="{% url 'sessions_app:availability' %}" class="btn btn-outline">Cancel</a>
-            </div>
-        </form>
-    </div>
+      <div class="mt-4 flex gap-3">
+        <button type="submit" class="btn btn-primary">
+          <i data-feather="plus"></i> Add Slot
+        </button>
+        <a href="{% url 'sessions_app:availability' %}" class="btn btn-outline">Cancel</a>
+      </div>
+    </form>
+  </div>
 </div>
 
-<!-- Mobile Toggle Button -->
-<button class="sidebar-toggle-mobile">
-    <i data-feather="menu"></i>
-</button>
-<div class="sidebar-overlay"></div>
 {% endblock %}

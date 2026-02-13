@@ -96,6 +96,39 @@
                         {% endwith %}
                         {% endfor %}
                         {% endfor %}
+
+                        {# Booked sessions for the month grouped by date #}
+                        {% if sessions_by_date %}
+                            {% for date_str, sessions in sessions_by_date.items %}
+                                {% for s in sessions %}
+                                    <div class="session-card booked" data-date="{{ date_str }}">
+                                        <div class="session-date-badge">
+                                            <span class="badge-day">{{ s.date|date:"d" }}</span>
+                                            <span class="badge-month">{{ s.date|date:"M" }}</span>
+                                        </div>
+                                        <div class="session-info">
+                                            <h4>{{ s.title }}</h4>
+                                            <div class="session-meta">
+                                                <span class="time">
+                                                    <i data-feather="clock"></i>
+                                                    {{ s.start_time|time:"H:i" }}{% if s.end_time %} - {{ s.end_time|time:"H:i" }}{% endif %}
+                                                </span>
+                                                <span class="status">
+                                                    <i data-feather="user"></i>
+                                                    {{ s.student }} • {{ s.status|capfirst }}
+                                                </span>
+                                            </div>
+                                            {% if s.description %}
+                                            <p class="session-desc">{{ s.description }}</p>
+                                            {% endif %}
+                                        </div>
+                                        <div class="session-actions">
+                                            <a href="{% url 'sessions_app:detail' s.id %}" class="btn btn-outline btn-sm">View</a>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            {% endfor %}
+                        {% endif %}
                     </div>
                 </div>
 
@@ -1004,5 +1037,15 @@ document.getElementById('bookingModal').addEventListener('click', function(e) {
 if (typeof feather !== 'undefined') {
     feather.replace();
 }
+
+// Attach click handlers to calendar day elements (fallback for older browsers / inline onclicks)
+document.querySelectorAll('.calendar-day[data-date]').forEach(function(el) {
+    el.addEventListener('click', function() {
+        const dateStr = this.getAttribute('data-date');
+        if (dateStr && dateStr !== 'None' && dateStr.trim() !== '') {
+            try { selectDay(null, dateStr); } catch (e) { console.error('selectDay error', e); }
+        }
+    });
+});
 </script>
 {% endblock %}

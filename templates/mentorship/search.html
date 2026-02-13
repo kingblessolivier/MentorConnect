@@ -165,6 +165,11 @@
                 <span class="results-count">
                     {% if mentors %}{{ mentors|length }}{% if page_obj.paginator.count > mentors|length %} of {{ page_obj.paginator.count }}{% endif %}{% else %}0{% endif %} mentors found
                 </span>
+                {% if used_fallback %}
+                <div class="fallback-note" style="color:#B45309; margin-top:6px;">
+                    No mentors matched your filters — showing active mentors instead. Try clearing filters for better results.
+                </div>
+                {% endif %}
                 {% if selected_skills %}
                 <div class="active-filters">
                     {% for skill in selected_skills %}
@@ -281,6 +286,9 @@
                     </a>
                     <a href="{% url 'mentorship:create_request' mentor.user.id %}" class="btn btn-primary">
                         <i data-feather="send"></i> Request
+                    </a>
+                    <a href="{% url 'sessions_app:mentor_calendar' mentor.user.id %}" class="btn btn-info">
+                        <i data-feather="calendar"></i> View Mentor Schedule
                     </a>
                     <button type="button" class="btn btn-ghost rate-btn" onclick="openRatingModal('{{ mentor.user.id }}', '{{ mentor.user.get_full_name }}', '{{ mentor.user.get_avatar_url }}')">
                         <i data-feather="star"></i>

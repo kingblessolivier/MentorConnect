@@ -4,13 +4,18 @@ Calendar utilities - ICS file generation for session export
 
 from django.http import HttpResponse
 from django.utils import timezone
+from datetime import timedelta
 import uuid
 
 
 def generate_ics_for_session(session, user_role='participant'):
     """Generate ICS content for a single session"""
-    dt_start = session.scheduled_time
-    dt_end = dt_start + timezone.timedelta(minutes=session.duration or 60)
+    # Prefer `start`/`end` fields; fallback to legacy `scheduled_time`/`duration`
+    dt_start = getattr(session, 'start', None) or getattr(session, 'scheduled_time', None)
+    dt_end = getattr(session, 'end', None)
+    if not dt_end and dt_start:
+        # fallback duration 60 minutes
+        dt_end = dt_start + timedelta(minutes=getattr(session, 'duration', 60) or 60)
 
     # Format for ICS (UTC)
     def format_dt(dt):

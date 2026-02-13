@@ -21,9 +21,17 @@
             <h4 class="mb-2">{{ day.grouper }}</h4>
             {% for slot in day.list %}
             <div class="flex justify-between items-center p-3 mb-2 rounded" style="background: var(--background-color);">
-                <div class="flex items-center gap-3">
-                    <i data-feather="clock" class="text-primary"></i>
-                    <span>{{ slot.start_time|time:"H:i" }} - {{ slot.end_time|time:"H:i" }}</span>
+                <div>
+                    <div class="flex items-center gap-3">
+                        <i data-feather="clock" class="text-primary"></i>
+                        <span>{{ slot.start_time|time:"H:i" }} - {{ slot.end_time|time:"H:i" }}</span>
+                    </div>
+                    {% if slot.location_name or slot.address %}
+                    <div class="text-muted mt-1" style="font-size: 0.95em;">
+                        <i data-feather="map-pin" style="width:14px;"></i>
+                        {{ slot.location_name }}{% if slot.location_name and slot.address %}, {% endif %}{{ slot.address }}
+                    </div>
+                    {% endif %}
                 </div>
                 <form method="post" action="{% url 'sessions_app:delete_availability' slot.pk %}">
                     {% csrf_token %}

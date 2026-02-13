@@ -1,0 +1,7 @@
+{# Include this partial in mentor profile templates to show a "View Schedule" button #}
+{% if request.user.is_authenticated and request.user.id == mentor.id %}
+	<a href="{% url 'sessions_app:mentor-schedule' mentor.id %}" class="inline-block bg-blue-600 text-white px-3 py-2 rounded">Manage Schedule</a>
+	<a href="{% url 'sessions_app:mentor-create-session' mentor.id %}" class="inline-block bg-green-600 text-white px-3 py-2 rounded ml-2">Create Session</a>
+{% else %}
+	<a href="{% url 'sessions_app:mentor-schedule' mentor.id %}" class="inline-block bg-blue-600 text-white px-3 py-2 rounded">Book a session</a>
+{% endif %}
