@@ -1,0 +1,92 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load static humanize %}
+
+{% block title %}Revenue Reports - Finance Officer{% endblock %}
+
+{% block dashboard_content %}
+<div class="dashboard-header">
+    <div>
+        <h1><i data-feather="bar-chart-2" class="header-icon"></i> Revenue Reports</h1>
+        <p class="text-muted">Student application payment revenue</p>
+    </div>
+    <div class="flex gap-3">
+        <a href="{% url 'dashboard:finance_export' %}?format=csv" class="btn btn-outline"><i data-feather="download"></i> Export CSV</a>
+        <a href="{% url 'dashboard:finance_dashboard' %}" class="btn btn-outline"><i data-feather="arrow-left"></i> Dashboard</a>
+    </div>
+</div>
+
+<div class="dashboard-stats">
+    <div class="stat-card">
+        <div class="stat-card-icon" style="background: #d1fae5; color: #059669;">
+            <i data-feather="dollar-sign"></i>
+        </div>
+        <div class="stat-card-value">{{ total_revenue|floatformat:0|intcomma }}</div>
+        <div class="stat-card-label">Total Revenue (RWF)</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon" style="background: #fef3c7; color: #d97706;">
+            <i data-feather="check-circle"></i>
+        </div>
+        <div class="stat-card-value">{{ verified_payments_count|default:0 }}</div>
+        <div class="stat-card-label">Verified Payments</div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <h3>Revenue by Month</h3>
+        <div class="chart-container" style="height: 300px;">
+            <canvas id="revenueChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <h4>Export Reports</h4>
+        <p class="text-muted mb-3">Download payment data for analysis or reporting.</p>
+        <div class="flex flex-wrap gap-3">
+            <a href="{% url 'dashboard:finance_export' %}?format=csv" class="btn btn-primary"><i data-feather="download"></i> Export CSV (All)</a>
+            <a href="{% url 'dashboard:finance_export' %}?format=csv&status=verified" class="btn btn-outline"><i data-feather="download"></i> Export CSV (Verified only)</a>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('revenueChart');
+    if (ctx) {
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: {{ revenue_monthly_labels|safe }},
+                datasets: [{
+                    label: 'Revenue (RWF)',
+                    data: {{ revenue_monthly_data|safe }},
+                    backgroundColor: '#10b981',
+                    borderRadius: 6,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { font: { size: 11 }, color: '#6b7280' }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: '#f3f4f6' },
+                        ticks: { font: { size: 11 }, color: '#6b7280' }
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

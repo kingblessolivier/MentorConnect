@@ -1,0 +1,60 @@
+{% extends 'dashboard/base_dashboard.html' %}
+
+{% block title %}Verify payment - {{ application.tracking_code }}{% endblock %}
+
+{% block dashboard_content %}
+<div class="dashboard-header">
+    <div>
+        <h1>Verify payment</h1>
+        <p class="text-muted">Application {{ application.tracking_code }}</p>
+    </div>
+    <a href="{% url 'dashboard:finance_dashboard' %}" class="btn btn-outline"><i data-feather="arrow-left"></i> Back</a>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <h3>Application details</h3>
+        <p><strong>Applicant:</strong> {{ application.applicant.get_full_name|default:application.email }}</p>
+        <p><strong>Mentor:</strong> {% if application.mentorship_request %}{{ application.mentorship_request.mentor.get_full_name }}{% elif application.selected_mentor %}{{ application.selected_mentor.get_full_name }}{% else %}—{% endif %}</p>
+        <p><strong>Submitted:</strong> {{ application.submitted_at|date:"F d, Y H:i" }}</p>
+    </div>
+</div>
+
+{% if payment %}
+<div class="card mb-4">
+    <div class="card-body">
+        <h3>Payment details</h3>
+        <p><strong>Amount:</strong> {{ payment.amount }}</p>
+        <p><strong>Transaction code:</strong> {{ payment.transaction_code }}</p>
+        <p><strong>Submitted:</strong> {{ payment.submitted_at|date:"F d, Y H:i" }}</p>
+        {% if payment.receipt %}
+        <p><strong>Receipt:</strong> <a href="{{ payment.receipt.url }}" target="_blank">View receipt</a></p>
+        {% endif %}
+    </div>
+</div>
+
+<form method="post" class="card">
+    <div class="card-body">
+        {% csrf_token %}
+        <div class="flex gap-3">
+            <button type="submit" name="action" value="verify" class="btn btn-primary">
+                <i data-feather="check"></i> Verify payment
+            </button>
+            <button type="submit" name="action" value="reject" class="btn btn-outline" style="border-color: #dc2626; color: #dc2626;">
+                Reject
+            </button>
+        </div>
+        <div class="mt-3">
+            <label for="reason" class="form-label">Rejection reason (if rejecting)</label>
+            <input type="text" name="reason" id="reason" class="form-control" placeholder="Optional reason">
+        </div>
+    </div>
+</form>
+{% else %}
+<div class="card">
+    <div class="card-body">
+        <p class="text-muted">No payment record found for this application.</p>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

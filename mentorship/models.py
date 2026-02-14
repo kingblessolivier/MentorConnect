@@ -411,3 +411,319 @@ class MentorshipGoal(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class MentorFacilitator(models.Model):
+    """
+    Staff role: mentor facilitator - assigned by admin. Handles disputes and session reports.
+    """
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='mentor_facilitator_profile'
+    )
+    bio = models.TextField(blank=True)
+    assigned_since = models.DateField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        verbose_name = _('Mentor Facilitator')
+        verbose_name_plural = _('Mentor Facilitators')
+
+    def __str__(self):
+        return str(self.user.get_full_name())
+
+
+class MentorFacilitatorAssignment(models.Model):
+    """Assignment of a facilitator to a mentor or a specific mentorship request."""
+    facilitator = models.ForeignKey(
+        MentorFacilitator,
+        on_delete=models.CASCADE,
+        related_name='assignments'
+    )
+    mentor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='facilitator_assignments'
+    )
+    mentorship_request = models.ForeignKey(
+        MentorshipRequest,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='facilitator_assignments'
+    )
+    assigned_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = [('facilitator', 'mentor', 'mentorship_request')]
+        verbose_name = _('Mentor Facilitator Assignment')
+        verbose_name_plural = _('Mentor Facilitator Assignments')
+
+    def __str__(self):
+        return f"{self.facilitator} -> {self.mentor or self.mentorship_request}"
+
+
+class Dispute(models.Model):
+    """Dispute raised on a mentorship request - handled by facilitator or admin."""
+    STATUS_CHOICES = [
+        ('open', _('Open')),
+        ('under_review', _('Under Review')),
+        ('resolved', _('Resolved')),
+        ('escalated', _('Escalated')),
+    ]
+
+    mentorship_request = models.ForeignKey(
+        MentorshipRequest,
+        on_delete=models.CASCADE,
+        related_name='disputes'
+    )
+    reported_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='disputes_reported'
+    )
+    facilitator = models.ForeignKey(
+        MentorFacilitator,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='disputes_handled'
+    )
+    description = models.TextField(_('Description'))
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='open')
+    admin_override = models.BooleanField(default=False)
+    resolution_notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = _('Dispute')
+        verbose_name_plural = _('Disputes')
+
+    def __str__(self):
+        return f"Dispute #{self.id} - {self.mentorship_request} ({self.get_status_display()})"
+
+
+class SessionReport(models.Model):
+    """Session report (e.g. from mentor or facilitator) for a mentorship session."""
+    ATTENDANCE_CHOICES = [
+        ('attended', _('Attended')),
+        ('missed', _('Missed')),
+        ('partial', _('Partial')),
+    ]
+
+    mentorship_request = models.ForeignKey(
+        MentorshipRequest,
+        on_delete=models.CASCADE,
+        related_name='session_reports'
+    )
+    session_date = models.DateField(_('Session Date'))
+    session_time = models.TimeField(_('Session Time'))
+    duration_minutes = models.PositiveIntegerField(_('Duration (minutes)'))
+    summary_notes = models.TextField(_('Summary'), blank=True)
+    attendance_status = models.CharField(
+        max_length=20,
+        choices=ATTENDANCE_CHOICES,
+        default='attended'
+    )
+    mentor_feedback = models.TextField(blank=True)
+    student_feedback = models.TextField(blank=True)
+    approved_by_facilitator = models.BooleanField(default=False)
+    flagged_issue = models.BooleanField(default=False)
+    escalated_to_admin = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-session_date', '-session_time']
+        verbose_name = _('Session Report')
+        verbose_name_plural = _('Session Reports')
+
+    def __str__(self):
+        return f"Report {self.session_date} - {self.mentorship_request}"
+
+
+class MentorshipAnalytics(models.Model):
+    """
+    Advanced analytics and tracking for mentorship relationships.
+    Tracks KPIs, success metrics, and performance indicators.
+    """
+    mentorship = models.OneToOneField(
+        MentorshipRequest,
+        on_delete=models.CASCADE,
+        related_name='analytics'
+    )
+    
+    # Success metrics
+    success_score = models.FloatField(
+        default=0.0,
+        validators=[MinValueValidator(0.0), MaxValueValidator(10.0)],
+        help_text=_('Overall success score (0-10) based on multiple factors')
+    )
+    engagement_level = models.FloatField(
+        default=0.0,
+        validators=[MinValueValidator(0.0), MaxValueValidator(100.0)],
+        help_text=_('Engagement level percentage based on session attendance and interactions')
+    )
+    goal_completion_rate = models.FloatField(
+        default=0.0,
+        validators=[MinValueValidator(0.0), MaxValueValidator(100.0)],
+        help_text=_('Percentage of mentorship goals completed')
+    )
+    session_attendance_rate = models.FloatField(
+        default=0.0,
+        validators=[MinValueValidator(0.0), MaxValueValidator(100.0)],
+        help_text=_('Percentage of sessions attended')
+    )
+    
+    # Time metrics
+    time_to_match = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text=_('Time in hours from request to approval')
+    )
+    time_to_schedule = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text=_('Time in hours from approval to scheduling')
+    )
+    time_to_completion = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text=_('Time in hours from start to completion')
+    )
+    total_duration_hours = models.PositiveIntegerField(
+        default=0,
+        help_text=_('Total mentorship duration in hours')
+    )
+    
+    # Quality metrics
+    student_satisfaction = models.FloatField(
+        default=0.0,
+        validators=[MinValueValidator(0.0), MaxValueValidator(5.0)],
+        help_text=_('Student satisfaction score (0-5)')
+    )
+    mentor_satisfaction = models.FloatField(
+        default=0.0,
+        validators=[MinValueValidator(0.0), MaxValueValidator(5.0)],
+        help_text=_('Mentor satisfaction score (0-5)')
+    )
+    skill_improvement_score = models.FloatField(
+        default=0.0,
+        validators=[MinValueValidator(0.0), MaxValueValidator(10.0)],
+        help_text=_('Measured skill improvement (0-10)')
+    )
+    
+    # Risk indicators
+    at_risk_score = models.FloatField(
+        default=0.0,
+        validators=[MinValueValidator(0.0), MaxValueValidator(10.0)],
+        help_text=_('Risk score indicating potential issues (0-10)')
+    )
+    intervention_needed = models.BooleanField(default=False)
+    last_intervention_at = models.DateTimeField(null=True, blank=True)
+    
+    # Analytics metadata
+    calculated_at = models.DateTimeField(auto_now=True)
+    last_updated = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = _('Mentorship Analytics')
+        verbose_name_plural = _('Mentorship Analytics')
+        ordering = ['-calculated_at']
+    
+    def __str__(self):
+        return f"Analytics for {self.mentorship}"
+    
+    def calculate_success_score(self):
+        """Calculate overall success score based on multiple factors"""
+        from django.utils import timezone
+        
+        factors = []
+        weights = []
+        
+        # Goal completion (weight: 30%)
+        factors.append(self.goal_completion_rate / 10.0)  # Convert 0-100 to 0-10
+        weights.append(0.3)
+        
+        # Session attendance (weight: 20%)
+        factors.append(self.session_attendance_rate / 10.0)
+        weights.append(0.2)
+        
+        # Student satisfaction (weight: 25%)
+        factors.append(self.student_satisfaction * 2)  # Convert 0-5 to 0-10
+        weights.append(0.25)
+        
+        # Mentor satisfaction (weight: 15%)
+        factors.append(self.mentor_satisfaction * 2)  # Convert 0-5 to 0-10
+        weights.append(0.15)
+        
+        # Skill improvement (weight: 10%)
+        factors.append(self.skill_improvement_score)
+        weights.append(0.1)
+        
+        # Calculate weighted average
+        weighted_sum = sum(f * w for f, w in zip(factors, weights))
+        total_weight = sum(weights)
+        
+        self.success_score = weighted_sum / total_weight if total_weight > 0 else 0.0
+        self.calculated_at = timezone.now()
+        self.save()
+    
+    def update_engagement_level(self):
+        """Update engagement level based on recent activity"""
+        from django.utils import timezone
+        from datetime import timedelta
+        
+        # Calculate based on session reports, messages, and interactions
+        # This is a simplified version - would be expanded in real implementation
+        total_sessions = self.mentorship.session_reports.count()
+        attended_sessions = self.mentorship.session_reports.filter(
+            attendance_status='attended'
+        ).count()
+        
+        if total_sessions > 0:
+            session_engagement = (attended_sessions / total_sessions) * 100
+        else:
+            session_engagement = 0
+        
+        # Consider other engagement factors (simplified)
+        self.engagement_level = min(100.0, session_engagement * 0.7 + 30.0)  # Base + session weight
+        self.save()
+    
+    def calculate_risk_score(self):
+        """Calculate risk score for early intervention"""
+        risk_factors = []
+        
+        # Low engagement
+        if self.engagement_level < 50:
+            risk_factors.append(7.0)
+        elif self.engagement_level < 70:
+            risk_factors.append(4.0)
+        
+        # Missed sessions
+        total_sessions = self.mentorship.session_reports.count()
+        missed_sessions = self.mentorship.session_reports.filter(
+            attendance_status='missed'
+        ).count()
+        
+        if total_sessions > 0 and missed_sessions / total_sessions > 0.3:
+            risk_factors.append(8.0)
+        
+        # Low satisfaction
+        if self.student_satisfaction < 2.5 or self.mentor_satisfaction < 2.5:
+            risk_factors.append(6.0)
+        
+        # Calculate average risk
+        if risk_factors:
+            self.at_risk_score = sum(risk_factors) / len(risk_factors)
+            self.intervention_needed = self.at_risk_score > 5.0
+        else:
+            self.at_risk_score = 0.0
+            self.intervention_needed = False
+        
+        self.save()

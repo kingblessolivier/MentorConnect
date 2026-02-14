@@ -181,6 +181,8 @@ class ActivityLog(models.Model):
         ('post_create', 'Post Created'),
         ('message_send', 'Message Sent'),
         ('admin_action', 'Admin Action'),
+        ('mentor_facilitator_action', 'Mentor Facilitator Action'),
+        ('finance_officer_action', 'Finance Officer Action'),
         ('other', 'Other'),
     ]
 

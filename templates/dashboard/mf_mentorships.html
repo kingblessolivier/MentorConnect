@@ -1,0 +1,51 @@
+{% extends 'dashboard/base_dashboard.html' %}
+
+{% block title %}Active Mentorships - Mentor Facilitator{% endblock %}
+
+{% block dashboard_content %}
+<div class="dashboard-header">
+    <div>
+        <h1><i data-feather="link" class="header-icon"></i> Active Mentorships</h1>
+        <p class="text-muted">Mentorships from your assigned mentors</p>
+    </div>
+    <a href="{% url 'dashboard:mentor_facilitator_dashboard' %}" class="btn btn-outline"><i data-feather="arrow-left"></i> Dashboard</a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Mentor</th>
+                        <th>Subject</th>
+                        <th>Status</th>
+                        <th>Updated</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for m in mentorships %}
+                    <tr>
+                        <td>{{ m.student.get_full_name }}</td>
+                        <td>{{ m.mentor.get_full_name }}</td>
+                        <td>{{ m.subject }}</td>
+                        <td><span class="badge badge-{{ m.status }}">{{ m.get_status_display }}</span></td>
+                        <td>{{ m.updated_at|date:"M d, Y" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="text-center text-muted py-4">No active mentorships</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if is_paginated %}
+        <div class="pagination-bar mt-4">
+            {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}" class="pagination-btn"><i data-feather="chevron-left"></i></a>{% endif %}
+            <span class="pagination-info">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}" class="pagination-btn"><i data-feather="chevron-right"></i></a>{% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

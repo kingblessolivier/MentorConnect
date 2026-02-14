@@ -7,7 +7,7 @@
     <div>
         <a href="{% url 'applications:mentor_applications' %}" class="text-primary text-sm mb-2 inline-block">&larr; Back to Applications</a>
         <h1>{{ application.name }}</h1>
-        <p class="text-muted">{{ application.email }} • {{ application.school }}</p>
+        <p class="text-muted">{{ application.email }} • Tracking: {{ application.tracking_code }}</p>
     </div>
     <span class="badge badge-{{ application.status }}">{{ application.get_status_display }}</span>
 </div>
@@ -15,54 +15,61 @@
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
     <div class="card">
         <div class="card-body">
-            <h3 class="mb-4">Application Details</h3>
+            <h3 class="mb-4">Personal Information</h3>
             <dl class="detail-list">
                 <dt>Name</dt>
                 <dd>{{ application.name }}</dd>
                 <dt>Email</dt>
                 <dd><a href="mailto:{{ application.email }}">{{ application.email }}</a></dd>
-                <dt>School</dt>
-                <dd>{{ application.school }}</dd>
-                <dt>Interests</dt>
-                <dd>{{ application.interests }}</dd>
-                <dt>Message</dt>
-                <dd>{{ application.message }}</dd>
-                {% if application.cv %}
-                <dt>CV</dt>
-                <dd><a href="{{ application.cv.url }}" target="_blank" class="text-primary">Download CV</a></dd>
+                <dt>Phone</dt>
+                <dd>{{ application.phone|default:"—" }}</dd>
+                <dt>Tracking Code</dt>
+                <dd><strong>{{ application.tracking_code }}</strong></dd>
+                {% if application.is_minor %}
+                <dt>Parent / Guardian</dt>
+                <dd>{{ application.parent_name }} ({{ application.parent_phone }})</dd>
                 {% endif %}
             </dl>
         </div>
     </div>
 
-    {% if application.status == 'pending' %}
     <div class="card">
         <div class="card-body">
-            <h3 class="mb-4">Approve or Reject</h3>
-            <form method="post" action="{% url 'applications:mentor_application_action' application.pk %}">
-                {% csrf_token %}
-                <div class="form-group mb-4">
-                    <label class="form-label">Feedback (optional)</label>
-                    <textarea name="feedback" class="form-textarea w-full" rows="3" placeholder="Add feedback for the applicant..."></textarea>
-                </div>
-                <div class="flex gap-2">
-                    <button type="submit" name="action" value="approve" class="btn btn-primary">
-                        <i data-feather="check"></i> Approve & Send Invitation
-                    </button>
-                    <button type="submit" name="action" value="reject" class="btn btn-outline" onclick="return confirm('Reject this application?')">
-                        <i data-feather="x"></i> Reject
-                    </button>
-                </div>
-            </form>
+            <h3 class="mb-4">Academic & Goals</h3>
+            <dl class="detail-list">
+                <dt>School / University</dt>
+                <dd>{{ application.school|default:"—" }}</dd>
+                <dt>Program</dt>
+                <dd>{{ application.program|default:"—" }}</dd>
+                <dt>Career Goals</dt>
+                <dd>{{ application.career_goals|default:"—" }}</dd>
+                <dt>Motivation</dt>
+                <dd>{{ application.motivation|default:"—" }}</dd>
+                <dt>Expectations</dt>
+                <dd>{{ application.expectations|default:"—" }}</dd>
+            </dl>
         </div>
     </div>
-    {% elif application.mentor_feedback %}
+
     <div class="card">
         <div class="card-body">
-            <h3 class="mb-4">Your Feedback</h3>
-            <p>{{ application.mentor_feedback }}</p>
+            <h3 class="mb-4">Selected Session</h3>
+            {% if application.selected_availability_slot %}
+            <p><strong>Date:</strong> {{ application.selected_availability_slot.date }}</p>
+            <p><strong>Time:</strong> {{ application.selected_availability_slot.start_time }} - {{ application.selected_availability_slot.end_time }}</p>
+            <p><strong>Location:</strong> {{ application.selected_availability_slot.get_location_type_display }}{% if application.selected_availability_slot.location_address %} • {{ application.selected_availability_slot.location_address }}{% endif %}</p>
+            {% else %}
+            <p class="text-muted">No session selected.</p>
+            {% endif %}
         </div>
     </div>
-    {% endif %}
+
+    <div class="card">
+        <div class="card-body">
+            <h3 class="mb-4">Status & Timeline</h3>
+            <p><strong>Status:</strong> {{ application.get_status_display }}</p>
+            <p><strong>Submitted:</strong> {{ application.submitted_at|date:"F d, Y H:i"|default:"—" }}</p>
+        </div>
+    </div>
 </div>
 {% endblock %}

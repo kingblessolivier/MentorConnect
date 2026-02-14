@@ -1,0 +1,119 @@
+{% extends 'dashboard/base_dashboard.html' %}
+
+{% block title %}Payment Queue - Finance Officer{% endblock %}
+
+{% block dashboard_content %}
+<div class="dashboard-header">
+    <div>
+        <h1><i data-feather="credit-card" class="header-icon"></i> Payment Queue</h1>
+        <p class="text-muted">Filter and search student payments</p>
+    </div>
+    <a href="{% url 'dashboard:finance_dashboard' %}" class="btn btn-outline"><i data-feather="arrow-left"></i> Dashboard</a>
+</div>
+
+<div class="dashboard-stats">
+    <div class="stat-card">
+        <div class="stat-card-icon" style="background: #fef3c7; color: #d97706;">
+            <i data-feather="clock"></i>
+        </div>
+        <div class="stat-card-value">{{ pending_count|default:0 }}</div>
+        <div class="stat-card-label">Pending</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon" style="background: #d1fae5; color: #059669;">
+            <i data-feather="check-circle"></i>
+        </div>
+        <div class="stat-card-value">{{ approved_count|default:0 }}</div>
+        <div class="stat-card-label">Approved</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon" style="background: #fee2e2; color: #dc2626;">
+            <i data-feather="x-circle"></i>
+        </div>
+        <div class="stat-card-value">{{ rejected_count|default:0 }}</div>
+        <div class="stat-card-label">Rejected</div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="filters-form">
+            <div class="filters-row">
+                <div class="filter-group">
+                    <label>Search</label>
+                    <input type="text" name="search" class="form-control" placeholder="Tracking code, student, mentor, email..." value="{{ request.GET.search }}">
+                </div>
+                <div class="filter-group">
+                    <label>Status</label>
+                    <select name="status" class="form-control">
+                        <option value="">All</option>
+                        <option value="pending_finance" {% if request.GET.status == 'pending_finance' %}selected{% endif %}>Pending</option>
+                        <option value="pending_review" {% if request.GET.status == 'pending_review' %}selected{% endif %}>Verified</option>
+                        <option value="finance_rejected" {% if request.GET.status == 'finance_rejected' %}selected{% endif %}>Rejected</option>
+                    </select>
+                </div>
+                <div class="filter-group filter-actions">
+                    <button type="submit" class="btn btn-primary"><i data-feather="search"></i> Filter</button>
+                    <a href="{% url 'dashboard:finance_payments' %}" class="btn btn-outline">Reset</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Tracking Code</th>
+                        <th>Applicant</th>
+                        <th>Mentor</th>
+                        <th>Status</th>
+                        <th>Submitted</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for app in applications %}
+                    <tr>
+                        <td><strong>{{ app.tracking_code }}</strong></td>
+                        <td>{{ app.applicant.get_full_name|default:app.email }}</td>
+                        <td>{% if app.mentorship_request %}{{ app.mentorship_request.mentor.get_full_name }}{% else %}—{% endif %}</td>
+                        <td><span class="badge badge-{{ app.status }}">{{ app.get_status_display }}</span></td>
+                        <td>{{ app.submitted_at|date:"M d, Y H:i"|default:"—" }}</td>
+                        <td>
+                            {% if app.status == 'pending_finance' %}
+                            <a href="{% url 'dashboard:finance_verify_payment' app.id %}" class="btn btn-sm btn-primary">Verify / Reject</a>
+                            {% else %}
+                            <span class="text-muted">{{ app.get_status_display }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6" class="text-center text-muted py-4">No applications found</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if is_paginated %}
+        <div class="pagination-bar mt-4">
+            {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" class="pagination-btn"><i data-feather="chevron-left"></i></a>{% endif %}
+            <span class="pagination-info">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" class="pagination-btn"><i data-feather="chevron-right"></i></a>{% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-body">
+        <h4>Export</h4>
+        <div class="flex flex-wrap gap-3 mt-2">
+            <a href="{% url 'dashboard:finance_export' %}?format=csv" class="btn btn-outline"><i data-feather="download"></i> Export CSV (All)</a>
+            <a href="{% url 'dashboard:finance_export' %}?format=csv&status=verified" class="btn btn-outline"><i data-feather="download"></i> Export CSV (Verified only)</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

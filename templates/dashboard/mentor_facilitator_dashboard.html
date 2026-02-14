@@ -1,0 +1,120 @@
+{% extends 'dashboard/base_dashboard.html' %}
+
+{% block title %}Mentor Facilitator Dashboard - {{ SITE_NAME }}{% endblock %}
+
+{% block dashboard_content %}
+<div class="dashboard-header">
+    <div>
+        <h1>Welcome, {{ user.first_name }}! 👋</h1>
+        <p class="text-muted">Manage mentors, mentorships, disputes and session reports</p>
+    </div>
+    <a href="{% url 'dashboard:mf_mentor_add' %}" class="btn btn-primary">
+        <i data-feather="user-plus"></i> Add Mentor
+    </a>
+</div>
+
+<!-- Stats -->
+<div class="dashboard-stats">
+    <div class="stat-card">
+        <div class="stat-card-icon" style="background: #fef3c7; color: #d97706;">
+            <i data-feather="users"></i>
+        </div>
+        <div class="stat-card-value">{{ assigned_mentors_count|default:0 }}</div>
+        <div class="stat-card-label">Assigned Mentors</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon" style="background: #d1fae5; color: #059669;">
+            <i data-feather="link"></i>
+        </div>
+        <div class="stat-card-value">{{ active_mentorships_count|default:0 }}</div>
+        <div class="stat-card-label">Active Mentorships</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon" style="background: #fee2e2; color: #dc2626;">
+            <i data-feather="alert-triangle"></i>
+        </div>
+        <div class="stat-card-value">{{ disputes_count|default:0 }}</div>
+        <div class="stat-card-label">Open Disputes</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon">
+            <i data-feather="file-text"></i>
+        </div>
+        <div class="stat-card-value">{{ session_reports_count|default:0 }}</div>
+        <div class="stat-card-label">Session Reports</div>
+    </div>
+</div>
+
+{% if facilitator %}
+<div class="grid grid-2">
+    <!-- Assignments -->
+    <div class="card">
+        <div class="card-body">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="mb-0">Assigned Mentors & Students</h3>
+                <a href="{% url 'dashboard:mf_assignments' %}" class="text-primary text-sm">View all</a>
+            </div>
+            {% for a in assignments %}
+            <div class="flex items-center gap-3 p-4 rounded-lg mb-3" style="background: var(--background-color);">
+                <div class="flex-1">
+                    {% if a.mentorship_request %}
+                    <div class="font-medium">{{ a.mentorship_request.student.get_full_name }} → {{ a.mentorship_request.mentor.get_full_name }}</div>
+                    <div class="text-sm text-muted">{{ a.mentorship_request.subject }}</div>
+                    {% elif a.mentor %}
+                    <div class="font-medium">{{ a.mentor.get_full_name }}</div>
+                    <div class="text-sm text-muted">Mentor</div>
+                    {% endif %}
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-muted text-center py-4">No assignments yet</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Open Disputes -->
+    <div class="card">
+        <div class="card-body">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="mb-0">Open Disputes</h3>
+                <a href="{% url 'dashboard:mf_disputes' %}" class="text-primary text-sm">View all</a>
+            </div>
+            {% for d in open_disputes %}
+            <div class="flex items-center gap-3 p-4 rounded-lg mb-3" style="background: var(--background-color);">
+                <div class="flex-1">
+                    <div class="font-medium">#{{ d.id }} — {{ d.mentorship_request.student.get_full_name }} vs {{ d.mentorship_request.mentor.get_full_name }}</div>
+                    <div class="text-sm text-muted">{{ d.description|truncatewords:15 }}</div>
+                    <span class="badge badge-warning">{{ d.get_status_display }}</span>
+                </div>
+                <a href="{% url 'dashboard:mf_dispute_resolve' d.pk %}" class="btn btn-sm btn-primary">Resolve</a>
+            </div>
+            {% empty %}
+            <p class="text-muted text-center py-4">No open disputes</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-body">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="mb-0">Quick Links</h3>
+        </div>
+        <div class="flex flex-wrap gap-3">
+            <a href="{% url 'dashboard:mf_mentors' %}" class="btn btn-outline"><i data-feather="award"></i> Mentors</a>
+            <a href="{% url 'dashboard:mf_assignments' %}" class="btn btn-outline"><i data-feather="users"></i> Assignments</a>
+            <a href="{% url 'dashboard:mf_mentorships' %}" class="btn btn-outline"><i data-feather="link"></i> Active Mentorships</a>
+            <a href="{% url 'dashboard:mf_disputes' %}" class="btn btn-outline"><i data-feather="alert-triangle"></i> Disputes</a>
+            <a href="{% url 'dashboard:mf_session_reports' %}" class="btn btn-outline"><i data-feather="file-text"></i> Session Reports</a>
+            <a href="{% url 'feed:home' %}" class="btn btn-outline"><i data-feather="layout"></i> Feed</a>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="card">
+    <div class="card-body">
+        <p class="text-muted mb-0">Your facilitator profile is not set up yet. Please contact admin.</p>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

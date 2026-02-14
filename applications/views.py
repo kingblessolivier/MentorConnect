@@ -1,64 +1,31 @@
 """
 Applications App Views
-Guest application, mentor actions, invitation registration
+Multi-step mentorship applications, mentor view, student applications
 """
 
 from django.shortcuts import render, redirect, get_object_or_404
-from django.views.generic import CreateView, ListView, DetailView, TemplateView
+from django.views.generic import ListView, DetailView, TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.urls import reverse_lazy, reverse
-from django.http import HttpResponseForbidden
 from django.utils import timezone
 
-from .models import GuestApplication, InvitationToken
-from .forms import GuestApplicationForm, MentorApplicationActionForm
-from .services import send_approval_email
+from django.conf import settings as django_settings
 
+from django.contrib.contenttypes.models import ContentType
 
-class GuestApplicationCreateView(CreateView):
-    """Guest can apply without account"""
-    model = GuestApplication
-    form_class = GuestApplicationForm
-    template_name = 'applications/apply.html'
-    success_url = reverse_lazy('applications:apply_success')
-
-    def get_initial(self):
-        initial = super().get_initial()
-        mentor_id = self.kwargs.get('mentor_id')
-        if mentor_id:
-            from accounts.models import User
-            mentor = User.objects.filter(pk=mentor_id, role='mentor').first()
-            if mentor:
-                initial['mentor'] = mentor
-        return initial
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        mentor_id = self.kwargs.get('mentor_id')
-        if mentor_id:
-            from accounts.models import User
-            mentor = User.objects.filter(pk=mentor_id, role='mentor').first()
-            context['preselected_mentor'] = mentor
-        return context
-
-    def form_valid(self, form):
-        messages.success(
-            self.request,
-            'Your application has been submitted! The mentor will review it and contact you.'
-        )
-        return super().form_valid(form)
-
-
-class ApplySuccessView(TemplateView):
-    """Thank you page after guest application"""
-    template_name = 'applications/apply_success.html'
+from .models import Application, Payment, ActivityLog, ApplicationWizardSession
+from .forms import (
+    ApplicationPaymentForm,
+    ApplicationWizardStep1Form, ApplicationWizardStep2Form, ApplicationWizardStep3Form,
+    ApplicationTrackingForm,
+)
 
 
 class MentorApplicationListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
-    """Mentor views their applications"""
-    model = GuestApplication
+    """Mentor views mentorship applications where they are the selected mentor"""
+    model = Application
     template_name = 'applications/mentor_applications.html'
     context_object_name = 'applications'
     paginate_by = 10
@@ -67,127 +34,333 @@ class MentorApplicationListView(LoginRequiredMixin, UserPassesTestMixin, ListVie
         return self.request.user.is_mentor
 
     def get_queryset(self):
-        return GuestApplication.objects.filter(
-            mentor=self.request.user
-        ).order_by('-created_at')
+        return Application.objects.filter(
+            selected_mentor=self.request.user
+        ).exclude(status='draft').select_related(
+            'applicant', 'selected_availability_slot'
+        ).order_by('-submitted_at')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        qs = self.get_queryset()
-        context['pending_count'] = qs.filter(status='pending').count()
-        context['approved_count'] = qs.filter(status='approved').count()
-        context['rejected_count'] = qs.filter(status='rejected').count()
+        qs = Application.objects.filter(selected_mentor=self.request.user).exclude(status='draft')
+        context['pending_count'] = qs.filter(status='pending_review').count()
+        context['approved_count'] = qs.filter(status__in=['approved', 'enrolled']).count()
+        context['rejected_count'] = qs.filter(status__in=['finance_rejected', 'review_rejected']).count()
         return context
 
 
 class MentorApplicationDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
-    """Mentor views single application"""
-    model = GuestApplication
+    """Mentor views single mentorship application"""
+    model = Application
     template_name = 'applications/mentor_application_detail.html'
     context_object_name = 'application'
 
     def test_func(self):
         app = self.get_object()
-        return app.mentor == self.request.user
+        return app.selected_mentor == self.request.user
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['action_form'] = MentorApplicationActionForm()
-        return context
+    def get_queryset(self):
+        return Application.objects.select_related(
+            'applicant', 'selected_mentor', 'selected_availability_slot'
+        )
 
+
+# ==================== PAY AND SUBMIT APPLICATION (logged-in student) ====================
 
 @login_required
-def mentor_application_action(request, pk):
-    """Mentor approve/reject application"""
-    application = get_object_or_404(GuestApplication, pk=pk)
-    if application.mentor != request.user:
-        return HttpResponseForbidden()
+def pay_and_submit_application(request, request_id):
+    """
+    Student pays application fee to submit their mentorship request.
+    Creates Application linked to MentorshipRequest; on payment submit -> status pending_finance.
+    """
+    from mentorship.models import MentorshipRequest
+    from django.contrib.contenttypes.models import ContentType
 
-    if application.status != 'pending':
-        messages.warning(request, 'This application has already been processed.')
-        return redirect('applications:mentor_applications')
+    mentorship_request = get_object_or_404(
+        MentorshipRequest,
+        pk=request_id,
+        student=request.user,
+        status='pending'
+    )
+
+    # Get or create Application for this mentorship request
+    application, created = Application.objects.get_or_create(
+        mentorship_request=mentorship_request,
+        defaults={
+            'applicant': request.user,
+            'name': request.user.get_full_name(),
+            'email': request.user.email,
+            'status': 'draft',
+        }
+    )
+    if created:
+        application.applicant = request.user
+        application.name = request.user.get_full_name()
+        application.email = request.user.email
+        application.save()
+
+    # If already submitted (has payment), redirect to request detail or applications list
+    if application.status != 'draft':
+        messages.info(request, 'This application has already been submitted.')
+        return redirect('mentorship:request_detail', pk=request_id)
+
+    application_fee = getattr(django_settings, 'APPLICATION_FEE_AMOUNT', 5000)
 
     if request.method == 'POST':
-        action = request.POST.get('action', '')
-        feedback = request.POST.get('feedback', '').strip()
-
-        if action == 'approve':
-            application.approve(feedback=feedback)
-            send_approval_email(application)
-            messages.success(
-                request,
-                f'Application approved! An invitation email has been sent to {application.email}.'
-            )
-        elif action == 'reject':
-            application.reject(feedback=feedback)
-            messages.info(request, 'Application has been rejected.')
-
-    return redirect('applications:mentor_applications')
-
-
-def register_with_token(request, token):
-    """Invitation-based registration - create account and link to application"""
-    token_obj = get_object_or_404(InvitationToken, token=token)
-
-    if not token_obj.is_valid:
-        return render(request, 'applications/invitation_expired.html', {'token': token})
-
-    application = token_obj.application
-
-    if request.method == 'POST':
-        from accounts.forms import StudentRegistrationForm
-        from django.contrib.auth import get_user_model
-        User = get_user_model()
-        form = StudentRegistrationForm(request.POST)
+        form = ApplicationPaymentForm(request.POST, request.FILES)
         if form.is_valid():
-            user = form.save()
-            # Update name from application
-            parts = application.name.split()
-            if parts:
-                user.first_name = parts[0]
-                user.last_name = ' '.join(parts[1:]) if len(parts) > 1 else ''
-                user.save()
+            transaction_code = form.cleaned_data['transaction_code'].strip()
+            if Payment.objects.filter(transaction_code=transaction_code).exists():
+                form.add_error('transaction_code', 'This transaction code has already been used.')
+            else:
+                payment = Payment.objects.create(
+                    application=application,
+                    amount=application_fee,
+                    transaction_code=transaction_code,
+                    receipt=form.cleaned_data.get('receipt') or None,
+                )
+                application.status = 'pending_finance'
+                application.submitted_at = timezone.now()
+                application.save(update_fields=['status', 'submitted_at'])
 
-            # Create StudentProfile and link application
-            from profiles.models import StudentProfile
-            profile, _ = StudentProfile.objects.get_or_create(user=user)
-            profile.institution = application.school
-            profile.interests = application.interests
-            if application.cv:
-                profile.cv = application.cv
-            profile.save()
+                # Log activity
+                ct = ContentType.objects.get_for_model(Application)
+                ActivityLog.objects.create(
+                    content_type=ct,
+                    object_id=application.id,
+                    action_type='payment_submitted',
+                    new_status='pending_finance',
+                    details=f'Payment {payment.transaction_code} submitted.',
+                    performed_by=request.user,
+                )
+                messages.success(
+                    request,
+                    'Your payment has been submitted. Finance will verify it shortly. You can check status in your applications.'
+                )
+                return redirect('mentorship:request_detail', pk=request_id)
+    else:
+        form = ApplicationPaymentForm()
 
-            application.student = user
-            application.save(update_fields=['student'])
+    return render(request, 'applications/pay_and_submit.html', {
+        'mentorship_request': mentorship_request,
+        'application': application,
+        'form': form,
+        'application_fee': application_fee,
+    })
 
-            token_obj.used_at = timezone.now()
-            token_obj.save(update_fields=['used_at'])
 
-            from django.contrib.auth import login
-            login(request, user)
+# ==================== MULTI-STEP APPLICATION WIZARD ====================
 
+def _get_wizard_session(request):
+    """Get or create wizard session (for public or registered user)."""
+    if request.user.is_authenticated and request.user.is_student:
+        ws = ApplicationWizardSession.objects.filter(
+            user=request.user,
+            application__status='draft'
+        ).select_related('application').order_by('-updated_at').first()
+        if not ws:
+            app = Application.objects.create(
+                applicant=request.user,
+                name=request.user.get_full_name(),
+                email=request.user.email,
+                status='draft',
+            )
+            ws = ApplicationWizardSession.objects.create(user=request.user, application=app, is_public=False)
+        return ws
+    else:
+        session_key = request.session.session_key
+        if not session_key:
+            request.session.create()
+            session_key = request.session.session_key
+        ws = ApplicationWizardSession.objects.filter(
+            session_key=session_key,
+            application__status='draft'
+        ).select_related('application').order_by('-updated_at').first()
+        if not ws:
+            app = Application.objects.create(status='draft')
+            ws = ApplicationWizardSession.objects.create(session_key=session_key, application=app, is_public=True)
+        return ws
+
+
+def application_wizard(request, step=None):
+    """
+    Multi-step mentorship application wizard.
+    Supports both registered students and public applicants.
+    """
+    # Ensure session for public
+    if not request.session.session_key:
+        request.session.create()
+    if request.user.is_authenticated and not request.user.is_student:
+        messages.warning(request, 'Only students can apply. Please log in as a student or apply as a public applicant.')
+        return redirect('core:home')
+    ws = _get_wizard_session(request)
+    app = ws.application
+    current_step = int(step) if step else ws.current_step
+    current_step = max(1, min(5, current_step))
+    # Prevent skipping steps - redirect to highest completed step
+    if current_step > app.current_step:
+        current_step = app.current_step
+        if step:
+            return redirect('applications:wizard_step', step=current_step)
+    application_fee = getattr(django_settings, 'APPLICATION_FEE_AMOUNT', 5000)
+    form = None
+    if request.method == 'POST':
+        if current_step == 1:
+            form = ApplicationWizardStep1Form(request.POST)
+            if form.is_valid():
+                app.name = form.cleaned_data['name']
+                app.email = form.cleaned_data['email']
+                app.phone = form.cleaned_data.get('phone', '')
+                app.date_of_birth = form.cleaned_data.get('date_of_birth')
+                app.parent_name = form.cleaned_data.get('parent_name', '')
+                app.parent_email = form.cleaned_data.get('parent_email', '')
+                app.parent_phone = form.cleaned_data.get('parent_phone', '')
+                app.parent_relationship = form.cleaned_data.get('parent_relationship', '')
+                app.parent_consent_given = form.cleaned_data.get('parent_consent_given', False)
+                app.current_step = 2
+                app.save()
+                ws.current_step = 2
+                ws.updated_at = timezone.now()
+                ws.save(update_fields=['current_step', 'updated_at'])
+                return redirect('applications:wizard_step', step=2)
+        elif current_step == 2:
+            form = ApplicationWizardStep2Form(request.POST)
+            if form.is_valid():
+                app.school = form.cleaned_data.get('school', '')
+                app.program = form.cleaned_data.get('program', '')
+                app.career_goals = form.cleaned_data.get('career_goals', '')
+                app.motivation = form.cleaned_data.get('motivation', '')
+                app.expectations = form.cleaned_data.get('expectations', '')
+                app.current_step = 3
+                app.save()
+                ws.current_step = 3
+                ws.save(update_fields=['current_step', 'updated_at'])
+                return redirect('applications:wizard_step', step=3)
+        elif current_step == 3:
+            form = ApplicationWizardStep3Form(request.POST, mentor_id=request.POST.get('mentor'))
+            if form.is_valid():
+                app.selected_mentor = form.cleaned_data['mentor']
+                app.selected_availability_slot = form.cleaned_data['availability_slot']
+                app.current_step = 4
+                app.save()
+                ws.current_step = 4
+                ws.save(update_fields=['current_step', 'updated_at'])
+                return redirect('applications:wizard_step', step=4)
+        elif current_step == 4:
+            form = ApplicationPaymentForm(request.POST, request.FILES)
+            if form.is_valid():
+                tc = form.cleaned_data['transaction_code'].strip()
+                if Payment.objects.filter(transaction_code=tc).exists():
+                    form.add_error('transaction_code', 'This transaction code has already been used.')
+                else:
+                    Payment.objects.create(
+                        application=app,
+                        amount=application_fee,
+                        transaction_code=tc,
+                        receipt=form.cleaned_data.get('receipt'),
+                    )
+                    app.current_step = 5
+                    app.save(update_fields=['current_step'])
+                    ws.current_step = 5
+                    ws.save(update_fields=['current_step', 'updated_at'])
+                    return redirect('applications:wizard_step', step=5)
+        elif current_step == 5:
+            # Final submit
+            app.status = 'pending_finance'
+            app.submitted_at = timezone.now()
+            app.save(update_fields=['status', 'submitted_at'])
+            ct = ContentType.objects.get_for_model(Application)
+            ActivityLog.objects.create(
+                content_type=ct, object_id=app.id,
+                action_type='payment_submitted',
+                new_status='pending_finance',
+                details='Application submitted.',
+                performed_by=request.user if request.user.is_authenticated else None,
+            )
             messages.success(
                 request,
-                'Welcome! Your account has been created. Check your dashboard for mentor feedback.'
+                f'Your application has been submitted! Tracking code: {app.tracking_code}. '
+                'Save it to track your application. Finance will verify your payment shortly.'
             )
-            return redirect('dashboard:student_dashboard')
+            if request.user.is_authenticated:
+                return redirect('applications:my_applications')
+            return redirect('applications:track_status')
+    if form is None:
+        if current_step == 1:
+            form = ApplicationWizardStep1Form(initial={
+                'name': app.name or (request.user.get_full_name() if request.user.is_authenticated else ''),
+                'email': app.email or (request.user.email if request.user.is_authenticated else ''),
+                'phone': app.phone,
+                'date_of_birth': app.date_of_birth,
+                'parent_name': app.parent_name,
+                'parent_email': app.parent_email,
+                'parent_phone': app.parent_phone,
+                'parent_relationship': app.parent_relationship,
+                'parent_consent_given': app.parent_consent_given,
+            })
+        elif current_step == 2:
+            form = ApplicationWizardStep2Form(initial={
+                'school': app.school,
+                'program': app.program,
+                'career_goals': app.career_goals,
+                'motivation': app.motivation,
+                'expectations': app.expectations,
+            })
+        elif current_step == 3:
+            mentor_id_val = app.selected_mentor_id or (request.POST.get('mentor') if request.method == 'POST' else None)
+            if mentor_id_val and isinstance(mentor_id_val, str):
+                try:
+                    mentor_id_val = int(mentor_id_val)
+                except (ValueError, TypeError):
+                    mentor_id_val = None
+            form = ApplicationWizardStep3Form(
+                initial={
+                    'mentor': app.selected_mentor_id,
+                    'availability_slot': app.selected_availability_slot_id,
+                },
+                mentor_id=mentor_id_val
+            )
+        elif current_step == 4:
+            form = ApplicationPaymentForm()
+        elif current_step == 5:
+            form = None  # Review step, no form
+    return render(request, 'applications/wizard_step.html', {
+        'application': app,
+        'wizard_session': ws,
+        'step': current_step,
+        'form': form,
+        'application_fee': application_fee,
+        'progress_percent': min(100, int((current_step / 5) * 100)),
+    })
 
-        return render(request, 'applications/register_with_token.html', {
-            'form': form,
-            'application': application,
-            'token': token,
-        })
 
-    # GET - show registration form
-    from accounts.forms import StudentRegistrationForm
-    initial = {
-        'email': application.email,
-        'first_name': application.name.split()[0] if application.name else '',
-        'last_name': ' '.join(application.name.split()[1:]) if len(application.name.split()) > 1 else '',
-    }
-    form = StudentRegistrationForm(initial=initial)
-    return render(request, 'applications/register_with_token.html', {
+def application_track_status(request):
+    """Public applicants track application by email + tracking code."""
+    application = None
+    if request.method == 'POST':
+        form = ApplicationTrackingForm(request.POST)
+        if form.is_valid():
+            application = Application.objects.filter(
+                email__iexact=form.cleaned_data['email'],
+                tracking_code__iexact=form.cleaned_data['tracking_code'].strip()
+            ).select_related('selected_mentor', 'selected_availability_slot').first()
+            if not application:
+                form.add_error(None, 'No application found with that email and tracking code.')
+    else:
+        form = ApplicationTrackingForm()
+    return render(request, 'applications/track_status.html', {
         'form': form,
         'application': application,
-        'token': token,
     })
+
+
+class StudentApplicationsListView(LoginRequiredMixin, ListView):
+    """Registered students view their applications."""
+    template_name = 'applications/my_applications.html'
+    context_object_name = 'applications'
+    paginate_by = 10
+
+    def get_queryset(self):
+        return Application.objects.filter(applicant=self.request.user).exclude(
+            status='draft'
+        ).select_related('selected_mentor', 'selected_availability_slot').order_by('-updated_at')

@@ -808,6 +808,9 @@
                         <i data-feather="calendar"></i> Select Time Slot
                     </a>
                     {% elif not user.is_mentor and request.status == 'pending' %}
+                    <a href="{% url 'applications:pay_and_submit' request.pk %}" class="btn-action-premium primary">
+                        <i data-feather="credit-card"></i> Pay application fee & submit
+                    </a>
                     <form method="post" action="{% url 'mentorship:cancel_request' request.pk %}">
                         {% csrf_token %}
                         <button type="submit" class="btn-action-premium danger">

@@ -178,14 +178,36 @@ def dashboard_context(request):
             except Exception:
                 context['pending_requests_count'] = 0
             try:
-                from applications.models import GuestApplication
-                context['guest_applications_pending_count'] = GuestApplication.objects.filter(
-                    mentor=user, status='pending'
+                from applications.models import Application
+                context['guest_applications_pending_count'] = Application.objects.filter(
+                    selected_mentor=user, status='pending_review'
                 ).count()
             except Exception:
                 context['guest_applications_pending_count'] = 0
         else:
             context['guest_applications_pending_count'] = 0
+
+        # Finance Officer: pending payment verification count for sidebar
+        if user.is_finance_officer:
+            try:
+                from applications.models import Application
+                context['pending_finance_count'] = Application.objects.filter(status='pending_finance').count()
+            except Exception:
+                context['pending_finance_count'] = 0
+
+        # Mentor Facilitator: open disputes count for sidebar
+        if user.is_mentor_facilitator:
+            try:
+                from mentorship.models import MentorFacilitator, Dispute
+                facilitator = getattr(user, 'mentor_facilitator_profile', None)
+                if facilitator:
+                    context['mf_open_disputes_count'] = Dispute.objects.filter(
+                        facilitator=facilitator, status__in=['open', 'under_review']
+                    ).count()
+                else:
+                    context['mf_open_disputes_count'] = 0
+            except Exception:
+                context['mf_open_disputes_count'] = 0
 
     except Exception:
         pass

@@ -9,6 +9,8 @@
         <p class="text-muted">View and manage all platform users</p>
     </div>
     <div class="dashboard-header-actions">
+        <a href="{% url 'dashboard:admin_create_mentor_facilitator' %}" class="btn btn-outline btn-sm">Add Mentor Facilitator</a>
+        <a href="{% url 'dashboard:admin_create_finance_officer' %}" class="btn btn-outline btn-sm">Add Finance Officer</a>
         <span class="total-count"><strong>{{ users|length }}</strong> users total</span>
     </div>
 </div>
@@ -61,6 +63,8 @@
                         <option value="student" {% if request.GET.role == 'student' %}selected{% endif %}>Students</option>
                         <option value="mentor" {% if request.GET.role == 'mentor' %}selected{% endif %}>Mentors</option>
                         <option value="admin" {% if request.GET.role == 'admin' %}selected{% endif %}>Admins</option>
+                        <option value="mentor_facilitator" {% if request.GET.role == 'mentor_facilitator' %}selected{% endif %}>Mentor Facilitators</option>
+                        <option value="finance_manager" {% if request.GET.role == 'finance_manager' %}selected{% endif %}>Finance Officers</option>
                     </select>
                 </div>
                 <div class="filter-group">

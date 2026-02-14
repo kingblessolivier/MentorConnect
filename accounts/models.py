@@ -42,6 +42,9 @@ class User(AbstractUser):
         STUDENT = 'student', 'Student'
         MENTOR = 'mentor', 'Mentor'
         ADMIN = 'admin', 'Admin'
+        MENTOR_FACILITATOR = 'mentor_facilitator', 'Mentor Facilitator'
+        FINANCE_OFFICER = 'finance_manager', 'Finance Officer'  # DB value finance_manager for existing migration
+        MENTORSHIP_DEPARTMENT = 'mentorship_department', 'Mentorship Department'
 
     # Remove username field, use email for authentication
     username = None
@@ -49,7 +52,7 @@ class User(AbstractUser):
 
     # Role field
     role = models.CharField(
-        max_length=20,
+        max_length=25,
         choices=Role.choices,
         default=Role.STUDENT,
         verbose_name='Role'
@@ -112,6 +115,18 @@ class User(AbstractUser):
     @property
     def is_admin_user(self):
         return self.role == self.Role.ADMIN
+
+    @property
+    def is_mentor_facilitator(self):
+        return self.role == self.Role.MENTOR_FACILITATOR
+
+    @property
+    def is_finance_officer(self):
+        return self.role == self.Role.FINANCE_OFFICER
+
+    @property
+    def is_mentorship_department(self):
+        return self.role == self.Role.MENTORSHIP_DEPARTMENT
 
     def get_avatar_url(self):
         if self.avatar:

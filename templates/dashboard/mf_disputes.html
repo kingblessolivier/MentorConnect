@@ -1,0 +1,61 @@
+{% extends 'dashboard/base_dashboard.html' %}
+
+{% block title %}Disputes - Mentor Facilitator{% endblock %}
+
+{% block dashboard_content %}
+<div class="dashboard-header">
+    <div>
+        <h1><i data-feather="alert-triangle" class="header-icon"></i> Dispute Resolution</h1>
+        <p class="text-muted">Resolve mentorship disputes</p>
+    </div>
+    <a href="{% url 'dashboard:mentor_facilitator_dashboard' %}" class="btn btn-outline"><i data-feather="arrow-left"></i> Dashboard</a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Mentorship</th>
+                        <th>Reported By</th>
+                        <th>Description</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for d in disputes %}
+                    <tr>
+                        <td>#{{ d.id }}</td>
+                        <td>{{ d.mentorship_request.student.get_full_name }} → {{ d.mentorship_request.mentor.get_full_name }}</td>
+                        <td>{{ d.reported_by.get_full_name }}</td>
+                        <td>{{ d.description|truncatewords:12 }}</td>
+                        <td><span class="badge badge-{{ d.status }}">{{ d.get_status_display }}</span></td>
+                        <td>{{ d.created_at|date:"M d, Y" }}</td>
+                        <td>
+                            {% if d.status in 'open,under_review' %}
+                            <a href="{% url 'dashboard:mf_dispute_resolve' d.pk %}" class="btn btn-sm btn-primary">Resolve</a>
+                            {% else %}
+                            <span class="text-muted">Resolved</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="7" class="text-center text-muted py-4">No disputes</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if is_paginated %}
+        <div class="pagination-bar mt-4">
+            {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}" class="pagination-btn"><i data-feather="chevron-left"></i></a>{% endif %}
+            <span class="pagination-info">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}" class="pagination-btn"><i data-feather="chevron-right"></i></a>{% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -117,11 +117,11 @@
                             </div>
                         </div>
                         <div class="dropdown-divider"></div>
-                        <a href="{% if user.is_mentor %}{% url 'profiles:mentor_edit' %}{% elif user.is_student %}{% url 'profiles:student_edit' %}{% else %}{% url 'profiles:edit' %}{% endif %}" class="dropdown-item">
+                        <a href="{% if user.is_mentor %}{% url 'profiles:mentor_edit' %}{% elif user.is_student %}{% url 'profiles:student_edit' %}{% elif user.is_mentor_facilitator or user.is_finance_officer %}{% url 'profiles:edit' %}{% else %}{% url 'profiles:edit' %}{% endif %}" class="dropdown-item">
                             <i data-feather="user"></i>
                             <span>My Profile</span>
                         </a>
-                        <a href="{% if user.is_mentor %}{% url 'dashboard:mentor_dashboard' %}{% elif user.is_student %}{% url 'dashboard:student_dashboard' %}{% else %}{% url 'dashboard:admin_dashboard' %}{% endif %}" class="dropdown-item">
+                        <a href="{% if user.is_mentor %}{% url 'dashboard:mentor_dashboard' %}{% elif user.is_student %}{% url 'dashboard:student_dashboard' %}{% elif user.is_mentor_facilitator %}{% url 'dashboard:mentor_facilitator_dashboard' %}{% elif user.is_finance_officer %}{% url 'dashboard:finance_dashboard' %}{% else %}{% url 'dashboard:admin_dashboard' %}{% endif %}" class="dropdown-item">
                             <i data-feather="grid"></i>
                             <span>Dashboard</span>
                         </a>
@@ -134,10 +134,13 @@
                             <i data-feather="external-link"></i>
                             <span>Visit Site</span>
                         </a>
-                        <a href="{% url 'accounts:logout' %}" class="dropdown-item text-danger">
-                            <i data-feather="log-out"></i>
-                            <span>Logout</span>
-                        </a>
+                        <form method="post" action="{% url 'accounts:logout' %}" style="margin: 0;">
+                            {% csrf_token %}
+                            <button type="submit" class="dropdown-item text-danger" style="width: 100%; text-align: left; background: none; border: none; cursor: pointer;">
+                                <i data-feather="log-out"></i>
+                                <span>Logout</span>
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>

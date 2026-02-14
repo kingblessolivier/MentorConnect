@@ -18,7 +18,6 @@ import json
 from accounts.models import User
 from profiles.models import MentorProfile
 from .models import MentorshipRequest, Review, MentorAvailability
-from sessions_app.models import Session as MentorSession
 
 
 class MentorSearchView(LoginRequiredMixin, ListView):
@@ -134,20 +133,8 @@ class MentorSearchView(LoginRequiredMixin, ListView):
             queryset = queryset.order_by('user__first_name', 'user__last_name')
         else:  # default: -rating
             queryset = queryset.order_by('-is_featured', '-rating', '-total_reviews')
-        queryset = queryset.distinct()
 
-        # If no mentors matched the filters, provide a lightweight fallback
-        # showing active mentors so the user isn't presented with an empty page.
-        if not queryset.exists():
-            fallback = MentorProfile.objects.filter(user__is_active=True).select_related('user').annotate(
-                avg_rating=Avg('user__reviews_received__rating')
-            ).order_by('-is_featured', '-rating')
-            # attach a marker so template can display a message
-            self._used_fallback = True
-            return fallback
-
-        self._used_fallback = False
-        return queryset
+        return queryset.distinct()
 
     def get_context_data(self, **kwargs):
         """Build context with filters, stats, and recommendations"""
@@ -200,9 +187,6 @@ class MentorSearchView(LoginRequiredMixin, ListView):
             context['location'] or context['min_rating'] or context['min_experience'] or
             context['price'] or context['session_type']
         )
-
-        # Indicate whether the view returned a fallback set due to no matches
-        context['used_fallback'] = getattr(self, '_used_fallback', False)
 
         return context
 
@@ -480,31 +464,6 @@ class MentorAvailabilityView(LoginRequiredMixin, TemplateView):
             'next_year': next_year,
             'weekdays': ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
         })
-
-        # Also include mentor sessions (booked) for the month, grouped by date
-        sessions_qs = MentorSession.objects.filter(
-            mentor=self.request.user,
-            start__date__gte=start_date,
-            start__date__lt=end_date,
-        ).order_by('start')
-
-        sessions_by_date = {}
-        for s in sessions_qs:
-            d = s.start.date()
-            key = d.isoformat()
-            sessions_by_date.setdefault(key, []).append({
-                'id': s.id,
-                'date': d,
-                'start_time': s.start.time(),
-                'end_time': s.end.time() if s.end else None,
-                'title': s.title or 'Session',
-                'student': s.student.get_full_name() if s.student else '',
-                'status': s.status,
-                'location_name': getattr(s, 'location_name', ''),
-                'description': getattr(s, 'description', ''),
-            })
-
-        context['sessions_by_date'] = sessions_by_date
         return context
 
 

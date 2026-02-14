@@ -8,13 +8,16 @@ from . import views
 app_name = 'applications'
 
 urlpatterns = [
-    path('apply/', views.GuestApplicationCreateView.as_view(), name='apply'),
-    path('apply/<int:mentor_id>/', views.GuestApplicationCreateView.as_view(), name='apply_to_mentor'),
-    path('apply/success/', views.ApplySuccessView.as_view(), name='apply_success'),
-
-    path('invite/<str:token>/', views.register_with_token, name='register_with_token'),
-
+    # Mentor: view mentorship applications where they are the selected mentor
     path('mentor/applications/', views.MentorApplicationListView.as_view(), name='mentor_applications'),
     path('mentor/applications/<int:pk>/', views.MentorApplicationDetailView.as_view(), name='mentor_application_detail'),
-    path('mentor/applications/<int:pk>/action/', views.mentor_application_action, name='mentor_application_action'),
+
+    # Logged-in student: pay to submit mentorship application
+    path('submit/<int:request_id>/pay/', views.pay_and_submit_application, name='pay_and_submit'),
+
+    # Multi-step application wizard
+    path('wizard/', views.application_wizard, name='wizard'),
+    path('wizard/<int:step>/', views.application_wizard, name='wizard_step'),
+    path('track/', views.application_track_status, name='track_status'),
+    path('my-applications/', views.StudentApplicationsListView.as_view(), name='my_applications'),
 ]

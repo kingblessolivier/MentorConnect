@@ -1,12 +1,12 @@
 {% extends 'dashboard/base_dashboard.html' %}
 
-{% block title %}Guest Applications - {{ SITE_NAME }}{% endblock %}
+{% block title %}Mentorship Applications - {{ SITE_NAME }}{% endblock %}
 
 {% block dashboard_content %}
 <div class="dashboard-header">
     <div>
-        <h1>Guest Applications</h1>
-        <p class="text-muted">Review and manage applications from students without accounts</p>
+        <h1>Mentorship Applications</h1>
+        <p class="text-muted">Applications where you are the selected mentor</p>
     </div>
 </div>
 
@@ -16,7 +16,7 @@
             <i data-feather="clock"></i>
         </div>
         <div class="stat-card-value">{{ pending_count|default:0 }}</div>
-        <div class="stat-card-label">Pending</div>
+        <div class="stat-card-label">Pending Review</div>
     </div>
     <div class="stat-card">
         <div class="stat-card-icon" style="background:#d1fae5;color:#059669">
@@ -40,30 +40,17 @@
         <div class="flex items-center gap-4 p-4 rounded-lg mb-3" style="background: var(--background-color);">
             <div class="flex-1">
                 <div class="font-medium">{{ app.name }}</div>
-                <div class="text-sm text-muted">{{ app.email }} • {{ app.school }}</div>
-                <div class="text-sm mt-1">{{ app.interests|truncatewords:15 }}</div>
+                <div class="text-sm text-muted">{{ app.email }} • {{ app.school|default:app.program|default:"—" }}</div>
+                <div class="text-sm mt-1">{{ app.motivation|truncatewords:15|default:"" }}</div>
+                <div class="text-xs text-muted mt-1">{{ app.tracking_code }} • {{ app.submitted_at|date:"M d, Y"|default:"—" }}</div>
             </div>
             <span class="badge badge-{{ app.status }}">
                 {{ app.get_status_display }}
             </span>
-            <div class="flex gap-2">
-                <a href="{% url 'applications:mentor_application_detail' app.pk %}" class="btn btn-sm btn-outline">View</a>
-                {% if app.status == 'pending' %}
-                <form method="post" action="{% url 'applications:mentor_application_action' app.pk %}" style="display:inline;">
-                    {% csrf_token %}
-                    <input type="hidden" name="action" value="approve">
-                    <button type="submit" class="btn btn-sm btn-primary">Approve</button>
-                </form>
-                <form method="post" action="{% url 'applications:mentor_application_action' app.pk %}" style="display:inline;">
-                    {% csrf_token %}
-                    <input type="hidden" name="action" value="reject">
-                    <button type="submit" class="btn btn-sm btn-outline" onclick="return confirm('Reject this application?')">Reject</button>
-                </form>
-                {% endif %}
-            </div>
+            <a href="{% url 'applications:mentor_application_detail' app.pk %}" class="btn btn-sm btn-outline">View</a>
         </div>
         {% empty %}
-        <p class="text-muted text-center py-8">No applications yet.</p>
+        <p class="text-muted text-center py-8">No mentorship applications yet.</p>
         {% endfor %}
     </div>
 </div>

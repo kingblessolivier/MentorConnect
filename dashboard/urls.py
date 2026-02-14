@@ -15,9 +15,29 @@ urlpatterns = [
     path('student/', views.StudentDashboardView.as_view(), name='student_dashboard'),
     path('mentor/', views.MentorDashboardView.as_view(), name='mentor_dashboard'),
     path('admin/', views.AdminDashboardView.as_view(), name='admin_dashboard'),
+    path('finance/', views.FinanceDashboardView.as_view(), name='finance_dashboard'),
+    path('mentor-facilitator/', views.MentorFacilitatorDashboardView.as_view(), name='mentor_facilitator_dashboard'),
+
+    # Finance officer: payments, reports, export
+    path('finance/applications/<int:application_id>/verify/', views.finance_verify_payment, name='finance_verify_payment'),
+    path('finance/payments/', views.FinancePaymentsView.as_view(), name='finance_payments'),
+    path('finance/reports/', views.FinanceReportsView.as_view(), name='finance_reports'),
+    path('finance/export/', views.finance_export, name='finance_export'),
+
+    # Mentor Facilitator: mentors, assignments, mentorships, disputes, session reports
+    path('mentor-facilitator/mentors/', views.MFMentorListView.as_view(), name='mf_mentors'),
+    path('mentor-facilitator/mentors/add/', views.MFMentorCreateView.as_view(), name='mf_mentor_add'),
+    path('mentor-facilitator/mentors/<int:pk>/edit/', views.MFMentorUpdateView.as_view(), name='mf_mentor_edit'),
+    path('mentor-facilitator/assignments/', views.MFAssignmentsView.as_view(), name='mf_assignments'),
+    path('mentor-facilitator/mentorships/', views.MFMentorshipsView.as_view(), name='mf_mentorships'),
+    path('mentor-facilitator/disputes/', views.MFDisputesView.as_view(), name='mf_disputes'),
+    path('mentor-facilitator/disputes/<int:pk>/resolve/', views.mf_dispute_resolve, name='mf_dispute_resolve'),
+    path('mentor-facilitator/session-reports/', views.MFSessionReportsView.as_view(), name='mf_session_reports'),
 
     # Admin User Management
     path('admin/users/', views.AdminUserListView.as_view(), name='admin_users'),
+    path('admin/staff/mentor-facilitator/add/', views.AdminMentorFacilitatorCreateView.as_view(), name='admin_create_mentor_facilitator'),
+    path('admin/staff/finance-officer/add/', views.AdminFinanceOfficerCreateView.as_view(), name='admin_create_finance_officer'),
     path('admin/users/<int:pk>/toggle/', views.toggle_user_status, name='toggle_user'),
     path('admin/users/<int:pk>/delete/', views.delete_user, name='delete_user'),
 
@@ -25,6 +45,8 @@ urlpatterns = [
     path('admin/mentors/', views.AdminMentorListView.as_view(), name='admin_mentors'),
     path('admin/mentors/add/', views.AdminMentorCreateView.as_view(), name='admin_mentor_create'),
     path('admin/mentors/<int:pk>/', views.AdminMentorDetailView.as_view(), name='admin_mentor_detail'),
+    path('admin/mentors/<int:pk>/assign-facilitator/', views.admin_assign_mentor_to_facilitator, name='admin_assign_mentor_to_facilitator'),
+    path('admin/mentors/<int:pk>/unassign-facilitator/<int:facilitator_id>/', views.admin_unassign_mentor_from_facilitator, name='admin_unassign_mentor_from_facilitator'),
     path('admin/mentors/<int:pk>/toggle-verified/', views.toggle_mentor_verified, name='toggle_mentor_verified'),
     path('admin/mentors/<int:pk>/toggle-featured/', views.toggle_mentor_featured, name='toggle_mentor_featured'),
 

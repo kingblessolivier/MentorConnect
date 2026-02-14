@@ -1,0 +1,101 @@
+{% extends 'dashboard/base_dashboard.html' %}
+
+{% block title %}Mentors - Mentor Facilitator{% endblock %}
+
+{% block dashboard_content %}
+<div class="dashboard-header">
+    <div>
+        <h1><i data-feather="award" class="header-icon"></i> Mentor Management</h1>
+        <p class="text-muted">View and add mentors</p>
+    </div>
+    <a href="{% url 'dashboard:mf_mentor_add' %}" class="btn btn-primary">
+        <i data-feather="user-plus"></i> Add Mentor
+    </a>
+</div>
+
+<div class="dashboard-stats">
+    <div class="stat-card">
+        <div class="stat-card-icon"><i data-feather="award"></i></div>
+        <div class="stat-card-value">{{ total_mentors }}</div>
+        <div class="stat-card-label">Total Mentors</div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="filters-form">
+            <div class="filters-row">
+                <div class="filter-group">
+                    <label>Search</label>
+                    <input type="text" name="search" class="form-control" placeholder="Name, email, expertise..." value="{{ request.GET.search }}">
+                </div>
+                <div class="filter-group">
+                    <label>Status</label>
+                    <select name="status" class="form-control">
+                        <option value="">All</option>
+                        <option value="available" {% if request.GET.status == 'available' %}selected{% endif %}>Available</option>
+                        <option value="unavailable" {% if request.GET.status == 'unavailable' %}selected{% endif %}>Unavailable</option>
+                    </select>
+                </div>
+                <div class="filter-group filter-actions">
+                    <button type="submit" class="btn btn-primary"><i data-feather="search"></i> Filter</button>
+                    <a href="{% url 'dashboard:mf_mentors' %}" class="btn btn-outline">Reset</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Mentor</th>
+                        <th>Expertise</th>
+                        <th>Rating</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for mentor in mentors %}
+                    <tr>
+                        <td>
+                            <div class="user-cell">
+                                <img src="{{ mentor.user.get_avatar_url }}" alt="" class="avatar avatar-md">
+                                <div class="user-info">
+                                    <div class="user-name">{{ mentor.user.get_full_name }}</div>
+                                    <div class="user-email">{{ mentor.user.email }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ mentor.expertise }} ({{ mentor.experience_years }} yrs)</td>
+                        <td>{{ mentor.rating }} ({{ mentor.total_reviews }} reviews)</td>
+                        <td>
+                            <span class="badge {% if mentor.is_available %}badge-success{% else %}badge-danger{% endif %}">
+                                {% if mentor.is_available %}Available{% else %}Unavailable{% endif %}
+                            </span>
+                        </td>
+                        <td>
+                            <a href="{% url 'dashboard:mf_mentor_edit' mentor.user_id %}" class="btn btn-sm btn-primary">Edit</a>
+                            <a href="{% url 'profiles:mentor_detail' mentor.user_id %}" class="btn btn-sm btn-outline">View</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="text-center text-muted py-4">No mentors found</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if is_paginated %}
+        <div class="pagination-bar mt-4">
+            {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" class="pagination-btn"><i data-feather="chevron-left"></i></a>{% endif %}
+            <span class="pagination-info">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" class="pagination-btn"><i data-feather="chevron-right"></i></a>{% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

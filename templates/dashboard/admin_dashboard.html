@@ -4,6 +4,7 @@
 {% block title %}Admin Dashboard - {{ SITE_NAME }}{% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/premium.css' %}">
 <style>
 /* ============================================
    ADMIN DASHBOARD - PREMIUM DESIGN
@@ -793,7 +794,7 @@
 {% endblock %}
 
 {% block dashboard_content %}
-<!-- Hero Section -->
+
 <div class="admin-hero">
     <div class="hero-content">
         <div class="hero-text">
@@ -1019,6 +1020,124 @@
             <div class="action-icon-wrap"><i data-feather="download"></i></div>
             <span class="action-text">Export Data</span>
         </a>
+    </div>
+</div>
+
+<!-- Mentorship Analytics -->
+<div class="analytics-section">
+    <div class="section-header">
+        <h2><i data-feather="trending-up"></i> Mentorship Analytics</h2>
+        <p class="section-subtitle">Advanced metrics and performance indicators for mentorship programs</p>
+    </div>
+    
+    <div class="analytics-grid">
+        <!-- Success Metrics -->
+        <div class="analytics-card success">
+            <div class="analytics-icon">
+                <i data-feather="award"></i>
+            </div>
+            <div class="analytics-content">
+                <h3>Success Score</h3>
+                <div class="analytics-value">{{ avg_success_score|default:0 }}/10</div>
+                <p class="analytics-desc">Overall mentorship success based on multiple factors</p>
+            </div>
+        </div>
+        
+        <!-- Engagement Level -->
+        <div class="analytics-card engagement">
+            <div class="analytics-icon">
+                <i data-feather="activity"></i>
+            </div>
+            <div class="analytics-content">
+                <h3>Engagement Level</h3>
+                <div class="analytics-value">{{ avg_engagement_level|default:0 }}%</div>
+                <p class="analytics-desc">Average participant engagement in sessions</p>
+            </div>
+        </div>
+        
+        <!-- Goal Completion -->
+        <div class="analytics-card goals">
+            <div class="analytics-icon">
+                <i data-feather="target"></i>
+            </div>
+            <div class="analytics-content">
+                <h3>Goal Achievement</h3>
+                <div class="analytics-value">{{ goal_achievement_rate|default:0 }}%</div>
+                <p class="analytics-desc">Percentage of mentorship goals completed</p>
+            </div>
+        </div>
+        
+        <!-- Session Attendance -->
+        <div class="analytics-card attendance">
+            <div class="analytics-icon">
+                <i data-feather="users"></i>
+            </div>
+            <div class="analytics-content">
+                <h3>Session Attendance</h3>
+                <div class="analytics-value">{{ avg_session_attendance|default:0 }}%</div>
+                <p class="analytics-desc">Average attendance rate for sessions</p>
+            </div>
+        </div>
+        
+        <!-- Student Satisfaction -->
+        <div class="analytics-card satisfaction">
+            <div class="analytics-icon">
+                <i data-feather="smile"></i>
+            </div>
+            <div class="analytics-content">
+                <h3>Student Satisfaction</h3>
+                <div class="analytics-value">{{ avg_student_satisfaction|default:0 }}/5</div>
+                <p class="analytics-desc">Average student satisfaction score</p>
+            </div>
+        </div>
+        
+        <!-- Mentor Satisfaction -->
+        <div class="analytics-card mentor-satisfaction">
+            <div class="analytics-icon">
+                <i data-feather="star"></i>
+            </div>
+            <div class="analytics-content">
+                <h3>Mentor Satisfaction</h3>
+                <div class="analytics-value">{{ avg_mentor_satisfaction|default:0 }}/5</div>
+                <p class="analytics-desc">Average mentor satisfaction score</p>
+            </div>
+        </div>
+        
+        <!-- Time to Match -->
+        <div class="analytics-card time">
+            <div class="analytics-icon">
+                <i data-feather="clock"></i>
+            </div>
+            <div class="analytics-content">
+                <h3>Time to Match</h3>
+                <div class="analytics-value">{{ avg_time_to_match|default:0 }}h</div>
+                <p class="analytics-desc">Average time from request to approval</p>
+            </div>
+        </div>
+        
+        <!-- Success Rate -->
+        <div class="analytics-card rate">
+            <div class="analytics-icon">
+                <i data-feather="check-circle"></i>
+            </div>
+            <div class="analytics-content">
+                <h3>Success Rate</h3>
+                <div class="analytics-value">{{ mentorship_success_rate|default:0 }}%</div>
+                <p class="analytics-desc">Percentage of started mentorships completed</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Risk Indicators -->
+    <div class="risk-indicator">
+        <div class="risk-header">
+            <h3><i data-feather="alert-triangle"></i> Risk Indicators</h3>
+            <span class="risk-count">{{ at_risk_mentorships|default:0 }} at risk ({{ at_risk_percentage|default:0 }}%)</span>
+        </div>
+        <div class="risk-bar">
+            <div class="risk-fill" style="width: {{ at_risk_percentage|default:0 }}%"></div>
+        </div>
+        <p class="risk-note">Mentorships flagged for potential issues requiring intervention</p>
     </div>
 </div>
 

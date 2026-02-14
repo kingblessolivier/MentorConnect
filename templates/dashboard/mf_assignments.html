@@ -1,0 +1,57 @@
+{% extends 'dashboard/base_dashboard.html' %}
+
+{% block title %}Assigned Mentors - Mentor Facilitator{% endblock %}
+
+{% block dashboard_content %}
+<div class="dashboard-header">
+    <div>
+        <h1><i data-feather="users" class="header-icon"></i> Assigned Mentors & Students</h1>
+        <p class="text-muted">Your assigned mentors and mentorship requests</p>
+    </div>
+    <a href="{% url 'dashboard:mentor_facilitator_dashboard' %}" class="btn btn-outline"><i data-feather="arrow-left"></i> Dashboard</a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Assignment</th>
+                        <th>Mentor</th>
+                        <th>Student / Request</th>
+                        <th>Assigned</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for a in assignments %}
+                    <tr>
+                        <td>
+                            {% if a.mentorship_request %}
+                            <span class="badge badge-info">Request</span>
+                            {% elif a.mentor %}
+                            <span class="badge badge-success">Mentor</span>
+                            {% else %}
+                            —
+                            {% endif %}
+                        </td>
+                        <td>{% if a.mentor %}{{ a.mentor.get_full_name }}{% elif a.mentorship_request %}{{ a.mentorship_request.mentor.get_full_name }}{% else %}—{% endif %}</td>
+                        <td>{% if a.mentorship_request %}{{ a.mentorship_request.student.get_full_name }} — {{ a.mentorship_request.subject }}{% else %}—{% endif %}</td>
+                        <td>{{ a.assigned_at|date:"M d, Y" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" class="text-center text-muted py-4">No assignments yet</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if is_paginated %}
+        <div class="pagination-bar mt-4">
+            {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}" class="pagination-btn"><i data-feather="chevron-left"></i></a>{% endif %}
+            <span class="pagination-info">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}" class="pagination-btn"><i data-feather="chevron-right"></i></a>{% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

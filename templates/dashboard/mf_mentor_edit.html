@@ -1,0 +1,44 @@
+{% extends 'dashboard/base_dashboard.html' %}
+
+{% block title %}Edit Mentor - Mentor Facilitator{% endblock %}
+
+{% block dashboard_content %}
+<div class="dashboard-header">
+    <div>
+        <h1><i data-feather="edit" class="header-icon"></i> Edit Mentor</h1>
+        <p class="text-muted">{{ mentor_user.get_full_name }}</p>
+    </div>
+    <a href="{% url 'dashboard:mf_mentors' %}" class="btn btn-outline"><i data-feather="arrow-left"></i> Back</a>
+</div>
+
+<div class="card" style="max-width: 36rem;">
+    <div class="card-body">
+        <form method="post" class="form-modern">
+            {% csrf_token %}
+            <div class="form-group">
+                <label class="form-label">Email (read-only)</label>
+                <input type="text" class="form-control" value="{{ mentor_user.email }}" readonly>
+            </div>
+            {% for field in form %}
+            <div class="form-group">
+                <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}<div class="text-danger text-sm">{{ field.errors.0 }}</div>{% endif %}
+            </div>
+            {% endfor %}
+            {% if profile %}
+            <div class="form-section mt-4">
+                <h4 class="mb-3">Mentor Profile (edit via Django Admin or profiles)</h4>
+                <p class="text-muted text-sm">Skills: {{ profile.skills|truncatewords:10 }}</p>
+                <p class="text-muted text-sm">Expertise: {{ profile.expertise }}</p>
+                <a href="{% url 'profiles:mentor_detail' mentor_user.id %}" class="btn btn-outline btn-sm">View full profile</a>
+            </div>
+            {% endif %}
+            <div class="form-actions mt-4">
+                <button type="submit" class="btn btn-primary">Save</button>
+                <a href="{% url 'dashboard:mf_mentors' %}" class="btn btn-outline">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,69 @@
+{% extends 'dashboard/base_dashboard.html' %}
+
+{% block title %}Add {{ staff_role }} - Admin{% endblock %}
+
+{% block dashboard_content %}
+<div class="dashboard-header">
+    <div>
+        <h1><i data-feather="user-plus" class="header-icon"></i> Add {{ staff_role }}</h1>
+        <p class="text-muted">Create a new {{ staff_role|lower }} account (created by admin)</p>
+    </div>
+    <a href="{% url 'dashboard:admin_users' %}" class="btn btn-outline">
+        <i data-feather="arrow-left"></i> Back to Users
+    </a>
+</div>
+
+<div class="card" style="max-width: 32rem;">
+    <div class="card-body">
+        <form method="post" class="form-modern">
+            {% csrf_token %}
+            {% if form.errors %}
+            <div class="alert alert-danger mb-4">
+                <strong>Please correct the errors below.</strong>
+                <ul class="error-list mt-2">
+                    {% for field in form %}{% for error in field.errors %}<li>{{ field.label }}: {{ error }}</li>{% endfor %}{% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            <div class="form-group">
+                <label for="id_email" class="form-label">Email *</label>
+                {{ form.email }}
+            </div>
+            <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label for="id_first_name" class="form-label">First name *</label>
+                    {{ form.first_name }}
+                </div>
+                <div class="form-group">
+                    <label for="id_last_name" class="form-label">Last name *</label>
+                    {{ form.last_name }}
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="id_phone" class="form-label">Phone</label>
+                {{ form.phone }}
+            </div>
+            {% if staff_role == 'Mentor Facilitator' %}
+            <div class="form-group">
+                <label for="bio" class="form-label">Bio (optional)</label>
+                <textarea name="bio" id="bio" class="form-control form-textarea" rows="3" placeholder="Short bio for this facilitator..."></textarea>
+            </div>
+            {% endif %}
+
+            <div class="form-actions" style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #e5e7eb;">
+                <button type="submit" class="btn btn-primary">Create {{ staff_role }}</button>
+                <a href="{% url 'dashboard:admin_users' %}" class="btn btn-outline">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card mt-4" style="max-width: 32rem;">
+    <div class="card-body">
+        <h3><i data-feather="key"></i> Default password</h3>
+        <code style="display: block; padding: 0.75rem; background: #fef3c7; border-radius: 8px; margin-top: 0.5rem;">MentorConnect2026!</code>
+        <p class="form-help mt-2">They should change this after first login.</p>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,1059 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Apply for Mentorship - Step {{ step }} - {{ SITE_NAME }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/premium.css' %}">
+<style>
+/* Application Wizard Premium Design */
+.application-wizard {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.wizard-hero {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 50%, #3b7fb8 100%);
+    border-radius: 24px;
+    padding: 3rem;
+    margin-bottom: 3rem;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(30, 58, 95, 0.35);
+    color: white;
+    text-align: center;
+}
+
+.wizard-hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 80%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 60%);
+    animation: heroGlow 6s ease-in-out infinite;
+}
+
+.wizard-hero-content {
+    position: relative;
+    z-index: 2;
+}
+
+.wizard-hero h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 1rem;
+    text-shadow: 0 2px 15px rgba(0,0,0,0.2);
+}
+
+.wizard-hero p {
+    font-size: 1.125rem;
+    opacity: 0.9;
+    max-width: 600px;
+    margin: 0 auto 2rem;
+}
+
+/* Progress Steps */
+.progress-steps {
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+    margin-bottom: 3rem;
+    counter-reset: step;
+}
+
+.progress-steps::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: #e2e8f0;
+    transform: translateY(-50%);
+    z-index: 1;
+}
+
+.progress-bar {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+    transform: translateY(-50%);
+    z-index: 2;
+    transition: width 0.6s ease;
+}
+
+.step {
+    position: relative;
+    z-index: 3;
+    text-align: center;
+    flex: 1;
+}
+
+.step-circle {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: white;
+    border: 4px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 0.75rem;
+    font-weight: 700;
+    color: #94a3b8;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.step-circle::before {
+    counter-increment: step;
+    content: counter(step);
+    font-size: 1.125rem;
+}
+
+.step.active .step-circle {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    color: white;
+    transform: scale(1.1);
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+}
+
+.step.completed .step-circle {
+    background: #10b981;
+    border-color: #10b981;
+    color: white;
+}
+
+.step.completed .step-circle::before {
+    content: '✓';
+}
+
+.step-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #64748b;
+    transition: color 0.3s;
+}
+
+.step.active .step-label {
+    color: #3b82f6;
+    font-weight: 700;
+}
+
+.step.completed .step-label {
+    color: #10b981;
+}
+
+/* Wizard Card */
+.wizard-card {
+    background: white;
+    border-radius: 20px;
+    padding: 2.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 25px rgba(0,0,0,0.04);
+    border: 1px solid rgba(0,0,0,0.04);
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.step-header {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(0,0,0,0.04);
+}
+
+.step-header h2 {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: #1e293b;
+    margin: 0 0 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.step-header h2 svg {
+    width: 28px;
+    height: 28px;
+    color: #3b82f6;
+}
+
+.step-header p {
+    font-size: 1.0625rem;
+    color: #64748b;
+    margin: 0;
+    max-width: 600px;
+}
+
+/* Form Styling */
+.form-group-premium {
+    margin-bottom: 2rem;
+}
+
+.form-label-premium {
+    display: block;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.5rem;
+}
+
+.form-label-premium .required {
+    color: #ef4444;
+}
+
+.form-control-premium {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    font-size: 1rem;
+    color: #1f2937;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.form-control-premium:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-control-premium:hover:not(:focus) {
+    border-color: #9ca3af;
+}
+
+.form-hint {
+    font-size: 0.8125rem;
+    color: #6b7280;
+    margin-top: 0.375rem;
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.form-hint svg {
+    width: 14px;
+    height: 14px;
+    color: #6b7280;
+}
+
+/* Form Grid */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .form-grid { grid-template-columns: 1fr; }
+}
+
+/* Option Cards */
+.option-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.option-card {
+    background: #f8fafc;
+    border: 2px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 1.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.option-card:hover {
+    border-color: #3b82f6;
+    background: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+
+.option-card.selected {
+    border-color: #3b82f6;
+    background: linear-gradient(135deg, #eff6ff, #dbeafe);
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.15);
+}
+
+.option-card.selected::after {
+    content: '✓';
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    width: 28px;
+    height: 28px;
+    background: #3b82f6;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.875rem;
+}
+
+.option-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+    color: white;
+}
+
+.option-icon svg {
+    width: 24px;
+    height: 24px;
+}
+
+.option-content h4 {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 0.5rem;
+}
+
+.option-content p {
+    font-size: 0.875rem;
+    color: #64748b;
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* Payment Card */
+.payment-card {
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border: 2px solid #f59e0b;
+}
+
+.payment-card h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #92400e;
+    margin: 0 0 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.payment-card h3 svg {
+    width: 24px;
+    height: 24px;
+    color: #92400e;
+}
+
+.payment-amount {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #92400e;
+    margin: 0 0 0.5rem;
+}
+
+.payment-methods {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.payment-method {
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.payment-method:hover {
+    border-color: #3b82f6;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+
+.payment-method.selected {
+    border-color: #3b82f6;
+    background: linear-gradient(135deg, #eff6ff, #dbeafe);
+}
+
+.payment-method-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #10b981, #059669);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    color: white;
+}
+
+.payment-method-icon svg {
+    width: 24px;
+    height: 24px;
+}
+
+/* Review Summary */
+.review-summary {
+    background: #f8fafc;
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.review-summary h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.review-summary h3 svg {
+    width: 24px;
+    height: 24px;
+    color: #3b82f6;
+}
+
+.review-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 1rem 0;
+    border-bottom: 1px solid rgba(0,0,0,0.04);
+}
+
+.review-item:last-child {
+    border-bottom: none;
+}
+
+.review-label {
+    font-weight: 600;
+    color: #4b5563;
+}
+
+.review-value {
+    font-weight: 500;
+    color: #1f2937;
+    text-align: right;
+    max-width: 300px;
+}
+
+/* Navigation Buttons */
+.wizard-navigation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(0,0,0,0.04);
+}
+
+.btn-wizard {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1.75rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    text-decoration: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 2px solid transparent;
+    cursor: pointer;
+}
+
+.btn-wizard svg {
+    width: 18px;
+    height: 18px;
+}
+
+.btn-prev {
+    background: white;
+    color: #64748b;
+    border-color: #e2e8f0;
+}
+
+.btn-prev:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+    transform: translateX(-2px);
+}
+
+.btn-next {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+    box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);
+}
+
+.btn-next:hover {
+    transform: translateX(2px);
+    box-shadow: 0 8px 30px rgba(59, 130, 246, 0.4);
+}
+
+.btn-submit {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
+}
+
+.btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(16, 185, 129, 0.4);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .wizard-hero {
+        padding: 2rem;
+        border-radius: 16px;
+    }
+    
+    .wizard-hero h1 {
+        font-size: 2rem;
+    }
+    
+    .progress-steps {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1.5rem;
+    }
+    
+    .progress-steps::before {
+        display: none;
+    }
+    
+    .step {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        width: 100%;
+    }
+    
+    .step-circle {
+        margin: 0;
+        flex-shrink: 0;
+    }
+    
+    .wizard-card {
+        padding: 1.5rem;
+    }
+    
+    .wizard-navigation {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .btn-wizard {
+        width: 100%;
+        justify-content: center;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="application-wizard">
+    <!-- Hero Section -->
+    <div class="wizard-hero">
+        <div class="wizard-hero-content">
+            <h1><i data-feather="send"></i> Apply for Mentorship</h1>
+            <p>Start your journey to personal and professional growth. Complete this 5-step application to find your perfect mentor match.</p>
+            <div class="application-meta">
+                <div class="meta-item" style="color: white; justify-content: center;">
+                    <i data-feather="clock"></i>
+                    <span>Step {{ step }} of 5 • Estimated time: 10-15 minutes</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Progress Steps -->
+    <div class="progress-steps">
+        <div class="progress-bar" style="width: {% widthratio step 5 100 %}%;"></div>
+        
+        <div class="step {% if step >= 1 %}completed{% endif %} {% if step == 1 %}active{% endif %}">
+            <div class="step-circle"></div>
+            <div class="step-label">Personal Info</div>
+        </div>
+        
+        <div class="step {% if step >= 2 %}completed{% endif %} {% if step == 2 %}active{% endif %}">
+            <div class="step-circle"></div>
+            <div class="step-label">Academic Goals</div>
+        </div>
+        
+        <div class="step {% if step >= 3 %}completed{% endif %} {% if step == 3 %}active{% endif %}">
+            <div class="step-circle"></div>
+            <div class="step-label">Mentor Match</div>
+        </div>
+        
+        <div class="step {% if step >= 4 %}completed{% endif %} {% if step == 4 %}active{% endif %}">
+            <div class="step-circle"></div>
+            <div class="step-label">Payment</div>
+        </div>
+        
+        <div class="step {% if step >= 5 %}completed{% endif %} {% if step == 5 %}active{% endif %}">
+            <div class="step-circle"></div>
+            <div class="step-label">Review</div>
+        </div>
+    </div>
+
+    <!-- Wizard Form -->
+    <div class="wizard-card">
+        {% if step == 1 %}
+        <!-- Step 1: Personal Information -->
+        <div class="step-header">
+            <h2><i data-feather="user"></i> Personal Information</h2>
+            <p>Tell us about yourself. This information helps us match you with the right mentor and ensure proper communication.</p>
+        </div>
+        
+        <form method="post" class="wizard-form">
+            {% csrf_token %}
+            
+            <div class="form-grid">
+                {% for field in form %}
+                <div class="form-group-premium">
+                    <label class="form-label-premium" for="{{ field.id_for_label }}">
+                        {{ field.label }}
+                        {% if field.field.required %}<span class="required">*</span>{% endif %}
+                    </label>
+                    
+                    {% if field.field.widget.input_type == 'select' %}
+                    <select name="{{ field.name }}" id="{{ field.id_for_label }}" class="form-control-premium" {% if field.field.required %}required{% endif %}>
+                        {% for choice in field.field.choices %}
+                        <option value="{{ choice.0 }}" {% if field.value == choice.0 %}selected{% endif %}>{{ choice.1 }}</option>
+                        {% endfor %}
+                    </select>
+                    {% elif field.field.widget.input_type == 'textarea' %}
+                    <textarea name="{{ field.name }}" id="{{ field.id_for_label }}" class="form-control-premium" rows="4" {% if field.field.required %}required{% endif %}>{{ field.value|default:'' }}</textarea>
+                    {% elif field.field.widget.input_type == 'checkbox' %}
+                    <div class="checkbox-wrapper">
+                        <input type="checkbox" name="{{ field.name }}" id="{{ field.id_for_label }}" class="form-checkbox-premium" {% if field.value %}checked{% endif %} {% if field.field.required %}required{% endif %}>
+                        <label for="{{ field.id_for_label }}" class="checkbox-label">{{ field.label }}</label>
+                    </div>
+                    {% else %}
+                    <input type="{{ field.field.widget.input_type|default:'text' }}" 
+                           name="{{ field.name }}" 
+                           id="{{ field.id_for_label }}" 
+                           class="form-control-premium" 
+                           value="{{ field.value|default:'' }}"
+                           placeholder="{{ field.field.widget.attrs.placeholder|default:'' }}"
+                           {% if field.field.required %}required{% endif %}>
+                    {% endif %}
+                    
+                    {% if field.help_text %}
+                    <div class="form-hint">
+                        <i data-feather="info"></i>
+                        {{ field.help_text }}
+                    </div>
+                    {% endif %}
+                    {% if field.errors %}
+                    <div class="form-hint" style="color: #ef4444;">
+                        <i data-feather="alert-circle"></i>
+                        {{ field.errors.0 }}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            
+            {% if form.date_of_birth %}
+            <div class="form-hint" style="margin-top: -1rem; margin-bottom: 2rem;">
+                <i data-feather="shield"></i>
+                If under 18, parent/guardian details are required in later steps.
+            </div>
+            {% endif %}
+            
+            <div class="wizard-navigation">
+                <div></div> <!-- Empty div for spacing -->
+                <button type="submit" class="btn-wizard btn-next">
+                    Next Step <i data-feather="arrow-right"></i>
+                </button>
+            </div>
+        </form>
+        
+        {% elif step == 2 %}
+        <!-- Step 2: Academic & Mentorship Goals -->
+        <div class="step-header">
+            <h2><i data-feather="target"></i> Academic & Mentorship Goals</h2>
+            <p>Share your educational background and what you hope to achieve through mentorship.</p>
+        </div>
+        
+        <form method="post" class="wizard-form">
+            {% csrf_token %}
+            
+            {% for field in form %}
+            <div class="form-group-premium">
+                <label class="form-label-premium" for="{{ field.id_for_label }}">
+                    {{ field.label }}
+                    {% if field.field.required %}<span class="required">*</span>{% endif %}
+                </label>
+                
+                {% if field.field.widget.input_type == 'select' %}
+                <select name="{{ field.name }}" id="{{ field.id_for_label }}" class="form-control-premium" {% if field.field.required %}required{% endif %}>
+                    {% for choice in field.field.choices %}
+                    <option value="{{ choice.0 }}" {% if field.value == choice.0 %}selected{% endif %}>{{ choice.1 }}</option>
+                    {% endfor %}
+                </select>
+                {% elif field.field.widget.input_type == 'textarea' %}
+                <textarea name="{{ field.name }}" id="{{ field.id_for_label }}" class="form-control-premium" rows="4" {% if field.field.required %}required{% endif %}>{{ field.value|default:'' }}</textarea>
+                {% elif field.field.widget.input_type == 'checkbox' %}
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" name="{{ field.name }}" id="{{ field.id_for_label }}" class="form-checkbox-premium" {% if field.value %}checked{% endif %} {% if field.field.required %}required{% endif %}>
+                    <label for="{{ field.id_for_label }}" class="checkbox-label">{{ field.label }}</label>
+                </div>
+                {% else %}
+                <input type="{{ field.field.widget.input_type|default:'text' }}" 
+                       name="{{ field.name }}" 
+                       id="{{ field.id_for_label }}" 
+                       class="form-control-premium" 
+                       value="{{ field.value|default:'' }}"
+                       placeholder="{{ field.field.widget.attrs.placeholder|default:'' }}"
+                       {% if field.field.required %}required{% endif %}>
+                {% endif %}
+                
+                {% if field.help_text %}
+                <div class="form-hint">
+                    <i data-feather="info"></i>
+                    {{ field.help_text }}
+                </div>
+                {% endif %}
+                {% if field.errors %}
+                <div class="form-hint" style="color: #ef4444;">
+                    <i data-feather="alert-circle"></i>
+                    {{ field.errors.0 }}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+            
+            <div class="wizard-navigation">
+                <a href="{% url 'applications:wizard_step' 1 %}" class="btn-wizard btn-prev">
+                    <i data-feather="arrow-left"></i> Previous Step
+                </a>
+                <button type="submit" class="btn-wizard btn-next">
+                    Next Step <i data-feather="arrow-right"></i>
+                </button>
+            </div>
+        </form>
+        
+        {% elif step == 3 %}
+        <!-- Step 3: Mentor Selection -->
+        <div class="step-header">
+            <h2><i data-feather="users"></i> Mentor Selection</h2>
+            <p>Choose your preferred mentor and available session time that works best for you.</p>
+        </div>
+        
+        <form method="post" class="wizard-form">
+            {% csrf_token %}
+            
+            <div class="form-grid">
+                {% for field in form %}
+                <div class="form-group-premium">
+                    <label class="form-label-premium" for="{{ field.id_for_label }}">
+                        {{ field.label }}
+                        {% if field.field.required %}<span class="required">*</span>{% endif %}
+                    </label>
+                    
+                    {% if field.field.widget.input_type == 'select' %}
+                    <select name="{{ field.name }}" id="{{ field.id_for_label }}" class="form-control-premium" {% if field.field.required %}required{% endif %}>
+                        {% for choice in field.field.choices %}
+                        <option value="{{ choice.0 }}" {% if field.value == choice.0 %}selected{% endif %}>{{ choice.1 }}</option>
+                        {% endfor %}
+                    </select>
+                    {% elif field.field.widget.input_type == 'textarea' %}
+                    <textarea name="{{ field.name }}" id="{{ field.id_for_label }}" class="form-control-premium" rows="4" {% if field.field.required %}required{% endif %}>{{ field.value|default:'' }}</textarea>
+                    {% elif field.field.widget.input_type == 'checkbox' %}
+                    <div class="checkbox-wrapper">
+                        <input type="checkbox" name="{{ field.name }}" id="{{ field.id_for_label }}" class="form-checkbox-premium" {% if field.value %}checked{% endif %} {% if field.field.required %}required{% endif %}>
+                        <label for="{{ field.id_for_label }}" class="checkbox-label">{{ field.label }}</label>
+                    </div>
+                    {% else %}
+                    <input type="{{ field.field.widget.input_type|default:'text' }}" 
+                           name="{{ field.name }}" 
+                           id="{{ field.id_for_label }}" 
+                           class="form-control-premium" 
+                           value="{{ field.value|default:'' }}"
+                           placeholder="{{ field.field.widget.attrs.placeholder|default:'' }}"
+                           {% if field.field.required %}required{% endif %}>
+                    {% endif %}
+                    
+                    {% if field.help_text %}
+                    <div class="form-hint">
+                        <i data-feather="info"></i>
+                        {{ field.help_text }}
+                    </div>
+                    {% endif %}
+                    {% if field.errors %}
+                    <div class="form-hint" style="color: #ef4444;">
+                        <i data-feather="alert-circle"></i>
+                        {{ field.errors.0 }}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div class="wizard-navigation">
+                <a href="{% url 'applications:wizard_step' 2 %}" class="btn-wizard btn-prev">
+                    <i data-feather="arrow-left"></i> Previous Step
+                </a>
+                <button type="submit" class="btn-wizard btn-next">
+                    Next Step <i data-feather="arrow-right"></i>
+                </button>
+            </div>
+        </form>
+        
+        {% elif step == 4 %}
+        <!-- Step 4: Payment -->
+        <div class="step-header">
+            <h2><i data-feather="credit-card"></i> Payment</h2>
+            <p>Complete your application by paying the application fee. Choose your preferred payment method.</p>
+        </div>
+        
+        <div class="payment-card">
+            <h3><i data-feather="dollar-sign"></i> Application Fee</h3>
+            <div class="payment-amount">{{ application_fee|floatformat:0 }} RWF</div>
+            <p style="color: #92400e; margin: 0;">Pay via MTN MoMo or upload your payment receipt.</p>
+        </div>
+        
+        <form method="post" enctype="multipart/form-data" class="wizard-form">
+            {% csrf_token %}
+            
+            <div class="form-grid">
+                {% for field in form %}
+                <div class="form-group-premium">
+                    <label class="form-label-premium" for="{{ field.id_for_label }}">
+                        {{ field.label }}
+                        {% if field.field.required %}<span class="required">*</span>{% endif %}
+                    </label>
+                    
+                    {% if field.field.widget.input_type == 'select' %}
+                    <select name="{{ field.name }}" id="{{ field.id_for_label }}" class="form-control-premium" {% if field.field.required %}required{% endif %}>
+                        {% for choice in field.field.choices %}
+                        <option value="{{ choice.0 }}" {% if field.value == choice.0 %}selected{% endif %}>{{ choice.1 }}</option>
+                        {% endfor %}
+                    </select>
+                    {% elif field.field.widget.input_type == 'textarea' %}
+                    <textarea name="{{ field.name }}" id="{{ field.id_for_label }}" class="form-control-premium" rows="4" {% if field.field.required %}required{% endif %}>{{ field.value|default:'' }}</textarea>
+                    {% elif field.field.widget.input_type == 'checkbox' %}
+                    <div class="checkbox-wrapper">
+                        <input type="checkbox" name="{{ field.name }}" id="{{ field.id_for_label }}" class="form-checkbox-premium" {% if field.value %}checked{% endif %} {% if field.field.required %}required{% endif %}>
+                        <label for="{{ field.id_for_label }}" class="checkbox-label">{{ field.label }}</label>
+                    </div>
+                    {% elif field.field.widget.input_type == 'file' %}
+                    <input type="file" 
+                           name="{{ field.name }}" 
+                           id="{{ field.id_for_label }}" 
+                           class="form-control-premium" 
+                           {% if field.field.required %}required{% endif %}>
+                    {% else %}
+                    <input type="{{ field.field.widget.input_type|default:'text' }}" 
+                           name="{{ field.name }}" 
+                           id="{{ field.id_for_label }}" 
+                           class="form-control-premium" 
+                           value="{{ field.value|default:'' }}"
+                           placeholder="{{ field.field.widget.attrs.placeholder|default:'' }}"
+                           {% if field.field.required %}required{% endif %}>
+                    {% endif %}
+                    
+                    {% if field.help_text %}
+                    <div class="form-hint">
+                        <i data-feather="info"></i>
+                        {{ field.help_text }}
+                    </div>
+                    {% endif %}
+                    {% if field.errors %}
+                    <div class="form-hint" style="color: #ef4444;">
+                        <i data-feather="alert-circle"></i>
+                        {{ field.errors.0 }}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div class="wizard-navigation">
+                <a href="{% url 'applications:wizard_step' 3 %}" class="btn-wizard btn-prev">
+                    <i data-feather="arrow-left"></i> Previous Step
+                </a>
+                <button type="submit" class="btn-wizard btn-next">
+                    Next Step <i data-feather="arrow-right"></i>
+                </button>
+            </div>
+        </form>
+        
+        {% elif step == 5 %}
+        <!-- Step 5: Review & Submit -->
+        <div class="step-header">
+            <h2><i data-feather="check-circle"></i> Review & Submit</h2>
+            <p>Review your application details before submitting. You can go back to make changes if needed.</p>
+        </div>
+        
+        <div class="review-summary">
+            <h3><i data-feather="file-text"></i> Application Summary</h3>
+            
+            <div class="review-item">
+                <span class="review-label">Full Name:</span>
+                <span class="review-value">{{ application.name|default:"Not provided" }}</span>
+            </div>
+            
+            <div class="review-item">
+                <span class="review-label">Email:</span>
+                <span class="review-value">{{ application.email|default:"Not provided" }}</span>
+            </div>
+            
+            <div class="review-item">
+                <span class="review-label">Phone:</span>
+                <span class="review-value">{{ application.phone|default:"Not provided" }}</span>
+            </div>
+            
+            {% if application.is_minor %}
+            <div class="review-item">
+                <span class="review-label">Parent/Guardian:</span>
+                <span class="review-value">{{ application.parent_name }} ({{ application.parent_phone }})</span>
+            </div>
+            {% endif %}
+            
+            <div class="review-item">
+                <span class="review-label">School/Institution:</span>
+                <span class="review-value">{{ application.school|default:"Not provided" }}</span>
+            </div>
+            
+            <div class="review-item">
+                <span class="review-label">Program/Field:</span>
+                <span class="review-value">{{ application.program|default:"Not provided" }}</span>
+            </div>
+            
+            <div class="review-item">
+                <span class="review-label">Motivation:</span>
+                <span class="review-value">{{ application.motivation|truncatewords:30|default:"Not provided" }}</span>
+            </div>
+            
+            <div class="review-item">
+                <span class="review-label">Selected Mentor:</span>
+                <span class="review-value">
+                    {% if application.selected_mentor %}
+                    {{ application.selected_mentor.get_full_name }}
+                    {% else %}
+                    Not selected
+                    {% endif %}
+                </span>
+            </div>
+            
+            <div class="review-item">
+                <span class="review-label">Session Time:</span>
+                <span class="review-value">
+                    {% if application.selected_availability_slot %}
+                    {{ application.selected_availability_slot.date }} at {{ application.selected_availability_slot.start_time }}
+                    {% else %}
+                    Not scheduled
+                    {% endif %}
+                </span>
+            </div>
+            
+            <div class="review-item" style="border-top: 2px solid #3b82f6; padding-top: 1.5rem; margin-top: 1rem;">
+                <span class="review-label" style="font-size: 1.125rem; color: #1e293b;">Application Fee:</span>
+                <span class="review-value" style="font-size: 1.125rem; color: #10b981; font-weight: 700;">
+                    {{ application_fee|floatformat:0 }} RWF
+                </span>
+            </div>
+        </div>
+        
+        <form method="post" class="wizard-form">
+            {% csrf_token %}
+            <input type="hidden" name="submit" value="1">
+            
+            <div class="form-group-premium">
+                <label class="form-label-premium" style="display: flex; align-items: flex-start; gap: 0.5rem;">
+                    <input type="checkbox" name="terms" required style="margin-top: 0.25rem;">
+                    <span>
+                        I agree to the <a href="{% url 'core:terms' %}" target="_blank">Terms of Service</a> and 
+                        <a href="{% url 'core:privacy' %}" target="_blank">Privacy Policy</a>. I confirm that all 
+                        information provided is accurate and complete.
+                    </span>
+                </label>
+            </div>
+            
+            <div class="wizard-navigation">
+                <a href="{% url 'applications:wizard_step' 4 %}" class="btn-wizard btn-prev">
+                    <i data-feather="arrow-left"></i> Previous Step
+                </a>
+                <div style="display: flex; gap: 1rem; align-items: center;">
+                    <a href="{% url 'applications:track_status' %}" class="btn-wizard btn-prev" style="text-decoration: none;">
+                        <i data-feather="search"></i> Track Application
+                    </a>
+                    <button type="submit" class="btn-wizard btn-submit">
+                        <i data-feather="send"></i> Submit Application
+                    </button>
+                </div>
+            </div>
+        </form>
+        {% endif %}
+    </div>
+    
+    <!-- Additional Actions -->
+    <div style="text-align: center; margin-top: 3rem;">
+        {% if user.is_authenticated %}
+        <a href="{% url 'dashboard:student_dashboard' %}" class="btn-wizard btn-prev" style="text-decoration: none;">
+            <i data-feather="home"></i> Back to Dashboard
+        </a>
+        {% else %}
+        <a href="{% url 'applications:track_status' %}" class="btn-wizard btn-prev" style="text-decoration: none;">
+            <i data-feather="compass"></i> Track Existing Application
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof feather !== 'undefined') feather.replace();
+    
+    // Form validation
+    const form = document.querySelector('.wizard-form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const requiredFields = form.querySelectorAll('[required]');
+            let valid = true;
+            
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    valid = false;
+                    field.style.borderColor = '#ef4444';
+                } else {
+                    field.style.borderColor = '';
+                }
+            });
+            
+            if (!valid) {
+                e.preventDefault();
+                alert('Please fill in all required fields marked with *');
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

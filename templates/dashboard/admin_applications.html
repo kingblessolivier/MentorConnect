@@ -3,8 +3,8 @@
 {% block dashboard_content %}
 <div class="dashboard-header">
     <div>
-        <h1><i data-feather="user-plus" class="header-icon"></i> Guest Applications</h1>
-        <p class="text-muted">Manage applications from students without accounts</p>
+        <h1><i data-feather="user-plus" class="header-icon"></i> Mentorship Applications</h1>
+        <p class="text-muted">Manage mentorship applications (finance verified)</p>
     </div>
 </div>
 
@@ -43,9 +43,12 @@
                     <label>Status</label>
                     <select name="status" class="form-control">
                         <option value="">All</option>
-                        <option value="pending" {% if request.GET.status == 'pending' %}selected{% endif %}>Pending</option>
+                        <option value="pending_finance" {% if request.GET.status == 'pending_finance' %}selected{% endif %}>Pending Finance</option>
+                        <option value="pending_review" {% if request.GET.status == 'pending_review' %}selected{% endif %}>Pending Review</option>
                         <option value="approved" {% if request.GET.status == 'approved' %}selected{% endif %}>Approved</option>
-                        <option value="rejected" {% if request.GET.status == 'rejected' %}selected{% endif %}>Rejected</option>
+                        <option value="enrolled" {% if request.GET.status == 'enrolled' %}selected{% endif %}>Enrolled</option>
+                        <option value="finance_rejected" {% if request.GET.status == 'finance_rejected' %}selected{% endif %}>Finance Rejected</option>
+                        <option value="review_rejected" {% if request.GET.status == 'review_rejected' %}selected{% endif %}>Review Rejected</option>
                     </select>
                 </div>
                 <div class="filter-group filter-actions">
@@ -65,9 +68,10 @@
                     <tr>
                         <th>Applicant</th>
                         <th>Mentor</th>
+                        <th>Tracking</th>
                         <th>School</th>
                         <th>Status</th>
-                        <th>Date</th>
+                        <th>Submitted</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -82,16 +86,16 @@
                                 </div>
                             </div>
                         </td>
-                        <td>{{ app.mentor.get_full_name }}</td>
-                        <td>{{ app.school|truncatechars:30 }}</td>
+                        <td>{% if app.selected_mentor %}{{ app.selected_mentor.get_full_name }}{% else %}—{% endif %}</td>
+                        <td><strong>{{ app.tracking_code }}</strong></td>
+                        <td>{{ app.school|truncatechars:30|default:"—" }}</td>
                         <td><span class="badge badge-{{ app.status }}">{{ app.get_status_display }}</span></td>
-                        <td>{{ app.created_at|date:"M d, Y" }}</td>
+                        <td>{{ app.submitted_at|date:"M d, Y"|default:"—" }}</td>
                         <td>
                             <a href="{% url 'dashboard:admin_application_detail' app.pk %}" class="btn btn-sm btn-outline">View</a>
-                            {% if app.status == 'pending' %}
+                            {% if app.status == 'pending_review' %}
                             <form method="post" action="{% url 'dashboard:admin_application_approve' app.pk %}" style="display:inline;">
                                 {% csrf_token %}
-                                <input type="hidden" name="feedback" value="">
                                 <button type="submit" class="btn btn-sm btn-primary">Approve</button>
                             </form>
                             <form method="post" action="{% url 'dashboard:admin_application_reject' app.pk %}" style="display:inline;">
@@ -103,7 +107,7 @@
                         </td>
                     </tr>
                     {% empty %}
-                    <tr><td colspan="6" class="text-center py-4 text-muted">No applications found</td></tr>
+                    <tr><td colspan="7" class="text-center py-4 text-muted">No applications found</td></tr>
                     {% endfor %}
                 </tbody>
             </table>

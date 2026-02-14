@@ -38,13 +38,31 @@ class StudentRequiredMixin(UserPassesTestMixin):
         return self.request.user.is_authenticated and self.request.user.is_student
 
 
-class DashboardRedirectView(LoginRequiredMixin, View):
-    """Redirects user to their role-specific dashboard"""
+class FinanceOfficerRequiredMixin(UserPassesTestMixin):
+    """Mixin to ensure user is finance officer"""
+    def test_func(self):
+        return self.request.user.is_authenticated and self.request.user.is_finance_officer
+
+
+class MentorFacilitatorRequiredMixin(UserPassesTestMixin):
+    """Mixin to ensure user is mentor facilitator"""
+    def test_func(self):
+        return self.request.user.is_authenticated and self.request.user.is_mentor_facilitator
+
+
+class DashboardRedirectView(View):
+    """Redirects user to their role-specific dashboard or home if not authenticated"""
     def get(self, request):
+        if not request.user.is_authenticated:
+            return redirect('core:home')
         if request.user.is_admin_user:
             return redirect('dashboard:admin_dashboard')
         elif request.user.is_mentor:
             return redirect('dashboard:mentor_dashboard')
+        elif request.user.is_mentor_facilitator:
+            return redirect('dashboard:mentor_facilitator_dashboard')
+        elif request.user.is_finance_officer:
+            return redirect('dashboard:finance_dashboard')
         return redirect('dashboard:student_dashboard')
 
 
@@ -94,9 +112,8 @@ class StudentDashboardView(LoginRequiredMixin, StudentRequiredMixin, TemplateVie
             context['unread_notifications'] = 0
 
         try:
-            from applications.models import GuestApplication
-            linked = GuestApplication.objects.filter(student=user, status='approved').order_by('-approved_at')[:3]
-            context['linked_applications_with_feedback'] = [a for a in linked if a.mentor_feedback]
+            # Legacy: linked applications with feedback (old GuestApplication flow removed)
+            context['linked_applications_with_feedback'] = []
         except Exception:
             context['linked_applications_with_feedback'] = []
 
@@ -124,16 +141,16 @@ class MentorDashboardView(LoginRequiredMixin, MentorRequiredMixin, TemplateView)
 
         try:
             from mentorship.models import MentorshipRequest
-            from applications.models import GuestApplication
+            from applications.models import Application
             context['pending_requests'] = MentorshipRequest.objects.filter(
                 mentor=user, status='pending'
             ).select_related('student')[:10]
             context['total_pending'] = MentorshipRequest.objects.filter(
                 mentor=user, status='pending'
             ).count()
-            context['guest_applications_pending'] = GuestApplication.objects.filter(
-                mentor=user, status='pending'
-            ).order_by('-created_at')[:5]
+            context['mentorship_applications_pending'] = Application.objects.filter(
+                selected_mentor=user, status='pending_review'
+            ).exclude(status='draft').order_by('-submitted_at')[:5]
             context['total_approved'] = MentorshipRequest.objects.filter(
                 mentor=user, status='approved'
             ).count()
@@ -145,6 +162,7 @@ class MentorDashboardView(LoginRequiredMixin, MentorRequiredMixin, TemplateView)
             context['total_pending'] = 0
             context['total_approved'] = 0
             context['total_completed'] = 0
+            context['mentorship_applications_pending'] = []
 
         try:
             from profiles.models import Follow
@@ -233,6 +251,104 @@ class AdminDashboardView(LoginRequiredMixin, AdminRequiredMixin, TemplateView):
             context['request_status_data'] = json.dumps([0, 0, 0, 0, 0, 0])
             context['average_rating'] = 0
             context['total_reviews'] = 0
+
+        # Advanced Mentorship Analytics
+        try:
+            from mentorship.models import MentorshipAnalytics, MentorshipRequest, MentorshipGoal
+            from django.db.models import Avg, Q
+            
+            # Get completed mentorships for analytics
+            completed_mentorships = MentorshipRequest.objects.filter(status='completed')
+            total_completed = completed_mentorships.count()
+            
+            if total_completed > 0:
+                # Calculate average success metrics from analytics
+                analytics_data = MentorshipAnalytics.objects.filter(
+                    mentorship__status='completed'
+                ).aggregate(
+                    avg_success_score=Avg('success_score'),
+                    avg_engagement=Avg('engagement_level'),
+                    avg_goal_completion=Avg('goal_completion_rate'),
+                    avg_attendance=Avg('session_attendance_rate'),
+                    avg_student_satisfaction=Avg('student_satisfaction'),
+                    avg_mentor_satisfaction=Avg('mentor_satisfaction')
+                )
+                
+                context['avg_success_score'] = round(analytics_data['avg_success_score'] or 0, 1)
+                context['avg_engagement_level'] = round(analytics_data['avg_engagement'] or 0, 1)
+                context['avg_goal_completion'] = round(analytics_data['avg_goal_completion'] or 0, 1)
+                context['avg_session_attendance'] = round(analytics_data['avg_attendance'] or 0, 1)
+                context['avg_student_satisfaction'] = round(analytics_data['avg_student_satisfaction'] or 0, 1)
+                context['avg_mentor_satisfaction'] = round(analytics_data['avg_mentor_satisfaction'] or 0, 1)
+                
+                # Calculate time metrics
+                time_metrics = []
+                for mentorship in completed_mentorships:
+                    if mentorship.approved_at and mentorship.created_at:
+                        time_to_match = (mentorship.approved_at - mentorship.created_at).total_seconds() / 3600
+                        time_metrics.append({'match': time_to_match})
+                    if mentorship.scheduled_at and mentorship.approved_at:
+                        time_to_schedule = (mentorship.scheduled_at - mentorship.approved_at).total_seconds() / 3600
+                        time_metrics.append({'schedule': time_to_schedule})
+                    if mentorship.completed_at and mentorship.started_at:
+                        time_to_complete = (mentorship.completed_at - mentorship.started_at).total_seconds() / 3600
+                        time_metrics.append({'complete': time_to_complete})
+                
+                if time_metrics:
+                    context['avg_time_to_match'] = round(sum(m.get('match', 0) for m in time_metrics) / len([m for m in time_metrics if 'match' in m]), 1) if any('match' in m for m in time_metrics) else 0
+                    context['avg_time_to_schedule'] = round(sum(m.get('schedule', 0) for m in time_metrics) / len([m for m in time_metrics if 'schedule' in m]), 1) if any('schedule' in m for m in time_metrics) else 0
+                    context['avg_time_to_complete'] = round(sum(m.get('complete', 0) for m in time_metrics) / len([m for m in time_metrics if 'complete' in m]), 1) if any('complete' in m for m in time_metrics) else 0
+                else:
+                    context['avg_time_to_match'] = 0
+                    context['avg_time_to_schedule'] = 0
+                    context['avg_time_to_complete'] = 0
+                
+                # Calculate goal achievement rate
+                total_goals = MentorshipGoal.objects.filter(mentorship__status='completed').count()
+                completed_goals = MentorshipGoal.objects.filter(mentorship__status='completed', status='completed').count()
+                context['goal_achievement_rate'] = round((completed_goals / total_goals * 100) if total_goals > 0 else 0, 1)
+                
+                # Risk indicators
+                at_risk_mentorships = MentorshipAnalytics.objects.filter(
+                    intervention_needed=True
+                ).count()
+                context['at_risk_mentorships'] = at_risk_mentorships
+                context['at_risk_percentage'] = round((at_risk_mentorships / total_completed * 100) if total_completed > 0 else 0, 1)
+                
+                # Success rate (completed vs started)
+                total_started = MentorshipRequest.objects.filter(status__in=['in_progress', 'completed']).count()
+                context['mentorship_success_rate'] = round((total_completed / total_started * 100) if total_started > 0 else 0, 1)
+            else:
+                # Default values when no completed mentorships
+                context['avg_success_score'] = 0
+                context['avg_engagement_level'] = 0
+                context['avg_goal_completion'] = 0
+                context['avg_session_attendance'] = 0
+                context['avg_student_satisfaction'] = 0
+                context['avg_mentor_satisfaction'] = 0
+                context['avg_time_to_match'] = 0
+                context['avg_time_to_schedule'] = 0
+                context['avg_time_to_complete'] = 0
+                context['goal_achievement_rate'] = 0
+                context['at_risk_mentorships'] = 0
+                context['at_risk_percentage'] = 0
+                context['mentorship_success_rate'] = 0
+                
+        except Exception as e:
+            # Set default values if analytics fail
+            context['avg_success_score'] = 0
+            context['avg_engagement_level'] = 0
+            context['avg_goal_completion'] = 0
+            context['avg_session_attendance'] = 0
+            context['avg_student_satisfaction'] = 0
+            context['avg_mentor_satisfaction'] = 0
+            context['avg_time_to_match'] = 0
+            context['avg_time_to_schedule'] = 0
+            context['avg_time_to_complete'] = 0
+            context['goal_achievement_rate'] = 0
+            context['at_risk_mentorships'] = 0
+            context['at_risk_percentage'] = 0
+            context['mentorship_success_rate'] = 0
 
         # Session Statistics
         try:
@@ -531,6 +647,69 @@ class AdminMentorCreateView(LoginRequiredMixin, AdminRequiredMixin, CreateView):
         return super().form_invalid(form)
 
 
+# ==================== ADMIN: CREATE MENTOR FACILITATOR & FINANCE OFFICER ====================
+
+class AdminMentorFacilitatorCreateView(LoginRequiredMixin, AdminRequiredMixin, CreateView):
+    """Admin view to create a mentor facilitator (staff role)"""
+    template_name = 'dashboard/admin_staff_form.html'
+    model = User
+    fields = ['email', 'first_name', 'last_name', 'phone']
+    success_url = reverse_lazy('dashboard:admin_users')
+
+    def form_valid(self, form):
+        user = form.save(commit=False)
+        user.role = User.Role.MENTOR_FACILITATOR
+        user.set_password('MentorConnect2026!')
+        user.save()
+
+        from mentorship.models import MentorFacilitator
+        bio = self.request.POST.get('bio', '')
+        MentorFacilitator.objects.get_or_create(
+            user=user,
+            defaults={'bio': bio}
+        )
+
+        ActivityLog.objects.create(
+            user=self.request.user,
+            action='admin_action',
+            description=f'Created mentor facilitator: {user.email}'
+        )
+        messages.success(self.request, f'Mentor Facilitator {user.get_full_name()} created. Default password: MentorConnect2026!')
+        return redirect(self.success_url)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['staff_role'] = 'Mentor Facilitator'
+        return context
+
+
+class AdminFinanceOfficerCreateView(LoginRequiredMixin, AdminRequiredMixin, CreateView):
+    """Admin view to create a finance officer (staff role)"""
+    template_name = 'dashboard/admin_staff_form.html'
+    model = User
+    fields = ['email', 'first_name', 'last_name', 'phone']
+    success_url = reverse_lazy('dashboard:admin_users')
+
+    def form_valid(self, form):
+        user = form.save(commit=False)
+        user.role = User.Role.FINANCE_OFFICER
+        user.set_password('MentorConnect2026!')
+        user.save()
+
+        ActivityLog.objects.create(
+            user=self.request.user,
+            action='admin_action',
+            description=f'Created finance officer: {user.email}'
+        )
+        messages.success(self.request, f'Finance Officer {user.get_full_name()} created. Default password: MentorConnect2026!')
+        return redirect(self.success_url)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['staff_role'] = 'Finance Officer'
+        return context
+
+
 class AdminMentorDetailView(LoginRequiredMixin, AdminRequiredMixin, DetailView):
     """Admin view to see mentor details"""
     template_name = 'dashboard/admin_mentor_detail.html'
@@ -544,12 +723,16 @@ class AdminMentorDetailView(LoginRequiredMixin, AdminRequiredMixin, DetailView):
         context = super().get_context_data(**kwargs)
         mentor = self.object
 
-        from mentorship.models import MentorshipRequest, Review
+        from mentorship.models import MentorshipRequest, Review, MentorFacilitator, MentorFacilitatorAssignment
         context['total_requests'] = MentorshipRequest.objects.filter(mentor=mentor.user).count()
         context['pending_requests'] = MentorshipRequest.objects.filter(mentor=mentor.user, status='pending').count()
         context['completed_requests'] = MentorshipRequest.objects.filter(mentor=mentor.user, status='completed').count()
         context['recent_requests'] = MentorshipRequest.objects.filter(mentor=mentor.user).select_related('student')[:10]
         context['reviews'] = Review.objects.filter(mentor=mentor.user).select_related('student')[:10]
+        context['facilitators'] = MentorFacilitator.objects.filter(is_active=True).select_related('user')
+        context['mentor_facilitator_assignments'] = MentorFacilitatorAssignment.objects.filter(
+            mentor=mentor.user
+        ).select_related('facilitator__user')
 
         return context
 
@@ -594,6 +777,51 @@ def toggle_mentor_featured(request, pk):
         return JsonResponse({'success': True, 'is_featured': mentor.is_featured})
     messages.success(request, f'Mentor {mentor.user.get_full_name()} {"is now featured" if mentor.is_featured else "is no longer featured"}.')
     return redirect('dashboard:admin_mentors')
+
+
+@login_required
+@user_passes_test(lambda u: u.is_admin_user)
+def admin_assign_mentor_to_facilitator(request, pk):
+    """Admin assigns a mentor to a mentor facilitator"""
+    from profiles.models import MentorProfile
+    from mentorship.models import MentorFacilitator, MentorFacilitatorAssignment
+
+    mentor_profile = get_object_or_404(MentorProfile, pk=pk)
+    facilitator_id = request.POST.get('facilitator_id')
+    if not facilitator_id:
+        messages.error(request, 'Please select a facilitator.')
+        return redirect('dashboard:admin_mentor_detail', pk=pk)
+
+    facilitator = get_object_or_404(MentorFacilitator, pk=facilitator_id, is_active=True)
+    _, created = MentorFacilitatorAssignment.objects.get_or_create(
+        facilitator=facilitator,
+        mentor=mentor_profile.user,
+        mentorship_request=None,
+        defaults={}
+    )
+    if created:
+        messages.success(request, f'{mentor_profile.user.get_full_name()} assigned to {facilitator.user.get_full_name()}.')
+    else:
+        messages.info(request, f'Mentor is already assigned to this facilitator.')
+    return redirect('dashboard:admin_mentor_detail', pk=pk)
+
+
+@login_required
+@user_passes_test(lambda u: u.is_admin_user)
+def admin_unassign_mentor_from_facilitator(request, pk, facilitator_id):
+    """Admin unassigns a mentor from a mentor facilitator"""
+    from profiles.models import MentorProfile
+    from mentorship.models import MentorFacilitatorAssignment
+
+    mentor_profile = get_object_or_404(MentorProfile, pk=pk)
+    deleted, _ = MentorFacilitatorAssignment.objects.filter(
+        mentor=mentor_profile.user,
+        facilitator_id=facilitator_id,
+        mentorship_request__isnull=True
+    ).delete()
+    if deleted:
+        messages.success(request, 'Mentor unassigned from facilitator.')
+    return redirect('dashboard:admin_mentor_detail', pk=pk)
 
 
 # ==================== MENTORSHIP REQUESTS MANAGEMENT ====================
@@ -643,25 +871,481 @@ class AdminRequestDetailView(LoginRequiredMixin, AdminRequiredMixin, DetailView)
         return get_object_or_404(MentorshipRequest, pk=self.kwargs['pk'])
 
 
-# ==================== GUEST APPLICATIONS MANAGEMENT ====================
+# ==================== FINANCE OFFICER DASHBOARD & PAYMENT VERIFICATION ====================
+
+class FinanceDashboardView(LoginRequiredMixin, FinanceOfficerRequiredMixin, TemplateView):
+    """Finance officer dashboard: applications pending payment verification"""
+    template_name = 'dashboard/finance_dashboard.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        from applications.models import Application, Payment
+
+        context['pending_finance'] = Application.objects.filter(
+            status='pending_finance'
+        ).select_related('applicant', 'mentorship_request__mentor', 'mentorship_request__student', 'selected_mentor').order_by('-submitted_at')[:20]
+        context['pending_finance_count'] = Application.objects.filter(status='pending_finance').count()
+        context['recent_verified'] = Payment.objects.filter(
+            verified=True
+        ).select_related('application', 'verified_by').order_by('-verified_at')[:10]
+        context['total_verified_count'] = Payment.objects.filter(verified=True).count()
+        return context
+
+
+@login_required
+@user_passes_test(lambda u: u.is_finance_officer)
+def finance_verify_payment(request, application_id):
+    """Finance officer verifies or rejects a payment for an application"""
+    from applications.models import Application, Payment, ActivityLog as AppActivityLog
+    from django.contrib.contenttypes.models import ContentType
+
+    application = get_object_or_404(Application, pk=application_id, status='pending_finance')
+    payment = application.payments.filter(verified=False).order_by('-submitted_at').first()
+
+    if request.method == 'POST':
+        action = request.POST.get('action')  # 'verify' or 'reject'
+        ct = ContentType.objects.get_for_model(Application)
+        if action == 'verify':
+            if not payment:
+                messages.error(request, 'No payment record found for this application. Cannot verify.')
+                return redirect('dashboard:finance_verify_payment', application_id=application_id)
+            else:
+                payment.verified = True
+                payment.verified_at = timezone.now()
+                payment.verified_by = request.user
+                payment.save()
+                application.status = 'pending_review'
+                application.save(update_fields=['status'])
+                AppActivityLog.objects.create(
+                    content_type=ct,
+                    object_id=application.id,
+                    action_type='payment_verified',
+                    new_status='pending_review',
+                    details=f'Payment {payment.transaction_code} verified by {request.user.email}',
+                    performed_by=request.user,
+                )
+                ActivityLog.objects.create(
+                    user=request.user,
+                    action='finance_officer_action',
+                    description=f'Payment verified for application {application.tracking_code}'
+                )
+                # Notify student
+                try:
+                    from notifications.models import Notification
+                    student = application.applicant
+                    if student:
+                        Notification.objects.create(
+                            recipient=student,
+                            sender=request.user,
+                            notification_type='request_approved',
+                            title='Payment approved',
+                            message=f'Your payment for application {application.tracking_code} has been verified. Your application is now pending mentor review.'
+                        )
+                except Exception:
+                    pass
+                messages.success(request, f'Payment verified. Application {application.tracking_code} is now pending mentor review.')
+        elif action == 'reject':
+            application.status = 'finance_rejected'
+            application.save(update_fields=['status'])
+            reason = request.POST.get('reason', 'Payment rejected.')
+            AppActivityLog.objects.create(
+                content_type=ct,
+                object_id=application.id,
+                action_type='status_change',
+                previous_status='pending_finance',
+                new_status='finance_rejected',
+                details=reason,
+                performed_by=request.user,
+            )
+            ActivityLog.objects.create(
+                user=request.user,
+                action='finance_officer_action',
+                description=f'Payment rejected for application {application.tracking_code}'
+            )
+            # Notify student
+            try:
+                from notifications.models import Notification
+                student = application.applicant
+                if student:
+                    Notification.objects.create(
+                        recipient=student,
+                        sender=request.user,
+                        notification_type='request_rejected',
+                        title='Payment rejected',
+                        message=f'Your payment for application {application.tracking_code} was rejected. Reason: {reason}'
+                    )
+            except Exception:
+                pass
+            messages.info(request, f'Application {application.tracking_code} rejected.')
+        return redirect('dashboard:finance_dashboard')
+
+    return render(request, 'dashboard/finance_verify_payment.html', {
+        'application': application,
+        'payment': payment,
+    })
+
+
+# ==================== MENTOR FACILITATOR DASHBOARD ====================
+
+class MentorFacilitatorDashboardView(LoginRequiredMixin, MentorFacilitatorRequiredMixin, TemplateView):
+    """Mentor facilitator dashboard: assignments, disputes, session reports"""
+    template_name = 'dashboard/mentor_facilitator_dashboard.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        from mentorship.models import MentorFacilitator, Dispute, MentorFacilitatorAssignment
+
+        try:
+            facilitator = self.request.user.mentor_facilitator_profile
+        except Exception:
+            facilitator = None
+
+        context['facilitator'] = facilitator
+        if facilitator:
+            context['assignments'] = MentorFacilitatorAssignment.objects.filter(
+                facilitator=facilitator
+            ).select_related('mentor', 'mentorship_request__student', 'mentorship_request__mentor')[:15]
+            context['open_disputes'] = Dispute.objects.filter(
+                status__in=['open', 'under_review'],
+                facilitator=facilitator
+            ).select_related('mentorship_request', 'reported_by')[:10]
+        else:
+            context['assignments'] = []
+            context['open_disputes'] = []
+
+        # Stats for dashboard
+        if facilitator:
+            from mentorship.models import MentorshipRequest
+            assigned_mentor_ids = list(MentorFacilitatorAssignment.objects.filter(
+                facilitator=facilitator
+            ).exclude(mentor__isnull=True).values_list('mentor_id', flat=True))
+            context['assigned_mentors_count'] = len(set(assigned_mentor_ids))
+            context['active_mentorships_count'] = MentorshipRequest.objects.filter(
+                status__in=['approved', 'scheduled', 'in_progress'],
+                mentor_id__in=assigned_mentor_ids
+            ).count() if assigned_mentor_ids else 0
+            context['disputes_count'] = Dispute.objects.filter(
+                facilitator=facilitator,
+                status__in=['open', 'under_review']
+            ).count()
+            from mentorship.models import SessionReport
+            context['session_reports_count'] = SessionReport.objects.filter(
+                mentorship_request__mentor_id__in=assigned_mentor_ids
+            ).count() if assigned_mentor_ids else 0
+        else:
+            context['assigned_mentors_count'] = 0
+            context['active_mentorships_count'] = 0
+            context['disputes_count'] = 0
+            context['session_reports_count'] = 0
+
+        return context
+
+
+# ==================== MENTOR FACILITATOR: MENTORS, ASSIGNMENTS, DISPUTES ====================
+
+class MFMentorListView(LoginRequiredMixin, MentorFacilitatorRequiredMixin, ListView):
+    """Mentor Facilitator: list mentors (can add/edit)"""
+    template_name = 'dashboard/mf_mentors.html'
+    context_object_name = 'mentors'
+    paginate_by = 20
+
+    def get_queryset(self):
+        from profiles.models import MentorProfile
+        qs = MentorProfile.objects.select_related('user').order_by('-created_at')
+        search = self.request.GET.get('search', '')
+        if search:
+            qs = qs.filter(
+                Q(user__email__icontains=search) |
+                Q(user__first_name__icontains=search) |
+                Q(user__last_name__icontains=search) |
+                Q(expertise__icontains=search)
+            )
+        status = self.request.GET.get('status', '')
+        if status == 'available':
+            qs = qs.filter(is_available=True)
+        elif status == 'unavailable':
+            qs = qs.filter(is_available=False)
+        return qs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        from profiles.models import MentorProfile
+        context['total_mentors'] = MentorProfile.objects.count()
+        return context
+
+
+class MFMentorCreateView(LoginRequiredMixin, MentorFacilitatorRequiredMixin, CreateView):
+    """Mentor Facilitator: add new mentor"""
+    template_name = 'dashboard/admin_mentor_form.html'
+    model = User
+    fields = ['email', 'first_name', 'last_name', 'phone']
+    success_url = reverse_lazy('dashboard:mf_mentors')
+
+    def form_valid(self, form):
+        user = form.save(commit=False)
+        user.role = 'mentor'
+        user.set_password('MentorConnect2026!')
+        user.save()
+        from profiles.models import MentorProfile
+        MentorProfile.objects.create(
+            user=user,
+            expertise=self.request.POST.get('expertise', 'General'),
+            skills=self.request.POST.get('skills', ''),
+            bio=self.request.POST.get('bio', ''),
+        )
+        ActivityLog.objects.create(
+            user=self.request.user,
+            action='mentor_facilitator_action',
+            description=f'Added mentor: {user.email}'
+        )
+        messages.success(self.request, f'Mentor {user.get_full_name()} added. Default password: MentorConnect2026!')
+        return redirect(self.success_url)
+
+
+class MFMentorUpdateView(LoginRequiredMixin, MentorFacilitatorRequiredMixin, UpdateView):
+    """Mentor Facilitator: update mentor profile (skills, availability, etc.)"""
+    template_name = 'dashboard/mf_mentor_edit.html'
+    model = User
+    fields = ['first_name', 'last_name', 'phone']
+    context_object_name = 'mentor_user'
+    success_url = reverse_lazy('dashboard:mf_mentors')
+
+    def get_queryset(self):
+        return User.objects.filter(role='mentor')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        try:
+            context['profile'] = self.object.mentor_profile
+        except Exception:
+            context['profile'] = None
+        return context
+
+
+class MFAssignmentsView(LoginRequiredMixin, MentorFacilitatorRequiredMixin, ListView):
+    """Mentor Facilitator: assigned mentors and students"""
+    template_name = 'dashboard/mf_assignments.html'
+    context_object_name = 'assignments'
+    paginate_by = 20
+
+    def get_queryset(self):
+        from mentorship.models import MentorFacilitatorAssignment
+        try:
+            facilitator = self.request.user.mentor_facilitator_profile
+            return MentorFacilitatorAssignment.objects.filter(
+                facilitator=facilitator
+            ).select_related('mentor', 'mentorship_request__student', 'mentorship_request__mentor').order_by('-assigned_at')
+        except Exception:
+            from mentorship.models import MentorFacilitatorAssignment
+            return MentorFacilitatorAssignment.objects.none()
+
+
+class MFMentorshipsView(LoginRequiredMixin, MentorFacilitatorRequiredMixin, ListView):
+    """Mentor Facilitator: active mentorships of assigned mentors"""
+    template_name = 'dashboard/mf_mentorships.html'
+    context_object_name = 'mentorships'
+    paginate_by = 20
+
+    def get_queryset(self):
+        from mentorship.models import MentorFacilitatorAssignment, MentorshipRequest
+        try:
+            facilitator = self.request.user.mentor_facilitator_profile
+            mentor_ids = list(MentorFacilitatorAssignment.objects.filter(
+                facilitator=facilitator
+            ).exclude(mentor__isnull=True).values_list('mentor_id', flat=True))
+            return MentorshipRequest.objects.filter(
+                mentor_id__in=mentor_ids,
+                status__in=['approved', 'scheduled', 'in_progress']
+            ).select_related('student', 'mentor').order_by('-updated_at')
+        except Exception:
+            from mentorship.models import MentorshipRequest
+            return MentorshipRequest.objects.none()
+
+
+class MFDisputesView(LoginRequiredMixin, MentorFacilitatorRequiredMixin, ListView):
+    """Mentor Facilitator: dispute resolution queue"""
+    template_name = 'dashboard/mf_disputes.html'
+    context_object_name = 'disputes'
+    paginate_by = 20
+
+    def get_queryset(self):
+        from mentorship.models import Dispute
+        try:
+            facilitator = self.request.user.mentor_facilitator_profile
+            return Dispute.objects.filter(facilitator=facilitator).select_related(
+                'mentorship_request__student', 'mentorship_request__mentor', 'reported_by'
+            ).order_by('-created_at')
+        except Exception:
+            return Dispute.objects.none()
+
+
+@login_required
+@user_passes_test(lambda u: u.is_mentor_facilitator)
+def mf_dispute_resolve(request, pk):
+    """Mentor Facilitator: resolve a dispute"""
+    from mentorship.models import Dispute
+    dispute = get_object_or_404(Dispute, pk=pk)
+    try:
+        if dispute.facilitator != request.user.mentor_facilitator_profile:
+            return redirect('dashboard:mf_disputes')
+    except Exception:
+        return redirect('dashboard:mf_disputes')
+    if request.method == 'POST':
+        status = request.POST.get('status', 'resolved')
+        notes = request.POST.get('resolution_notes', '')
+        dispute.status = status
+        dispute.resolution_notes = notes
+        dispute.save()
+        ActivityLog.objects.create(
+            user=request.user,
+            action='mentor_facilitator_action',
+            description=f'Resolved dispute #{pk}: {status}'
+        )
+        messages.success(request, 'Dispute updated.')
+        return redirect('dashboard:mf_disputes')
+    return render(request, 'dashboard/mf_dispute_resolve.html', {'dispute': dispute})
+
+
+class MFSessionReportsView(LoginRequiredMixin, MentorFacilitatorRequiredMixin, ListView):
+    """Mentor Facilitator: pending session reports"""
+    template_name = 'dashboard/mf_session_reports.html'
+    context_object_name = 'reports'
+    paginate_by = 20
+
+    def get_queryset(self):
+        from mentorship.models import MentorFacilitatorAssignment, SessionReport
+        try:
+            facilitator = self.request.user.mentor_facilitator_profile
+            mentor_ids = list(MentorFacilitatorAssignment.objects.filter(
+                facilitator=facilitator
+            ).exclude(mentor__isnull=True).values_list('mentor_id', flat=True))
+            return SessionReport.objects.filter(
+                mentorship_request__mentor_id__in=mentor_ids
+            ).select_related('mentorship_request__student', 'mentorship_request__mentor').order_by('-session_date', '-session_time')
+        except Exception:
+            from mentorship.models import SessionReport
+            return SessionReport.objects.none()
+
+
+# ==================== FINANCE OFFICER: PAYMENTS LIST, REPORTS, EXPORT ====================
+
+class FinancePaymentsView(LoginRequiredMixin, FinanceOfficerRequiredMixin, ListView):
+    """Finance Officer: payment queue with filter/search"""
+    template_name = 'dashboard/finance_payments.html'
+    context_object_name = 'applications'
+    paginate_by = 20
+
+    def get_queryset(self):
+        from applications.models import Application
+        qs = Application.objects.exclude(status='draft').select_related(
+            'applicant', 'mentorship_request__mentor', 'mentorship_request__student'
+        ).order_by('-submitted_at')
+        status = self.request.GET.get('status', '')
+        if status:
+            qs = qs.filter(status=status)
+        search = self.request.GET.get('search', '')
+        if search:
+            qs = qs.filter(
+                Q(tracking_code__icontains=search) |
+                Q(email__icontains=search) |
+                Q(applicant__email__icontains=search) |
+                Q(mentorship_request__mentor__email__icontains=search)
+            )
+        return qs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        from applications.models import Application, Payment
+        context['pending_count'] = Application.objects.filter(status='pending_finance').count()
+        context['approved_count'] = Payment.objects.filter(verified=True).count()
+        context['rejected_count'] = Application.objects.filter(status='finance_rejected').count()
+        return context
+
+
+class FinanceReportsView(LoginRequiredMixin, FinanceOfficerRequiredMixin, TemplateView):
+    """Finance Officer: revenue charts and summary"""
+    template_name = 'dashboard/finance_reports.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        from applications.models import Payment
+        from django.db.models import Sum
+        from django.db.models.functions import TruncMonth, TruncDate
+
+        total_revenue = Payment.objects.filter(verified=True).aggregate(
+            total=Sum('amount')
+        )['total'] or 0
+        context['total_revenue'] = total_revenue
+        context['verified_payments_count'] = Payment.objects.filter(verified=True).count()
+
+        # Revenue by month for chart
+        monthly = Payment.objects.filter(verified=True).annotate(
+            month=TruncMonth('verified_at')
+        ).values('month').annotate(total=Sum('amount')).order_by('month')[:12]
+        context['revenue_monthly_labels'] = json.dumps([m['month'].strftime('%b %Y') for m in monthly])
+        context['revenue_monthly_data'] = json.dumps([float(m['total']) for m in monthly])
+        return context
+
+
+@login_required
+@user_passes_test(lambda u: u.is_finance_officer)
+def finance_export(request):
+    """Finance Officer: export payments as CSV or PDF"""
+    import csv
+    from django.http import HttpResponse
+    from applications.models import Payment
+
+    format_type = request.GET.get('format', 'csv')
+    status = request.GET.get('status', '')  # verified, pending, all
+
+    qs = Payment.objects.select_related('application', 'application__applicant', 'verified_by').order_by('-submitted_at')
+    if status == 'verified':
+        qs = qs.filter(verified=True)
+    elif status == 'pending':
+        qs = qs.filter(verified=False)
+
+    if format_type == 'csv':
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename="finance_payments_{timezone.now().strftime("%Y%m%d")}.csv"'
+        writer = csv.writer(response)
+        writer.writerow(['Transaction Code', 'Amount', 'Status', 'Student', 'Application', 'Submitted', 'Verified At'])
+        for p in qs:
+            writer.writerow([
+                p.transaction_code,
+                p.amount,
+                'Verified' if p.verified else 'Pending',
+                p.application.applicant.get_full_name() if p.application.applicant else p.application.email,
+                p.application.tracking_code,
+                p.submitted_at.strftime('%Y-%m-%d %H:%M'),
+                p.verified_at.strftime('%Y-%m-%d %H:%M') if p.verified_at else '',
+            ])
+        return response
+
+    return redirect('dashboard:finance_reports')
+
+
+# ==================== MENTORSHIP APPLICATIONS MANAGEMENT ====================
 
 class AdminApplicationListView(LoginRequiredMixin, AdminRequiredMixin, ListView):
-    """Admin view to list all guest applications"""
+    """Admin view to list all mentorship applications"""
     template_name = 'dashboard/admin_applications.html'
     context_object_name = 'applications'
     paginate_by = 20
 
     def get_queryset(self):
-        from applications.models import GuestApplication
-        queryset = GuestApplication.objects.select_related('mentor', 'student').order_by('-created_at')
+        from applications.models import Application
+        queryset = Application.objects.exclude(status='draft').select_related(
+            'applicant', 'selected_mentor', 'selected_availability_slot'
+        ).order_by('-submitted_at')
 
         search = self.request.GET.get('search', '')
         if search:
             queryset = queryset.filter(
                 Q(name__icontains=search) |
                 Q(email__icontains=search) |
+                Q(tracking_code__icontains=search) |
                 Q(school__icontains=search) |
-                Q(mentor__email__icontains=search)
+                Q(selected_mentor__email__icontains=search)
             )
 
         status = self.request.GET.get('status', '')
@@ -670,62 +1354,120 @@ class AdminApplicationListView(LoginRequiredMixin, AdminRequiredMixin, ListView)
 
         mentor_id = self.request.GET.get('mentor', '')
         if mentor_id:
-            queryset = queryset.filter(mentor_id=mentor_id)
+            queryset = queryset.filter(selected_mentor_id=mentor_id)
 
         return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        from applications.models import GuestApplication
-        context['total_applications'] = GuestApplication.objects.count()
-        context['pending_count'] = GuestApplication.objects.filter(status='pending').count()
-        context['approved_count'] = GuestApplication.objects.filter(status='approved').count()
-        context['rejected_count'] = GuestApplication.objects.filter(status='rejected').count()
+        from applications.models import Application
+        qs = Application.objects.exclude(status='draft')
+        context['total_applications'] = qs.count()
+        context['pending_count'] = qs.filter(status='pending_review').count()
+        context['approved_count'] = qs.filter(status__in=['approved', 'enrolled']).count()
+        context['rejected_count'] = qs.filter(status__in=['finance_rejected', 'review_rejected']).count()
         return context
 
 
 class AdminApplicationDetailView(LoginRequiredMixin, AdminRequiredMixin, DetailView):
-    """Admin view to see application details"""
+    """Admin view to see mentorship application details"""
     template_name = 'dashboard/admin_application_detail.html'
     context_object_name = 'application'
 
     def get_object(self):
-        from applications.models import GuestApplication
-        return get_object_or_404(GuestApplication, pk=self.kwargs['pk'])
+        from applications.models import Application
+        return get_object_or_404(Application, pk=self.kwargs['pk'])
+
+    def get_queryset(self):
+        from applications.models import Application
+        return Application.objects.select_related(
+            'applicant', 'selected_mentor', 'selected_availability_slot'
+        )
 
 
 @login_required
 @user_passes_test(lambda u: u.is_admin_user)
 def admin_application_approve(request, pk):
-    """Admin approve application"""
-    from applications.models import GuestApplication
-    from applications.services import send_approval_email
-    application = get_object_or_404(GuestApplication, pk=pk)
-    feedback = request.POST.get('feedback', '')
-    application.approve(feedback=feedback)
-    send_approval_email(application)
+    """Admin/Mentorship Department approve application"""
+    from applications.models import Application
+    from applications.models import ActivityLog as AppActivityLog
+    from django.contrib.contenttypes.models import ContentType
+
+    application = get_object_or_404(Application, pk=pk, status='pending_review')
+    application.status = 'approved'
+    application.save(update_fields=['status'])
+
+    ct = ContentType.objects.get_for_model(Application)
+    AppActivityLog.objects.create(
+        content_type=ct,
+        object_id=application.id,
+        action_type='status_change',
+        previous_status='pending_review',
+        new_status='approved',
+        details='Application approved by admin.',
+        performed_by=request.user,
+    )
     ActivityLog.objects.create(
         user=request.user,
         action='admin_action',
-        description=f'Approved guest application #{pk} ({application.email})'
+        description=f'Approved mentorship application {application.tracking_code} ({application.email})'
     )
-    messages.success(request, f'Application approved. Invitation sent to {application.email}.')
+    try:
+        from notifications.models import Notification
+        if application.applicant:
+            Notification.objects.create(
+                recipient=application.applicant,
+                sender=request.user,
+                notification_type='request_approved',
+                title='Application approved',
+                message=f'Your mentorship application {application.tracking_code} has been approved.'
+            )
+    except Exception:
+        pass
+    messages.success(request, f'Application {application.tracking_code} approved.')
     return redirect('dashboard:admin_applications')
 
 
 @login_required
 @user_passes_test(lambda u: u.is_admin_user)
 def admin_application_reject(request, pk):
-    """Admin reject application"""
-    from applications.models import GuestApplication
-    application = get_object_or_404(GuestApplication, pk=pk)
-    feedback = request.POST.get('feedback', '')
-    application.reject(feedback=feedback)
+    """Admin/Mentorship Department reject application"""
+    from applications.models import Application
+    from applications.models import ActivityLog as AppActivityLog
+    from django.contrib.contenttypes.models import ContentType
+
+    application = get_object_or_404(Application, pk=pk, status='pending_review')
+    reason = request.POST.get('feedback', request.POST.get('reason', 'Application rejected.'))
+    application.status = 'review_rejected'
+    application.save(update_fields=['status'])
+
+    ct = ContentType.objects.get_for_model(Application)
+    AppActivityLog.objects.create(
+        content_type=ct,
+        object_id=application.id,
+        action_type='status_change',
+        previous_status='pending_review',
+        new_status='review_rejected',
+        details=reason,
+        performed_by=request.user,
+    )
     ActivityLog.objects.create(
         user=request.user,
         action='admin_action',
-        description=f'Rejected guest application #{pk} ({application.email})'
+        description=f'Rejected mentorship application {application.tracking_code} ({application.email})'
     )
+    try:
+        from notifications.models import Notification
+        if application.applicant:
+            Notification.objects.create(
+                recipient=application.applicant,
+                sender=request.user,
+                notification_type='request_rejected',
+                title='Application rejected',
+                message=f'Your mentorship application {application.tracking_code} was rejected. Reason: {reason}'
+            )
+    except Exception:
+        pass
     messages.info(request, 'Application rejected.')
     return redirect('dashboard:admin_applications')
 

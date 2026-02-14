@@ -37,6 +37,10 @@ class CustomLoginView(LoginView):
             return reverse_lazy('dashboard:admin_dashboard')
         elif user.is_mentor:
             return reverse_lazy('dashboard:mentor_dashboard')
+        elif user.is_mentor_facilitator:
+            return reverse_lazy('dashboard:mentor_facilitator_dashboard')
+        elif user.is_finance_officer:
+            return reverse_lazy('dashboard:finance_dashboard')
         return reverse_lazy('dashboard:student_dashboard')
 
     def form_valid(self, form):

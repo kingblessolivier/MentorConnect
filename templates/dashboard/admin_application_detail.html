@@ -5,7 +5,7 @@
     <div>
         <a href="{% url 'dashboard:admin_applications' %}" class="text-primary text-sm mb-2 inline-block">&larr; Back</a>
         <h1>{{ application.name }}</h1>
-        <p class="text-muted">{{ application.email }} • {{ application.school }}</p>
+        <p class="text-muted">{{ application.email }} • {{ application.tracking_code }} • {{ application.school|default:application.program|default:"—" }}</p>
     </div>
     <span class="badge badge-{{ application.status }}">{{ application.get_status_display }}</span>
 </div>
@@ -13,32 +13,40 @@
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
     <div class="card">
         <div class="card-body">
-            <h3 class="mb-4">Details</h3>
+            <h3 class="mb-4">Personal & Academic</h3>
             <dl class="detail-list">
                 <dt>Name</dt><dd>{{ application.name }}</dd>
                 <dt>Email</dt><dd><a href="mailto:{{ application.email }}">{{ application.email }}</a></dd>
-                <dt>School</dt><dd>{{ application.school }}</dd>
-                <dt>Interests</dt><dd>{{ application.interests }}</dd>
-                <dt>Message</dt><dd>{{ application.message }}</dd>
-                <dt>Mentor</dt><dd>{{ application.mentor.get_full_name }}</dd>
+                <dt>Phone</dt><dd>{{ application.phone|default:"—" }}</dd>
+                <dt>Tracking Code</dt><dd><strong>{{ application.tracking_code }}</strong></dd>
+                <dt>School</dt><dd>{{ application.school|default:"—" }}</dd>
+                <dt>Program</dt><dd>{{ application.program|default:"—" }}</dd>
+                <dt>Career Goals</dt><dd>{{ application.career_goals|default:"—" }}</dd>
+                <dt>Motivation</dt><dd>{{ application.motivation|default:"—" }}</dd>
+                <dt>Expectations</dt><dd>{{ application.expectations|default:"—" }}</dd>
+                <dt>Mentor</dt><dd>{% if application.selected_mentor %}{{ application.selected_mentor.get_full_name }}{% else %}—{% endif %}</dd>
+                {% if application.selected_availability_slot %}
+                <dt>Session</dt><dd>{{ application.selected_availability_slot.date }} {{ application.selected_availability_slot.start_time }}</dd>
+                {% endif %}
                 {% if application.cv %}<dt>CV</dt><dd><a href="{{ application.cv.url }}" target="_blank">Download</a></dd>{% endif %}
-                {% if application.mentor_feedback %}<dt>Mentor Feedback</dt><dd>{{ application.mentor_feedback }}</dd>{% endif %}
             </dl>
         </div>
     </div>
-    {% if application.status == 'pending' %}
+    {% if application.status == 'pending_review' %}
     <div class="card">
         <div class="card-body">
             <h3 class="mb-4">Actions</h3>
             <form method="post" action="{% url 'dashboard:admin_application_approve' application.pk %}">
                 {% csrf_token %}
-                <div class="form-group"><label>Feedback</label><textarea name="feedback" class="form-textarea" rows="2"></textarea></div>
-                <button type="submit" class="btn btn-primary">Approve & Send Invitation</button>
+                <button type="submit" class="btn btn-primary mb-3">Approve</button>
             </form>
-            <form method="post" action="{% url 'dashboard:admin_application_reject' application.pk %}" class="mt-4">
+            <form method="post" action="{% url 'dashboard:admin_application_reject' application.pk %}">
                 {% csrf_token %}
-                <div class="form-group"><label>Feedback</label><textarea name="feedback" class="form-textarea" rows="2"></textarea></div>
-                <button type="submit" class="btn btn-outline" onclick="return confirm('Reject?')">Reject</button>
+                <div class="form-group mb-3">
+                    <label>Rejection reason (optional)</label>
+                    <textarea name="feedback" class="form-textarea" rows="2" placeholder="Reason for rejection..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-outline" onclick="return confirm('Reject this application?')">Reject</button>
             </form>
         </div>
     </div>

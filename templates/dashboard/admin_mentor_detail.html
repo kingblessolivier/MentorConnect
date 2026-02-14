@@ -137,6 +137,37 @@
     </div>
 </div>
 
+<!-- Assign to Mentor Facilitator -->
+<div class="card mb-4">
+    <div class="card-body">
+        <h3><i data-feather="users" class="card-icon"></i> Assign to Mentor Facilitator</h3>
+        {% if mentor_facilitator_assignments %}
+        <div class="mb-3">
+            <span class="text-muted text-sm">Assigned to:</span>
+            {% for a in mentor_facilitator_assignments %}
+            <span class="badge badge-info mx-1">
+                {{ a.facilitator.user.get_full_name }}
+                <form method="post" action="{% url 'dashboard:admin_unassign_mentor_from_facilitator' mentor.pk a.facilitator.pk %}" class="d-inline" onsubmit="return confirm('Unassign?');">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-link-sm" style="margin-left: 4px;">&times;</button>
+                </form>
+            </span>
+            {% endfor %}
+        </div>
+        {% endif %}
+        <form method="post" action="{% url 'dashboard:admin_assign_mentor_to_facilitator' mentor.pk %}" class="flex gap-2 align-items-center">
+            {% csrf_token %}
+            <select name="facilitator_id" class="form-control" style="max-width: 250px;">
+                <option value="">-- Select facilitator --</option>
+                {% for f in facilitators %}
+                <option value="{{ f.pk }}">{{ f.user.get_full_name }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-primary btn-sm">Assign</button>
+        </form>
+    </div>
+</div>
+
 <!-- Recent Requests -->
 <div class="card mb-4">
     <div class="card-body">

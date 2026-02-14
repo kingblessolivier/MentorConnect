@@ -1,0 +1,55 @@
+{% extends 'dashboard/base_dashboard.html' %}
+
+{% block title %}My Applications - {{ SITE_NAME }}{% endblock %}
+
+{% block dashboard_content %}
+<div class="dashboard-header">
+    <div>
+        <h1>My Applications</h1>
+        <p class="text-muted">View and track your mentorship applications</p>
+    </div>
+    <a href="{% url 'applications:wizard' %}" class="btn btn-primary">
+        <i data-feather="plus"></i> New Application
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Tracking Code</th>
+                        <th>Mentor</th>
+                        <th>Status</th>
+                        <th>Submitted</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for app in applications %}
+                    <tr>
+                        <td><strong>{{ app.tracking_code }}</strong></td>
+                        <td>{{ app.selected_mentor.get_full_name|default:"—" }}</td>
+                        <td><span class="badge badge-{{ app.status }}">{{ app.get_status_display }}</span></td>
+                        <td>{{ app.submitted_at|date:"M d, Y"|default:"—" }}</td>
+                        <td>
+                            <a href="{% url 'applications:track_status' %}?email={{ app.email|urlencode }}&tracking_code={{ app.tracking_code }}" class="btn btn-sm btn-outline">Track</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="text-center text-muted py-4">No applications yet. <a href="{% url 'applications:wizard' %}">Start one</a>.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if is_paginated %}
+        <div class="pagination-bar mt-4">
+            {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}" class="pagination-btn"><i data-feather="chevron-left"></i></a>{% endif %}
+            <span class="pagination-info">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}" class="pagination-btn"><i data-feather="chevron-right"></i></a>{% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
