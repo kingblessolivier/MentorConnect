@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'feed.apps.FeedConfig',
     'sessions_app.apps.SessionsAppConfig',
     'applications.apps.ApplicationsConfig',
+    'payments.apps.PaymentsConfig',
     'chat.apps.ChatConfig',
     'notifications.apps.NotificationsConfig',
     'dashboard.apps.DashboardConfig',
@@ -240,3 +241,6 @@ DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'nsengimanaolivier100@gmail
 
 SITE_NAME = 'MentorConnect'
 SITE_TAGLINE = 'Connect with mentors, grow your future'
+
+# Application fee (amount student pays to submit mentorship application)
+APPLICATION_FEE_AMOUNT = float(os.getenv('APPLICATION_FEE_AMOUNT', '5000'))
