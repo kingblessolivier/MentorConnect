@@ -204,6 +204,8 @@ def application_wizard(request, step=None):
             return redirect('applications:wizard_step', step=current_step)
     application_fee = getattr(django_settings, 'APPLICATION_FEE_AMOUNT', 5000)
     form = None
+    slots_qs = None
+    availability_by_date = None
     if request.method == 'POST':
         if current_step == 1:
             form = ApplicationWizardStep1Form(request.POST)
@@ -320,10 +322,24 @@ def application_wizard(request, step=None):
                 },
                 mentor_id=mentor_id_val
             )
+            # Prepare availability slots for calendar display
+            slots_qs = form.fields['availability_slot'].queryset
+            # Group slots by date for template
+            availability_by_date = {}
+            for slot in slots_qs:
+                date_str = slot.date.isoformat()
+                availability_by_date.setdefault(date_str, []).append(slot)
         elif current_step == 4:
             form = ApplicationPaymentForm()
+            slots_qs = None
+            availability_by_date = None
         elif current_step == 5:
             form = None  # Review step, no form
+            slots_qs = None
+            availability_by_date = None
+        else:
+            slots_qs = None
+            availability_by_date = None
     return render(request, 'applications/wizard_step.html', {
         'application': app,
         'wizard_session': ws,
@@ -331,6 +347,8 @@ def application_wizard(request, step=None):
         'form': form,
         'application_fee': application_fee,
         'progress_percent': min(100, int((current_step / 5) * 100)),
+        'availability_slots': slots_qs,
+        'availability_by_date': availability_by_date,
     })
 
 

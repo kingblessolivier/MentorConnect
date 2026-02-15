@@ -23,6 +23,7 @@
                         <th>Duration</th>
                         <th>Attendance</th>
                         <th>Approved</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -34,9 +35,18 @@
                         <td>{{ r.duration_minutes }} min</td>
                         <td><span class="badge badge-{{ r.attendance_status }}">{{ r.get_attendance_status_display }}</span></td>
                         <td>{% if r.approved_by_facilitator %}<i data-feather="check" class="text-success"></i>{% else %}—{% endif %}</td>
+                        <td>
+                            {% if not r.approved_by_facilitator %}
+                            <form method="post" action="{% url 'dashboard:mf_session_report_approve' r.pk %}" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-primary">Approve</button>
+                            </form>
+                            {% endif %}
+                            <a href="#" class="btn btn-sm btn-outline ml-1">View</a>
+                        </td>
                     </tr>
                     {% empty %}
-                    <tr><td colspan="6" class="text-center text-muted py-4">No session reports</td></tr>
+                    <tr><td colspan="7" class="text-center text-muted py-4">No session reports</td></tr>
                     {% endfor %}
                 </tbody>
             </table>

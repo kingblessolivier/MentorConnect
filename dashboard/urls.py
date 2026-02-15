@@ -30,9 +30,16 @@ urlpatterns = [
     path('mentor-facilitator/mentors/<int:pk>/edit/', views.MFMentorUpdateView.as_view(), name='mf_mentor_edit'),
     path('mentor-facilitator/assignments/', views.MFAssignmentsView.as_view(), name='mf_assignments'),
     path('mentor-facilitator/mentorships/', views.MFMentorshipsView.as_view(), name='mf_mentorships'),
+    path('mentor-facilitator/inactive-mentorships/', views.MFInactiveMentorshipsView.as_view(), name='mf_inactive_mentorships'),
+    path('mentor-facilitator/applications/', views.MFApplicationsView.as_view(), name='mf_applications'),
+    path('mentor-facilitator/applications/<int:pk>/reassign/', views.mf_reassign_mentor, name='mf_reassign_mentor'),
     path('mentor-facilitator/disputes/', views.MFDisputesView.as_view(), name='mf_disputes'),
     path('mentor-facilitator/disputes/<int:pk>/resolve/', views.mf_dispute_resolve, name='mf_dispute_resolve'),
     path('mentor-facilitator/session-reports/', views.MFSessionReportsView.as_view(), name='mf_session_reports'),
+    path('mentor-facilitator/session-reports/<int:pk>/approve/', views.mf_session_report_approve, name='mf_session_report_approve'),
+    path('mentor-facilitator/sessions/', views.MFSessionsView.as_view(), name='mf_sessions'),
+    path('mentor-facilitator/onboarding/', views.MFOnboardingView.as_view(), name='mf_onboarding'),
+    path('mentor-facilitator/backup/', views.MFBackupView.as_view(), name='mf_backup'),
 
     # Admin User Management
     path('admin/users/', views.AdminUserListView.as_view(), name='admin_users'),

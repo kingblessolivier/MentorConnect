@@ -1,0 +1,73 @@
+{% extends 'dashboard/base_dashboard.html' %}
+
+{% block title %}Inactive Mentorships - Mentor Facilitator{% endblock %}
+
+{% block dashboard_content %}
+<div class="dashboard-header">
+    <div>
+        <h1><i data-feather="alert-circle" class="header-icon"></i> Inactive Mentorships</h1>
+        <p class="text-muted">Mentorships with no session in the last 30 days</p>
+    </div>
+    <a href="{% url 'dashboard:mentor_facilitator_dashboard' %}" class="btn btn-outline"><i data-feather="arrow-left"></i> Dashboard</a>
+</div>
+
+<div class="dashboard-stats">
+    <div class="stat-card">
+        <div class="stat-card-icon" style="background:#fee2e2;color:#dc2626"><i data-feather="alert-circle"></i></div>
+        <div class="stat-card-value">{{ inactive_count|default:0 }}</div>
+        <div class="stat-card-label">Inactive</div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Mentor</th>
+                        <th>Subject</th>
+                        <th>Status</th>
+                        <th>Last Session</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for m in mentorships %}
+                    <tr>
+                        <td>{{ m.student.get_full_name }}</td>
+                        <td>{{ m.mentor.get_full_name }}</td>
+                        <td>{{ m.subject }}</td>
+                        <td><span class="badge badge-{{ m.status }}">{{ m.get_status_display }}</span></td>
+                        <td>
+                            {% with m.session_reports.last as last_report %}
+                                {% if last_report %}
+                                    {{ last_report.session_date|date:"M d, Y" }}
+                                {% else %}
+                                    <span class="text-muted">No session reports</span>
+                                {% endif %}
+                            {% endwith %}
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-warning" onclick="alert('Flagged as inactive. Admin will be notified.')">
+                                <i data-feather="flag"></i> Flag
+                            </button>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6" class="text-center text-muted py-4">No inactive mentorships found</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if is_paginated %}
+        <div class="pagination-bar mt-4">
+            {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}" class="pagination-btn"><i data-feather="chevron-left"></i></a>{% endif %}
+            <span class="pagination-info">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}" class="pagination-btn"><i data-feather="chevron-right"></i></a>{% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

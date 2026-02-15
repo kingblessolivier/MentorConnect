@@ -903,6 +903,7 @@ def finance_verify_payment(request, application_id):
     payment = application.payments.filter(verified=False).order_by('-submitted_at').first()
 
     if request.method == 'POST':
+        print('DEBUG: finance_verify_payment POST received, action =', request.POST.get('action'))
         action = request.POST.get('action')  # 'verify' or 'reject'
         ct = ContentType.objects.get_for_model(Application)
         if action == 'verify':
@@ -1162,6 +1163,162 @@ class MFMentorshipsView(LoginRequiredMixin, MentorFacilitatorRequiredMixin, List
             return MentorshipRequest.objects.none()
 
 
+class MFInactiveMentorshipsView(LoginRequiredMixin, MentorFacilitatorRequiredMixin, ListView):
+    """Mentor Facilitator: flag inactive mentorships (no session in last 30 days)"""
+    template_name = 'dashboard/mf_inactive_mentorships.html'
+    context_object_name = 'mentorships'
+    paginate_by = 20
+
+    def get_queryset(self):
+        from mentorship.models import MentorFacilitatorAssignment, MentorshipRequest, SessionReport
+        from django.utils import timezone
+        from datetime import timedelta
+        try:
+            facilitator = self.request.user.mentor_facilitator_profile
+            mentor_ids = list(MentorFacilitatorAssignment.objects.filter(
+                facilitator=facilitator
+            ).exclude(mentor__isnull=True).values_list('mentor_id', flat=True))
+            # Get mentorships that are active (approved, scheduled, in_progress)
+            active_mentorships = MentorshipRequest.objects.filter(
+                mentor_id__in=mentor_ids,
+                status__in=['approved', 'scheduled', 'in_progress']
+            ).select_related('student', 'mentor')
+            # Filter those with no session report in last 30 days
+            cutoff = timezone.now() - timedelta(days=30)
+            inactive = []
+            for mr in active_mentorships:
+                has_recent = SessionReport.objects.filter(
+                    mentorship_request=mr,
+                    session_date__gte=cutoff
+                ).exists()
+                if not has_recent:
+                    inactive.append(mr.id)
+            # Return the filtered queryset
+            return MentorshipRequest.objects.filter(id__in=inactive).select_related('student', 'mentor').order_by('-updated_at')
+        except Exception:
+            from mentorship.models import MentorshipRequest
+            return MentorshipRequest.objects.none()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['inactive_count'] = self.get_queryset().count()
+        return context
+
+
+class MFApplicationsView(LoginRequiredMixin, MentorFacilitatorRequiredMixin, ListView):
+    """Mentor Facilitator: monitor applications for assigned mentors"""
+    template_name = 'dashboard/mf_applications.html'
+    context_object_name = 'applications'
+    paginate_by = 20
+
+    def get_queryset(self):
+        from applications.models import Application
+        from mentorship.models import MentorFacilitatorAssignment
+        try:
+            facilitator = self.request.user.mentor_facilitator_profile
+            mentor_ids = list(MentorFacilitatorAssignment.objects.filter(
+                facilitator=facilitator
+            ).exclude(mentor__isnull=True).values_list('mentor_id', flat=True))
+            qs = Application.objects.exclude(status='draft').filter(
+                selected_mentor_id__in=mentor_ids
+            ).select_related('applicant', 'selected_mentor', 'selected_availability_slot').order_by('-submitted_at')
+            # Filter by status
+            status = self.request.GET.get('status', '')
+            if status:
+                qs = qs.filter(status=status)
+            # Filter by minor
+            minor = self.request.GET.get('minor', '')
+            if minor == 'yes':
+                qs = qs.filter(is_minor=True)
+            elif minor == 'no':
+                qs = qs.filter(is_minor=False)
+            # Search
+            search = self.request.GET.get('search', '')
+            if search:
+                qs = qs.filter(
+                    Q(name__icontains=search) |
+                    Q(email__icontains=search) |
+                    Q(tracking_code__icontains=search) |
+                    Q(school__icontains=search)
+                )
+            return qs
+        except Exception:
+            from applications.models import Application
+            return Application.objects.none()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        from applications.models import Application
+        from mentorship.models import MentorFacilitatorAssignment
+        try:
+            facilitator = self.request.user.mentor_facilitator_profile
+            mentor_ids = list(MentorFacilitatorAssignment.objects.filter(
+                facilitator=facilitator
+            ).exclude(mentor__isnull=True).values_list('mentor_id', flat=True))
+            qs = Application.objects.exclude(status='draft').filter(selected_mentor_id__in=mentor_ids)
+            context['total_applications'] = qs.count()
+            context['pending_count'] = qs.filter(status='pending_review').count()
+            context['approved_count'] = qs.filter(status__in=['approved', 'enrolled']).count()
+            context['rejected_count'] = qs.filter(status__in=['finance_rejected', 'review_rejected']).count()
+            context['minor_count'] = qs.filter(is_minor=True).count()
+        except Exception:
+            context['total_applications'] = 0
+            context['pending_count'] = 0
+            context['approved_count'] = 0
+            context['rejected_count'] = 0
+            context['minor_count'] = 0
+        return context
+
+
+@login_required
+@user_passes_test(lambda u: u.is_mentor_facilitator)
+def mf_reassign_mentor(request, pk):
+    """Mentor Facilitator: reassign application to another mentor"""
+    from applications.models import Application
+    from mentorship.models import MentorFacilitatorAssignment
+    from core.models import ActivityLog
+    application = get_object_or_404(Application, pk=pk)
+    # Ensure facilitator is assigned to the current mentor
+    try:
+        facilitator = request.user.mentor_facilitator_profile
+        mentor_ids = list(MentorFacilitatorAssignment.objects.filter(
+            facilitator=facilitator
+        ).exclude(mentor__isnull=True).values_list('mentor_id', flat=True))
+        if application.selected_mentor_id not in mentor_ids:
+            messages.error(request, 'You are not assigned to this mentor.')
+            return redirect('dashboard:mf_applications')
+    except Exception:
+        messages.error(request, 'Facilitator profile not found.')
+        return redirect('dashboard:mf_applications')
+    
+    if request.method == 'POST':
+        new_mentor_id = request.POST.get('new_mentor')
+        if not new_mentor_id:
+            messages.error(request, 'Please select a mentor.')
+            return redirect('dashboard:mf_applications')
+        # Ensure new mentor is also assigned to facilitator
+        if int(new_mentor_id) not in mentor_ids:
+            messages.error(request, 'You cannot assign to a mentor not under your supervision.')
+            return redirect('dashboard:mf_applications')
+        old_mentor = application.selected_mentor
+        application.selected_mentor_id = new_mentor_id
+        application.save()
+        ActivityLog.objects.create(
+            user=request.user,
+            action='mentor_facilitator_action',
+            description=f'Reassigned application {application.tracking_code} from {old_mentor.get_full_name()} to {application.selected_mentor.get_full_name()}'
+        )
+        messages.success(request, 'Mentor reassigned successfully.')
+        return redirect('dashboard:mf_applications')
+    # GET: show form with mentor choices
+    from accounts.models import User
+    mentors = User.objects.filter(id__in=mentor_ids, role='mentor', is_active=True)
+    return render(request, 'dashboard/mf_reassign_mentor.html', {
+        'application': application,
+        'mentors': mentors,
+    })
+
+
 class MFDisputesView(LoginRequiredMixin, MentorFacilitatorRequiredMixin, ListView):
     """Mentor Facilitator: dispute resolution queue"""
     template_name = 'dashboard/mf_disputes.html'
@@ -1201,6 +1358,18 @@ def mf_dispute_resolve(request, pk):
             action='mentor_facilitator_action',
             description=f'Resolved dispute #{pk}: {status}'
         )
+        # Notify admin if escalated
+        if status == 'escalated':
+            from notifications.models import Notification
+            from accounts.models import User
+            admin_users = User.objects.filter(role='admin', is_active=True)
+            for admin in admin_users:
+                Notification.objects.create(
+                    recipient=admin,
+                    sender=request.user,
+                    notification_type='dispute_escalated',
+                    message=f'Dispute #{pk} has been escalated by {request.user.get_full_name()}.'
+                )
         messages.success(request, 'Dispute updated.')
         return redirect('dashboard:mf_disputes')
     return render(request, 'dashboard/mf_dispute_resolve.html', {'dispute': dispute})
@@ -1225,6 +1394,133 @@ class MFSessionReportsView(LoginRequiredMixin, MentorFacilitatorRequiredMixin, L
         except Exception:
             from mentorship.models import SessionReport
             return SessionReport.objects.none()
+
+
+@login_required
+@user_passes_test(lambda u: u.is_mentor_facilitator)
+def mf_session_report_approve(request, pk):
+    """Mentor Facilitator: approve a session report"""
+    from mentorship.models import SessionReport, MentorFacilitatorAssignment
+    from core.models import ActivityLog
+    report = get_object_or_404(SessionReport, pk=pk)
+    # Ensure facilitator is assigned to the mentor of this report
+    try:
+        facilitator = request.user.mentor_facilitator_profile
+        mentor_ids = list(MentorFacilitatorAssignment.objects.filter(
+            facilitator=facilitator
+        ).exclude(mentor__isnull=True).values_list('mentor_id', flat=True))
+        if report.mentorship_request.mentor_id not in mentor_ids:
+            messages.error(request, 'You are not assigned to this mentor.')
+            return redirect('dashboard:mf_session_reports')
+    except Exception:
+        messages.error(request, 'Facilitator profile not found.')
+        return redirect('dashboard:mf_session_reports')
+    
+    if request.method == 'POST':
+        report.approved_by_facilitator = True
+        report.save()
+        ActivityLog.objects.create(
+            user=request.user,
+            action='mentor_facilitator_action',
+            description=f'Approved session report #{report.pk} for mentorship {report.mentorship_request.pk}'
+        )
+        messages.success(request, 'Session report approved.')
+        return redirect('dashboard:mf_session_reports')
+    # If GET, redirect back
+    return redirect('dashboard:mf_session_reports')
+
+
+class MFSessionsView(LoginRequiredMixin, MentorFacilitatorRequiredMixin, ListView):
+    """Mentor Facilitator: view sessions for assigned mentors (calendar/list)"""
+    template_name = 'dashboard/mf_sessions.html'
+    context_object_name = 'sessions'
+    paginate_by = 30
+
+    def get_queryset(self):
+        from sessions_app.models import Session
+        from mentorship.models import MentorFacilitatorAssignment
+        try:
+            facilitator = self.request.user.mentor_facilitator_profile
+            mentor_ids = list(MentorFacilitatorAssignment.objects.filter(
+                facilitator=facilitator
+            ).exclude(mentor__isnull=True).values_list('mentor_id', flat=True))
+            qs = Session.objects.filter(mentor_id__in=mentor_ids).select_related(
+                'mentor', 'student', 'availability'
+            ).order_by('-start')
+            # Filter by status
+            status = self.request.GET.get('status', '')
+            if status:
+                qs = qs.filter(status=status)
+            # Filter by date range
+            date_from = self.request.GET.get('date_from', '')
+            date_to = self.request.GET.get('date_to', '')
+            if date_from:
+                qs = qs.filter(start__date__gte=date_from)
+            if date_to:
+                qs = qs.filter(start__date__lte=date_to)
+            return qs
+        except Exception:
+            from sessions_app.models import Session
+            return Session.objects.none()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        from sessions_app.models import Session
+        from mentorship.models import MentorFacilitatorAssignment
+        try:
+            facilitator = self.request.user.mentor_facilitator_profile
+            mentor_ids = list(MentorFacilitatorAssignment.objects.filter(
+                facilitator=facilitator
+            ).exclude(mentor__isnull=True).values_list('mentor_id', flat=True))
+            context['total_sessions'] = Session.objects.filter(mentor_id__in=mentor_ids).count()
+            context['upcoming_sessions'] = Session.objects.filter(
+                mentor_id__in=mentor_ids, start__gte=timezone.now()
+            ).count()
+            context['past_sessions'] = Session.objects.filter(
+                mentor_id__in=mentor_ids, start__lt=timezone.now()
+            ).count()
+        except Exception:
+            context['total_sessions'] = 0
+            context['upcoming_sessions'] = 0
+            context['past_sessions'] = 0
+        return context
+
+
+class MFOnboardingView(LoginRequiredMixin, MentorFacilitatorRequiredMixin, TemplateView):
+    """Mentor Facilitator: onboarding and training resources for mentors"""
+    template_name = 'dashboard/mf_onboarding.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Add any resources or guidance
+        context['resources'] = [
+            {'title': 'Mentor Guidelines', 'url': '/core/mentor-guidelines/', 'description': 'Official mentor guidelines and code of conduct'},
+            {'title': 'Session Best Practices', 'url': '#', 'description': 'How to conduct effective mentorship sessions'},
+            {'title': 'Platform Tutorial', 'url': '#', 'description': 'Video walkthrough of platform features'},
+            {'title': 'Safety & Compliance', 'url': '#', 'description': 'Safety protocols and compliance requirements'},
+            {'title': 'Communication Templates', 'url': '#', 'description': 'Email and message templates for mentors'},
+        ]
+        return context
+
+
+class MFBackupView(LoginRequiredMixin, MentorFacilitatorRequiredMixin, TemplateView):
+    """Mentor Facilitator: act as backup for assigned mentors"""
+    template_name = 'dashboard/mf_backup.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        from mentorship.models import MentorFacilitatorAssignment
+        from accounts.models import User
+        try:
+            facilitator = self.request.user.mentor_facilitator_profile
+            assignments = MentorFacilitatorAssignment.objects.filter(
+                facilitator=facilitator
+            ).exclude(mentor__isnull=True).select_related('mentor')
+            mentors = [a.mentor for a in assignments if a.mentor]
+            context['mentors'] = mentors
+        except Exception:
+            context['mentors'] = []
+        return context
 
 
 # ==================== FINANCE OFFICER: PAYMENTS LIST, REPORTS, EXPORT ====================

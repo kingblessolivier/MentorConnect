@@ -11,58 +11,154 @@
   </div>
 </div>
 
-<div class="card" style="max-width: 700px;">
+<div class="card" style="max-width: 800px;">
   <div class="card-body">
     <form method="post">
       {% csrf_token %}
 
       {{ form.non_field_errors }}
 
-      <div class="grid gap-4">
-        <div class="form-group">
-          <label class="form-label">Start</label>
-          {{ form.start }}
-        </div>
-        <div class="form-group">
-          <label class="form-label">End</label>
-          {{ form.end }}
-        </div>
-        <div class="form-group">
-          <label class="form-label">Session Type</label>
-          {{ form.session_type }}
-        </div>
-        <div class="form-group">
-          <label class="form-label">Location Name</label>
-          {{ form.location_name }}
-        </div>
-        <div class="form-group">
-          <label class="form-label">Address</label>
-          {{ form.address }}
-        </div>
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="form-label">Latitude</label>
-            {{ form.latitude }}
-          </div>
-          <div>
-            <label class="form-label">Longitude</label>
-            {{ form.longitude }}
+      <div class="space-y-6">
+        <!-- Date & Time Section -->
+        <div>
+          <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <i data-feather="calendar" class="w-5 h-5"></i>
+            Date & Time
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="form-group">
+              <label class="form-label">Start</label>
+              {{ form.start }}
+              {% if form.start.errors %}
+                <div class="form-error">{{ form.start.errors }}</div>
+              {% endif %}
+              <p class="form-help">When the slot begins</p>
+            </div>
+            <div class="form-group">
+              <label class="form-label">End</label>
+              {{ form.end }}
+              {% if form.end.errors %}
+                <div class="form-error">{{ form.end.errors }}</div>
+              {% endif %}
+              <p class="form-help">When the slot ends</p>
+            </div>
           </div>
         </div>
-        <div class="form-group">
-          <label class="form-label">Active</label>
-          {{ form.is_active }}
+
+        <!-- Session Type -->
+        <div>
+          <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <i data-feather="video" class="w-5 h-5"></i>
+            Session Type
+          </h3>
+          <div class="form-group">
+            <label class="form-label">How will the session take place?</label>
+            {{ form.session_type }}
+            {% if form.session_type.errors %}
+              <div class="form-error">{{ form.session_type.errors }}</div>
+            {% endif %}
+            <p class="form-help">Select "physical" for in‑person meetings, "online" for virtual sessions.</p>
+          </div>
+        </div>
+
+        <!-- Location Details (conditional) -->
+        <div id="location-section">
+          <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <i data-feather="map-pin" class="w-5 h-5"></i>
+            Location Details
+          </h3>
+          <div class="space-y-4">
+            <div class="form-group">
+              <label class="form-label">Location Name</label>
+              {{ form.location_name }}
+              {% if form.location_name.errors %}
+                <div class="form-error">{{ form.location_name.errors }}</div>
+              {% endif %}
+              <p class="form-help">e.g., "Central Library", "Coffee Shop"</p>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Address</label>
+              {{ form.address }}
+              {% if form.address.errors %}
+                <div class="form-error">{{ form.address.errors }}</div>
+              {% endif %}
+              <p class="form-help">Full street address for in‑person sessions</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="form-group">
+                <label class="form-label">Latitude</label>
+                {{ form.latitude }}
+                {% if form.latitude.errors %}
+                  <div class="form-error">{{ form.latitude.errors }}</div>
+                {% endif %}
+                <p class="form-help">Optional, for map precision</p>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Longitude</label>
+                {{ form.longitude }}
+                {% if form.longitude.errors %}
+                  <div class="form-error">{{ form.longitude.errors }}</div>
+                {% endif %}
+                <p class="form-help">Optional, for map precision</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Active Status -->
+        <div>
+          <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <i data-feather="toggle-right" class="w-5 h-5"></i>
+            Status
+          </h3>
+          <div class="form-group">
+            <div class="flex items-center gap-3">
+              {{ form.is_active }}
+              <label class="form-label mb-0 cursor-pointer" for="{{ form.is_active.id_for_label }}">
+                Mark this slot as active
+              </label>
+            </div>
+            {% if form.is_active.errors %}
+              <div class="form-error">{{ form.is_active.errors }}</div>
+            {% endif %}
+            <p class="form-help">Inactive slots won't be shown to students.</p>
+          </div>
         </div>
       </div>
 
-      <div class="mt-4 flex gap-3">
-        <button type="submit" class="btn btn-primary">
-          <i data-feather="plus"></i> Add Slot
+      <!-- Buttons -->
+      <div class="mt-8 pt-6 border-t border-gray-200 flex flex-wrap gap-3">
+        <button type="submit" class="btn btn-primary px-6 py-3">
+          <i data-feather="plus" class="w-5 h-5 mr-2"></i>
+          Add Availability Slot
         </button>
-        <a href="{% url 'sessions_app:availability' %}" class="btn btn-outline">Cancel</a>
+        <a href="{% url 'sessions_app:availability' %}" class="btn btn-outline px-6 py-3">
+          Cancel
+        </a>
       </div>
     </form>
   </div>
 </div>
+
+<script>
+  // Conditional display of location fields based on session type
+  document.addEventListener('DOMContentLoaded', function() {
+    const sessionTypeSelect = document.querySelector('#{{ form.session_type.id_for_label }}');
+    const locationSection = document.getElementById('location-section');
+
+    function toggleLocation() {
+      if (sessionTypeSelect.value === 'physical') {
+        locationSection.style.display = 'block';
+      } else {
+        locationSection.style.display = 'none';
+      }
+    }
+
+    // Initial toggle
+    toggleLocation();
+    // Listen for changes
+    sessionTypeSelect.addEventListener('change', toggleLocation);
+  });
+</script>
 
 {% endblock %}

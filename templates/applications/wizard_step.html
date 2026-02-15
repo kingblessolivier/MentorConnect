@@ -571,6 +571,163 @@
         justify-content: center;
     }
 }
+
+/* Calendar list view styles */
+.calendar-list-view {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 1rem;
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.list-item {
+    display: flex;
+    align-items: center;
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.list-item:hover {
+    border-color: #3b82f6;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+}
+
+.list-item.selected {
+    border-color: #3b82f6;
+    background: linear-gradient(135deg, #eff6ff, #dbeafe);
+}
+
+.list-date {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 70px;
+    padding-right: 1rem;
+    border-right: 2px solid #e2e8f0;
+    margin-right: 1rem;
+}
+
+.list-day {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #1e293b;
+    line-height: 1;
+}
+
+.list-month {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    margin-top: 0.25rem;
+}
+
+.list-weekday {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    margin-top: 0.125rem;
+}
+
+.list-content {
+    flex: 1;
+}
+
+.list-content h4 {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 0.5rem;
+}
+
+.list-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    font-size: 0.875rem;
+    color: #64748b;
+}
+
+.list-meta span {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.list-meta i {
+    width: 14px;
+    height: 14px;
+}
+
+.list-status {
+    margin-left: 1rem;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-badge.available {
+    background: #d1fae5;
+    color: #059669;
+}
+
+.status-badge.partial {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.status-badge.booked {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.empty-list {
+    text-align: center;
+    padding: 3rem 1rem;
+}
+
+.empty-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
+    background: #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    color: #94a3b8;
+}
+
+.empty-icon i {
+    width: 32px;
+    height: 32px;
+}
+
+.empty-list h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 0.5rem;
+}
+
+.empty-list p {
+    color: #64748b;
+    max-width: 400px;
+    margin: 0 auto;
+}
 </style>
 {% endblock %}
 
@@ -770,50 +927,89 @@
             {% csrf_token %}
             
             <div class="form-grid">
-                {% for field in form %}
+                <!-- Mentor selection dropdown -->
                 <div class="form-group-premium">
-                    <label class="form-label-premium" for="{{ field.id_for_label }}">
-                        {{ field.label }}
-                        {% if field.field.required %}<span class="required">*</span>{% endif %}
+                    <label class="form-label-premium" for="id_mentor">
+                        Preferred Mentor <span class="required">*</span>
                     </label>
-                    
-                    {% if field.field.widget.input_type == 'select' %}
-                    <select name="{{ field.name }}" id="{{ field.id_for_label }}" class="form-control-premium" {% if field.field.required %}required{% endif %}>
-                        {% for choice in field.field.choices %}
-                        <option value="{{ choice.0 }}" {% if field.value == choice.0 %}selected{% endif %}>{{ choice.1 }}</option>
+                    <select name="mentor" id="id_mentor" class="form-control-premium" required>
+                        {% for choice in form.mentor.field.choices %}
+                        <option value="{{ choice.0 }}" {% if form.mentor.value == choice.0 %}selected{% endif %}>{{ choice.1 }}</option>
                         {% endfor %}
                     </select>
-                    {% elif field.field.widget.input_type == 'textarea' %}
-                    <textarea name="{{ field.name }}" id="{{ field.id_for_label }}" class="form-control-premium" rows="4" {% if field.field.required %}required{% endif %}>{{ field.value|default:'' }}</textarea>
-                    {% elif field.field.widget.input_type == 'checkbox' %}
-                    <div class="checkbox-wrapper">
-                        <input type="checkbox" name="{{ field.name }}" id="{{ field.id_for_label }}" class="form-checkbox-premium" {% if field.value %}checked{% endif %} {% if field.field.required %}required{% endif %}>
-                        <label for="{{ field.id_for_label }}" class="checkbox-label">{{ field.label }}</label>
-                    </div>
-                    {% else %}
-                    <input type="{{ field.field.widget.input_type|default:'text' }}" 
-                           name="{{ field.name }}" 
-                           id="{{ field.id_for_label }}" 
-                           class="form-control-premium" 
-                           value="{{ field.value|default:'' }}"
-                           placeholder="{{ field.field.widget.attrs.placeholder|default:'' }}"
-                           {% if field.field.required %}required{% endif %}>
-                    {% endif %}
-                    
-                    {% if field.help_text %}
+                    {% if form.mentor.help_text %}
                     <div class="form-hint">
                         <i data-feather="info"></i>
-                        {{ field.help_text }}
+                        {{ form.mentor.help_text }}
                     </div>
                     {% endif %}
-                    {% if field.errors %}
+                    {% if form.mentor.errors %}
                     <div class="form-hint" style="color: #ef4444;">
                         <i data-feather="alert-circle"></i>
-                        {{ field.errors.0 }}
+                        {{ form.mentor.errors.0 }}
                     </div>
                     {% endif %}
                 </div>
-                {% endfor %}
+                
+                <!-- Hidden input for selected availability slot -->
+                <input type="hidden" name="availability_slot" id="id_availability_slot" value="{{ form.availability_slot.value|default:'' }}">
+                
+                <!-- Calendar list view for session selection -->
+                <div class="form-group-premium">
+                    <label class="form-label-premium">
+                        Preferred Session <span class="required">*</span>
+                    </label>
+                    <div class="calendar-list-view" id="sessionCalendar" style="margin-top: 1rem;">
+                        {% if availability_by_date %}
+                            {% for date_str, slots in availability_by_date.items %}
+                                {% for slot in slots %}
+                                <div class="list-item session-slot {% if form.availability_slot.value == slot.id|stringformat:'i' %}selected{% endif %}" 
+                                     data-slot-id="{{ slot.id }}" 
+                                     data-mentor-id="{{ slot.mentor.id }}">
+                                    <div class="list-date">
+                                        <span class="list-day">{{ slot.date|date:"d" }}</span>
+                                        <span class="list-month">{{ slot.date|date:"M" }}</span>
+                                        <span class="list-weekday">{{ slot.date|date:"D" }}</span>
+                                    </div>
+                                    <div class="list-content">
+                                        <h4>{{ slot.title }}</h4>
+                                        <div class="list-meta">
+                                            <span><i data-feather="clock"></i> {{ slot.start_time|time:"H:i" }} - {{ slot.end_time|time:"H:i" }}</span>
+                                            {% if slot.description %}
+                                            <span><i data-feather="file-text"></i> {{ slot.description|truncatewords:5 }}</span>
+                                            {% endif %}
+                                            <span><i data-feather="user"></i> {{ slot.mentor.get_full_name }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="list-status">
+                                        {% if slot.is_booked %}
+                                        <span class="status-badge booked">Fully Booked</span>
+                                        {% elif slot.current_bookings > 0 %}
+                                        <span class="status-badge partial">{{ slot.spots_left }} left</span>
+                                        {% else %}
+                                        <span class="status-badge available">Available</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% endfor %}
+                        {% else %}
+                            <div class="empty-list">
+                                <div class="empty-icon">
+                                    <i data-feather="calendar"></i>
+                                </div>
+                                <h3>No available sessions</h3>
+                                <p>No availability slots found for the selected mentor. Please choose another mentor or check back later.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                    {% if form.availability_slot.errors %}
+                    <div class="form-hint" style="color: #ef4444;">
+                        <i data-feather="alert-circle"></i>
+                        {{ form.availability_slot.errors.0 }}
+                    </div>
+                    {% endif %}
+                </div>
             </div>
             
             <div class="wizard-navigation">
@@ -825,6 +1021,38 @@
                 </button>
             </div>
         </form>
+        
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const slotItems = document.querySelectorAll('.session-slot');
+            const hiddenInput = document.getElementById('id_availability_slot');
+            
+            slotItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    // Remove selected class from all slots
+                    slotItems.forEach(s => s.classList.remove('selected'));
+                    // Add selected class to clicked slot
+                    this.classList.add('selected');
+                    // Set hidden input value
+                    hiddenInput.value = this.dataset.slotId;
+                });
+            });
+            
+            // Mentor change event - reload page with mentor filter (simple page reload)
+            const mentorSelect = document.getElementById('id_mentor');
+            mentorSelect.addEventListener('change', function() {
+                // Submit the form to reload with new mentor filter
+                // We'll add a hidden input to indicate filter-only
+                const form = this.closest('form');
+                const filterInput = document.createElement('input');
+                filterInput.type = 'hidden';
+                filterInput.name = 'filter_mentor';
+                filterInput.value = '1';
+                form.appendChild(filterInput);
+                form.submit();
+            });
+        });
+        </script>
         
         {% elif step == 4 %}
         <!-- Step 4: Payment -->

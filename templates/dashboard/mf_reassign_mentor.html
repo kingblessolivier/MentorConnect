@@ -1,0 +1,42 @@
+{% extends 'dashboard/base_dashboard.html' %}
+
+{% block title %}Reassign Mentor - Mentor Facilitator{% endblock %}
+
+{% block dashboard_content %}
+<div class="dashboard-header">
+    <div>
+        <h1><i data-feather="user-check" class="header-icon"></i> Reassign Mentor</h1>
+        <p class="text-muted">Change the assigned mentor for application {{ application.tracking_code }}</p>
+    </div>
+    <a href="{% url 'dashboard:mf_applications' %}" class="btn btn-outline"><i data-feather="arrow-left"></i> Back to Applications</a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="mb-4">
+            <h3>Application Details</h3>
+            <p><strong>Applicant:</strong> {{ application.name }} ({{ application.email }})</p>
+            <p><strong>Current Mentor:</strong> {{ application.selected_mentor.get_full_name }}</p>
+            <p><strong>Status:</strong> <span class="badge badge-{{ application.status }}">{{ application.get_status_display }}</span></p>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="new_mentor"><strong>Select New Mentor</strong></label>
+                <select name="new_mentor" id="new_mentor" class="form-control" required>
+                    <option value="">-- Choose a mentor --</option>
+                    {% for mentor in mentors %}
+                    <option value="{{ mentor.id }}" {% if mentor.id == application.selected_mentor.id %}selected{% endif %}>{{ mentor.get_full_name }} ({{ mentor.email }})</option>
+                    {% endfor %}
+                </select>
+                <small class="text-muted">Only mentors assigned to you are listed.</small>
+            </div>
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary"><i data-feather="check"></i> Reassign Mentor</button>
+                <a href="{% url 'dashboard:mf_applications' %}" class="btn btn-outline">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

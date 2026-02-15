@@ -33,6 +33,8 @@ class MentorScheduleView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         mentor_id = self.kwargs.get('mentor_id')
+        mentor = get_object_or_404(User, pk=mentor_id)
+        ctx['mentor'] = mentor
         ctx['mentor_id'] = mentor_id
         return ctx
 
