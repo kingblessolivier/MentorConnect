@@ -1100,26 +1100,14 @@
                 </h4>
             </div>
             <div class="trending-list-premium">
-                <a href="#" class="trending-item-premium">
-                    <span class="trending-tag">#shadowing</span>
-                    <span class="trending-count">245 posts</span>
+                {% for hashtag in trending_hashtags %}
+                <a href="{% url 'feed:home' %}?q=%23{{ hashtag.tag }}" class="trending-item-premium">
+                    <span class="trending-tag">#{{ hashtag.tag }}</span>
+                    <span class="trending-count">{{ hashtag.count }} post{{ hashtag.count|pluralize }}</span>
                 </a>
-                <a href="#" class="trending-item-premium">
-                    <span class="trending-tag">#careerinsights</span>
-                    <span class="trending-count">189 posts</span>
-                </a>
-                <a href="#" class="trending-item-premium">
-                    <span class="trending-tag">#mentorship</span>
-                    <span class="trending-count">156 posts</span>
-                </a>
-                <a href="#" class="trending-item-premium">
-                    <span class="trending-tag">#healthcare</span>
-                    <span class="trending-count">134 posts</span>
-                </a>
-                <a href="#" class="trending-item-premium">
-                    <span class="trending-tag">#technology</span>
-                    <span class="trending-count">98 posts</span>
-                </a>
+                {% empty %}
+                <p style="color: #94a3b8; font-size: 0.875rem; text-align: center; padding: 1rem 0;">No trending topics yet</p>
+                {% endfor %}
             </div>
         </div>
 

@@ -13,21 +13,21 @@
 
 <div class="dashboard-stats">
     <div class="stat-card">
-        <div class="stat-card-icon" style="background: #fef3c7; color: #d97706;">
+        <div class="stat-card-icon stat-card-icon-warning">
             <i data-feather="clock"></i>
         </div>
         <div class="stat-card-value">{{ pending_count|default:0 }}</div>
         <div class="stat-card-label">Pending</div>
     </div>
     <div class="stat-card">
-        <div class="stat-card-icon" style="background: #d1fae5; color: #059669;">
+        <div class="stat-card-icon stat-card-icon-success">
             <i data-feather="check-circle"></i>
         </div>
         <div class="stat-card-value">{{ approved_count|default:0 }}</div>
         <div class="stat-card-label">Approved</div>
     </div>
     <div class="stat-card">
-        <div class="stat-card-icon" style="background: #fee2e2; color: #dc2626;">
+        <div class="stat-card-icon stat-card-icon-danger">
             <i data-feather="x-circle"></i>
         </div>
         <div class="stat-card-value">{{ rejected_count|default:0 }}</div>

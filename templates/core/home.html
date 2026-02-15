@@ -26,9 +26,17 @@
                 Shadow a professional for 1-5 days and experience the reality of your dream career.
             </p>
             <div class="hero-buttons-premium">
-                <a href="{% url 'accounts:signup_student' %}" class="btn-hero-primary">
-                    <i data-feather="eye"></i>
-                    Start Discovering
+                <a href="{% url 'accounts:signup' %}" class="btn-hero-primary">
+                    <i data-feather="user-plus"></i>
+                    Join Us
+                </a>
+                <a href="/applications/wizard/" class="btn btn-primary btn-lg">
+                    <i data-feather="edit-3"></i>
+                    Apply for Mentorship
+                </a>
+                <a href="/applications/track/" class="btn btn-outline btn-lg" style="margin-left: 0.5rem;">
+                    <i data-feather="activity"></i>
+                    Track Status
                 </a>
                 <a href="{% url 'core:mentors' %}" class="btn-hero-secondary">
                     <i data-feather="search"></i>
@@ -41,19 +49,19 @@
             <div class="hero-visual-card">
                 <div class="hero-stats-grid">
                     <div class="hero-stat-item">
-                        <div class="hero-stat-value">500+</div>
+                        <div class="hero-stat-value">{{ hero_professionals }}+</div>
                         <div class="hero-stat-label">Professionals</div>
                     </div>
                     <div class="hero-stat-item">
-                        <div class="hero-stat-value">2K+</div>
+                        <div class="hero-stat-value">{{ hero_students }}+</div>
                         <div class="hero-stat-label">Students</div>
                     </div>
                     <div class="hero-stat-item">
-                        <div class="hero-stat-value">50+</div>
+                        <div class="hero-stat-value">{{ hero_professions }}+</div>
                         <div class="hero-stat-label">Professions</div>
                     </div>
                     <div class="hero-stat-item">
-                        <div class="hero-stat-value">4.9</div>
+                        <div class="hero-stat-value">{{ hero_avg_rating }}</div>
                         <div class="hero-stat-label">Avg Rating</div>
                     </div>
                 </div>
@@ -68,7 +76,7 @@
         <div class="section-header-premium">
             <div class="section-badge">
                 <i data-feather="info"></i>
-                About Mirror
+                About {{ SITE_NAME }}
             </div>
             <h2 class="section-title-premium">Who Are We?</h2>
             <p class="section-subtitle-premium">
@@ -80,7 +88,7 @@
         <div class="grid grid-2" style="align-items: center; gap: 4rem;">
             <div>
                 <p style="font-size: 1.125rem; color: #475569; line-height: 1.8; margin-bottom: 1.5rem;">
-                    <strong style="color: #1e293b;">Mirror</strong> organizes observation internships of
+                    <strong style="color: #1e293b;">{{ SITE_NAME }}</strong> organizes observation internships of
                     <strong style="color: #3b82f6;">1-5 days</strong> where students literally become
                     the shadow of a professional. Discover what a profession looks like in practice.
                 </p>
@@ -438,7 +446,7 @@
     <div class="container" style="text-align: center;">
         <h2 style="font-size: 2.5rem; font-weight: 800; color: white; margin-bottom: 1rem;">Ready to Discover Your Future?</h2>
         <p style="font-size: 1.25rem; color: rgba(255,255,255,0.8); max-width: 600px; margin: 0 auto 2rem;">
-            Join Mirror today. One experience can make all the difference in your career journey.
+            Join {{ SITE_NAME }} today. One experience can make all the difference in your career journey.
         </p>
         <div class="hero-buttons-premium" style="justify-content: center;">
             <a href="{% url 'accounts:signup_student' %}" class="btn-hero-primary" style="background: white; color: #1e3a5f;">

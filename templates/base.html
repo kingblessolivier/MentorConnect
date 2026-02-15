@@ -7,14 +7,11 @@
     <meta name="description" content="{{ SITE_TAGLINE }}">
     <title>{% block title %}{{ SITE_NAME }}{% endblock %}</title>
 
-    <!-- Favicon -->
     {% if site_settings.site_favicon %}
     <link rel="icon" href="{{ site_settings.site_favicon.url }}">
     {% else %}
     <link rel="icon" href="{% static 'images/favicon.svg' %}" type="image/svg+xml">
     {% endif %}
-
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">

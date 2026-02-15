@@ -5,9 +5,9 @@
         <!-- Logo -->
         <a href="{% url 'core:home' %}" class="navbar-brand" aria-label="{{ SITE_NAME }} Home">
             {% if site_settings.site_logo %}
-            <img src="{{ site_settings.site_logo.url }}" alt="{{ SITE_NAME }}" class="navbar-logo">
+                <img src="{{ site_settings.site_logo.url }}" alt="{{ SITE_NAME }}" class="navbar-logo" style="height: 56px; max-width: 180px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); background: #fff; padding: 2px;">
             {% else %}
-            <span style="font-size: 1.5rem; font-weight: 800; background: linear-gradient(135deg, #1e3a5f 0%, #3b7fb8 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Mirror</span>
+                <span style="font-size: 1.5rem; font-weight: 800; background: linear-gradient(135deg, #1e3a5f 0%, #3b7fb8 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">{{ SITE_NAME }}</span>
             {% endif %}
         </a>
 
@@ -42,20 +42,19 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a href="http://127.0.0.1:8000/applications/wizard/" class="nav-link">
+                        <i data-feather="user-check"></i>
+                        <span>Apply</span>
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a href="{% url 'feed:home' %}" class="nav-link {% if request.resolver_match.app_name == 'feed' %}active{% endif %}">
                         <i data-feather="rss"></i>
                         <span>{{ t.feed|default:"Feed" }}</span>
                     </a>
                 </li>
 
-                {% if user.is_authenticated %}
-                <li class="nav-item">
-                    <a href="{% url 'chat:list' %}" class="nav-link">
-                        <i data-feather="message-circle"></i>
-                        <span>{{ t.chat }}</span>
-                    </a>
-                </li>
-                {% endif %}
+                {# Chat link removed from base navbar #}
             </ul>
 
             <!-- Right Side Items -->

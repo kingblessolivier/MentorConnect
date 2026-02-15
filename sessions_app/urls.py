@@ -15,6 +15,7 @@ urlpatterns = [
 
     # Session actions
     path('<int:pk>/cancel/', views.cancel_session, name='cancel'),
+    path('<int:pk>/reschedule/', views.RescheduleSessionView.as_view(), name='reschedule'),
     path('<int:pk>/complete/', views.complete_session, name='complete'),
     path('<int:pk>/calendar/', views.session_ics_export, name='session_ics'),
 
@@ -23,6 +24,7 @@ urlpatterns = [
     # provide both name variants for compatibility
     path('availability/add/', views.AddAvailabilityView.as_view(), name='add-availability'),
     path('availability/add/', views.AddAvailabilityView.as_view(), name='add_availability'),
+    path('availability/<int:pk>/edit/', views.EditAvailabilityView.as_view(), name='edit_availability'),
     path('availability/<int:pk>/delete/', views.delete_availability, name='delete_availability'),
 
     # Mentor calendar + events JSON endpoint

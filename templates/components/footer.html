@@ -5,7 +5,13 @@
         <div class="footer-grid-premium">
             <!-- Brand Column -->
             <div class="footer-brand-premium">
-                <div class="footer-logo-premium">Mirror</div>
+                                <div class="footer-logo-premium">
+                                    {% if site_settings.site_logo %}
+                                        <img src="{{ site_settings.site_logo.url }}" alt="{{ SITE_NAME }}" style="height: 36px;">
+                                    {% else %}
+                                        {{ SITE_NAME }}
+                                    {% endif %}
+                                </div>
                 <p style="color: #94a3b8; line-height: 1.7; margin-bottom: 1.5rem;">
                     Connecting students with professionals through observation internships. One experience, big insights.
                 </p>
@@ -74,7 +80,7 @@
 
         <div class="footer-bottom-premium">
             <p class="footer-copyright">
-                &copy; {{ current_year|default:"2026" }} Mirror. All rights reserved.
+                &copy; {{ current_year|default:"2026" }} {{ SITE_NAME }}. All rights reserved.
             </p>
             <div class="footer-bottom-links">
                 <a href="{% url 'core:privacy' %}">Privacy Policy</a>

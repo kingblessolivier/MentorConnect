@@ -26,6 +26,27 @@ class AvailabilityForm(forms.ModelForm):
         return cleaned
 
 
+class SessionRescheduleForm(forms.ModelForm):
+    """Form for rescheduling a session (update start/end, title, description)"""
+    class Meta:
+        model = Session
+        fields = ['title', 'description', 'start', 'end']
+        widgets = {
+            'start': forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-input'}),
+            'end': forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-input'}),
+            'title': forms.TextInput(attrs={'class': 'form-input'}),
+            'description': forms.Textarea(attrs={'class': 'form-textarea', 'rows': 3}),
+        }
+
+    def clean(self):
+        cleaned = super().clean()
+        start = cleaned.get('start')
+        end = cleaned.get('end')
+        if start and end and end <= start:
+            self.add_error('end', 'End must be after start.')
+        return cleaned
+
+
 class SessionRequestForm(forms.ModelForm):
     class Meta:
         model = Session

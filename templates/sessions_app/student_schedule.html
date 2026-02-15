@@ -1,30 +1,142 @@
-{% load static %}
-<!doctype html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Your Sessions</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-</head>
-<body class="bg-gray-50">
-  <div class="max-w-3xl mx-auto py-8">
-    <h1 class="text-2xl font-semibold mb-4">Your Session Requests</h1>
-    <div class="bg-white p-4 rounded shadow">
-      {% for s in sessions %}
-        <div class="py-2 border-b">
-          <div class="flex justify-between">
-            <div>
-              <div class="font-medium">{{ s.title }}</div>
-              <div class="text-sm text-gray-600">{{ s.start }} — {{ s.end }} • {{ s.status }}</div>
-            </div>
-            <div class="text-sm text-gray-500">Mentor: {{ s.mentor.get_full_name }}</div>
-          </div>
-        </div>
-      {% empty %}
-        <p class="text-gray-600">You have no session requests.</p>
-      {% endfor %}
+{% extends 'dashboard/base_dashboard.html' %}
+
+{% block title %}My Sessions - {{ SITE_NAME }}{% endblock %}
+
+{% block topnav_title %}My Sessions{% endblock %}
+
+{% block dashboard_content %}
+<div class="dashboard-header">
+    <div>
+        <h1><i data-feather="calendar" class="header-icon"></i> My Sessions</h1>
+        <p class="text-muted">View and manage your scheduled mentorship sessions</p>
     </div>
-  </div>
-</body>
-</html>
+    <div class="dashboard-header-actions">
+        <a href="{% url 'mentorship:request_list' %}" class="btn btn-outline btn-sm">View Requests</a>
+        <a href="{% url 'mentorship:search' %}" class="btn btn-primary btn-sm">Find Mentors</a>
+    </div>
+</div>
+
+<!-- Stats -->
+<div class="dashboard-stats">
+    <div class="stat-card">
+        <div class="stat-card-icon">
+            <i data-feather="clock"></i>
+        </div>
+        <div class="stat-card-value">{{ total_count }}</div>
+        <div class="stat-card-label">Total Sessions</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon" style="background: #d1fae5; color: #059669;">
+            <i data-feather="check-circle"></i>
+        </div>
+        <div class="stat-card-value">{{ approved_count }}</div>
+        <div class="stat-card-label">Approved</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon" style="background: #fef3c7; color: #d97706;">
+            <i data-feather="pause-circle"></i>
+        </div>
+        <div class="stat-card-value">{{ pending_count }}</div>
+        <div class="stat-card-label">Pending</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon" style="background: #fee2e2; color: #dc2626;">
+            <i data-feather="x-circle"></i>
+        </div>
+        <div class="stat-card-value">{{ rejected_count }}</div>
+        <div class="stat-card-label">Rejected</div>
+    </div>
+</div>
+
+<!-- Sessions Table -->
+<div class="card">
+    <div class="card-body">
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Session</th>
+                        <th>Mentor</th>
+                        <th>Date & Time</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in sessions %}
+                    <tr>
+                        <td>
+                            <div class="flex items-center gap-3">
+                                <div class="session-icon">
+                                    <i data-feather="calendar"></i>
+                                </div>
+                                <div>
+                                    <div class="font-medium">{{ s.title|default:"Untitled Session" }}</div>
+                                    <div class="text-sm text-muted">{{ s.session_type|default:"Online" }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="flex items-center gap-2">
+                                <img src="{{ s.mentor.get_avatar_url }}" alt="" class="avatar avatar-sm">
+                                <span>{{ s.mentor.get_full_name }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="text-sm">
+                                <div>{{ s.start|date:"M d, Y" }}</div>
+                                <div class="text-muted">{{ s.start|time:"g:i A" }} - {{ s.end|time:"g:i A" }}</div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge badge-{{ s.status }}">{{ s.get_status_display }}</span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                {% if s.status == 'approved' %}
+                                <a href="#" class="btn btn-sm btn-outline" title="Join Session">
+                                    <i data-feather="video"></i>
+                                </a>
+                                {% elif s.status == 'pending' %}
+                                <span class="text-muted text-sm">Waiting for mentor</span>
+                                {% endif %}
+                                <a href="{% url 'sessions_app:detail' s.pk %}" class="btn btn-sm btn-outline" title="View Details">
+                                    <i data-feather="eye"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4">
+                            <div class="empty-state">
+                                <i data-feather="calendar" class="empty-icon"></i>
+                                <p class="text-muted">You have no scheduled sessions yet.</p>
+                                <a href="{% url 'mentorship:search' %}" class="btn btn-outline btn-sm">Find a Mentor</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+.session-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background: var(--primary-light);
+    color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.session-icon i {
+    width: 18px;
+    height: 18px;
+}
+</style>
+{% endblock %}

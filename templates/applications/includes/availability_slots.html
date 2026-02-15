@@ -1,0 +1,43 @@
+{% load humanize %}
+{% if availability_by_date %}
+    {% for date_str, slots in availability_by_date.items %}
+        {% for slot in slots %}
+        <div class="list-item session-slot {% if selected_slot_id == slot.id|stringformat:'i' %}selected{% endif %}" 
+             data-slot-id="{{ slot.id }}" 
+             data-mentor-id="{{ slot.mentor.id }}">
+            <div class="list-date">
+                <span class="list-day">{{ slot.date|date:"d" }}</span>
+                <span class="list-month">{{ slot.date|date:"M" }}</span>
+                <span class="list-weekday">{{ slot.date|date:"D" }}</span>
+            </div>
+            <div class="list-content">
+                <h4>{{ slot.title }}</h4>
+                <div class="list-meta">
+                    <span><i data-feather="clock"></i> {{ slot.start_time|time:"H:i" }} - {{ slot.end_time|time:"H:i" }}</span>
+                    {% if slot.description %}
+                    <span><i data-feather="file-text"></i> {{ slot.description|truncatewords:5 }}</span>
+                    {% endif %}
+                    <span><i data-feather="user"></i> {{ slot.mentor.get_full_name }}</span>
+                </div>
+            </div>
+            <div class="list-status">
+                {% if slot.is_booked %}
+                <span class="status-badge booked">Fully Booked</span>
+                {% elif slot.current_bookings > 0 %}
+                <span class="status-badge partial">{{ slot.spots_left }} left</span>
+                {% else %}
+                <span class="status-badge available">Available</span>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    {% endfor %}
+{% else %}
+    <div class="empty-list">
+        <div class="empty-icon">
+            <i data-feather="calendar"></i>
+        </div>
+        <h3>No available sessions</h3>
+        <p>No availability slots found for the selected mentor. Please choose another mentor or check back later.</p>
+    </div>
+{% endif %}

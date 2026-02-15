@@ -32,15 +32,24 @@
         {% endif %}
     </div>
 </div>
+{% else %}
+<div class="card mb-4">
+    <div class="card-body">
+        <h3>Payment details</h3>
+        <p class="text-muted">No payment record found for this application.</p>
+    </div>
+</div>
+{% endif %}
 
-<form method="post" class="card">
+<form method="post" class="card" id="finance-verify-form">
     <div class="card-body">
         {% csrf_token %}
+        <input type="hidden" name="action" id="action_input" value="">
         <div class="flex gap-3">
-            <button type="submit" name="action" value="verify" class="btn btn-primary">
+            <button type="submit" onclick="document.getElementById('action_input').value='verify'" class="btn btn-primary" {% if not payment %}disabled{% endif %}>
                 <i data-feather="check"></i> Verify payment
             </button>
-            <button type="submit" name="action" value="reject" class="btn btn-outline" style="border-color: #dc2626; color: #dc2626;">
+            <button type="submit" onclick="document.getElementById('action_input').value='reject'" class="btn btn-outline" style="border-color: #dc2626; color: #dc2626;">
                 Reject
             </button>
         </div>
@@ -50,11 +59,4 @@
         </div>
     </div>
 </form>
-{% else %}
-<div class="card">
-    <div class="card-body">
-        <p class="text-muted">No payment record found for this application.</p>
-    </div>
-</div>
-{% endif %}
 {% endblock %}

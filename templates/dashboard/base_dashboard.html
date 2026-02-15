@@ -148,6 +148,19 @@
 
         <!-- Main Content Area -->
         <div class="dashboard-main-content">
+            {% if messages %}
+            <div class="toast-container" role="alert" aria-live="polite">
+                {% for message in messages %}
+                <div class="toast toast-{{ message.tags }}" data-autohide="5000">
+                    <div class="toast-content">
+                        <i data-feather="{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}alert-circle{% elif message.tags == 'warning' %}alert-triangle{% else %}info{% endif %}"></i>
+                        <span>{{ message }}</span>
+                    </div>
+                    <button class="toast-close" aria-label="Close">&times;</button>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
             {% block dashboard_content %}{% endblock %}
         </div>
     </main>
@@ -971,21 +984,36 @@ body.sidebar-open {
     justify-content: space-between;
     flex-wrap: wrap;
     gap: 1rem;
-    margin-bottom: 1.5rem;
-    padding-bottom: 1.5rem;
-    border-bottom: 1px solid var(--border-color, #e5e7eb);
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    border-radius: 16px;
+    background: linear-gradient(135deg, var(--surface-color, #ffffff) 0%, var(--background-color, #f8fafc) 100%);
+    border: 1px solid var(--border-color, #e5e7eb);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .dashboard-header h1 {
-    font-size: 1.75rem;
-    font-weight: 700;
+    font-size: 1.875rem;
+    font-weight: 800;
     color: var(--text-primary, #111827);
-    margin: 0 0 0.25rem;
+    margin: 0 0 0.5rem;
     line-height: 1.2;
+    letter-spacing: -0.025em;
+}
+
+.dashboard-header h1 .header-icon {
+    width: 32px;
+    height: 32px;
+    vertical-align: middle;
+    margin-right: 0.75rem;
+    color: var(--primary-color, #4f46e5);
 }
 
 .dashboard-header p {
     margin: 0;
+    font-size: 1.0625rem;
+    color: var(--text-secondary, #6b7280);
+    line-height: 1.5;
 }
 
 .dashboard-header-actions {
@@ -993,6 +1021,21 @@ body.sidebar-open {
     align-items: center;
     gap: 0.75rem;
     flex-wrap: wrap;
+}
+
+/* Enhanced dashboard header for premium feel */
+.dashboard-header-enhanced {
+    background: linear-gradient(135deg, var(--primary-light, #eef2ff) 0%, var(--surface-color, #ffffff) 100%);
+    border-color: var(--primary-light, #eef2ff);
+    box-shadow: 0 4px 20px rgba(79, 70, 229, 0.08);
+}
+
+.dashboard-header-enhanced h1 {
+    color: var(--primary-color, #4f46e5);
+}
+
+.dashboard-header-enhanced p {
+    color: var(--text-secondary, #6b7280);
 }
 
 /* ============================================
@@ -1057,6 +1100,32 @@ body.sidebar-open {
 .stat-card-icon i {
     width: 24px;
     height: 24px;
+}
+
+/* Stat card icon variants */
+.stat-card-icon-warning {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.stat-card-icon-success {
+    background: #d1fae5;
+    color: #059669;
+}
+
+.stat-card-icon-danger {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.stat-card-icon-info {
+    background: #dbeafe;
+    color: #2563eb;
+}
+
+.stat-card-icon-primary {
+    background: var(--primary-light, #eef2ff);
+    color: var(--primary-color, #4f46e5);
 }
 
 .stat-card-value {

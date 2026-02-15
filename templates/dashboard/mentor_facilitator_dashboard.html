@@ -6,120 +6,143 @@
 <div class="dashboard-header">
     <div>
         <h1>Welcome, {{ user.first_name }}! 👋</h1>
-        <p class="text-muted">Manage mentors, mentorships, disputes and session reports</p>
+        <p class="text-muted">Manage your mentorship activities</p>
     </div>
-    <a href="{% url 'dashboard:mf_mentor_add' %}" class="btn btn-primary">
-        <i data-feather="user-plus"></i> Add Mentor
-    </a>
+    <div class="dashboard-header-actions">
+        <a href="{% url 'feed:create_post' %}" class="btn btn-primary">
+            <i data-feather="edit"></i> Create Post
+        </a>
+        <a href="{% url 'sessions_app:add-availability' %}" class="btn btn-outline">
+            <i data-feather="calendar"></i> Add Availability
+        </a>
+    </div>
 </div>
 
 <!-- Stats -->
 <div class="dashboard-stats">
     <div class="stat-card">
         <div class="stat-card-icon" style="background: #fef3c7; color: #d97706;">
-            <i data-feather="users"></i>
+            <i data-feather="clock"></i>
         </div>
-        <div class="stat-card-value">{{ assigned_mentors_count|default:0 }}</div>
-        <div class="stat-card-label">Assigned Mentors</div>
+        <div class="stat-card-value">{{ total_pending|default:0 }}</div>
+        <div class="stat-card-label">Pending Requests</div>
     </div>
     <div class="stat-card">
         <div class="stat-card-icon" style="background: #d1fae5; color: #059669;">
-            <i data-feather="link"></i>
+            <i data-feather="check-circle"></i>
         </div>
-        <div class="stat-card-value">{{ active_mentorships_count|default:0 }}</div>
-        <div class="stat-card-label">Active Mentorships</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-card-icon" style="background: #fee2e2; color: #dc2626;">
-            <i data-feather="alert-triangle"></i>
-        </div>
-        <div class="stat-card-value">{{ disputes_count|default:0 }}</div>
-        <div class="stat-card-label">Open Disputes</div>
+        <div class="stat-card-value">{{ total_approved|default:0 }}</div>
+        <div class="stat-card-label">Active Mentees</div>
     </div>
     <div class="stat-card">
         <div class="stat-card-icon">
-            <i data-feather="file-text"></i>
+            <i data-feather="award"></i>
         </div>
-        <div class="stat-card-value">{{ session_reports_count|default:0 }}</div>
-        <div class="stat-card-label">Session Reports</div>
+        <div class="stat-card-value">{{ total_completed|default:0 }}</div>
+        <div class="stat-card-label">Completed</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon" style="background: #fee2e2; color: #dc2626;">
+            <i data-feather="heart"></i>
+        </div>
+        <div class="stat-card-value">{{ followers_count|default:0 }}</div>
+        <div class="stat-card-label">Followers</div>
     </div>
 </div>
 
-{% if facilitator %}
-<div class="grid grid-2">
-    <!-- Assignments -->
-    <div class="card">
-        <div class="card-body">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="mb-0">Assigned Mentors & Students</h3>
-                <a href="{% url 'dashboard:mf_assignments' %}" class="text-primary text-sm">View all</a>
-            </div>
-            {% for a in assignments %}
-            <div class="flex items-center gap-3 p-4 rounded-lg mb-3" style="background: var(--background-color);">
-                <div class="flex-1">
-                    {% if a.mentorship_request %}
-                    <div class="font-medium">{{ a.mentorship_request.student.get_full_name }} → {{ a.mentorship_request.mentor.get_full_name }}</div>
-                    <div class="text-sm text-muted">{{ a.mentorship_request.subject }}</div>
-                    {% elif a.mentor %}
-                    <div class="font-medium">{{ a.mentor.get_full_name }}</div>
-                    <div class="text-sm text-muted">Mentor</div>
-                    {% endif %}
+<!-- Profile Rating -->
+{% if profile %}
+<div class="card mb-4">
+    <div class="card-body flex justify-between items-center">
+        <div class="flex items-center gap-4">
+            <div>
+                <div class="text-muted text-sm">Your Rating</div>
+                <div class="flex items-center gap-2">
+                    <span class="text-2xl font-bold">{{ profile.rating|floatformat:1 }}</span>
+                    <div class="rating">
+                        {% for i in "12345" %}
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                             fill="{% if forloop.counter <= profile.rating %}#fbbf24{% else %}#e5e7eb{% endif %}" stroke="none">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                        </svg>
+                        {% endfor %}
+                    </div>
+                    <span class="text-muted">({{ profile.total_reviews }} reviews)</span>
                 </div>
             </div>
-            {% empty %}
-            <p class="text-muted text-center py-4">No assignments yet</p>
-            {% endfor %}
         </div>
-    </div>
-
-    <!-- Open Disputes -->
-    <div class="card">
-        <div class="card-body">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="mb-0">Open Disputes</h3>
-                <a href="{% url 'dashboard:mf_disputes' %}" class="text-primary text-sm">View all</a>
-            </div>
-            {% for d in open_disputes %}
-            <div class="flex items-center gap-3 p-4 rounded-lg mb-3" style="background: var(--background-color);">
-                <div class="flex-1">
-                    <div class="font-medium">#{{ d.id }} — {{ d.mentorship_request.student.get_full_name }} vs {{ d.mentorship_request.mentor.get_full_name }}</div>
-                    <div class="text-sm text-muted">{{ d.description|truncatewords:15 }}</div>
-                    <span class="badge badge-warning">{{ d.get_status_display }}</span>
-                </div>
-                <a href="{% url 'dashboard:mf_dispute_resolve' d.pk %}" class="btn btn-sm btn-primary">Resolve</a>
-            </div>
-            {% empty %}
-            <p class="text-muted text-center py-4">No open disputes</p>
-            {% endfor %}
+        <div class="text-right">
+            <div class="text-muted text-sm">Profile Status</div>
+            <span class="badge {% if profile.is_available %}badge-success{% else %}badge-danger{% endif %}">
+                {% if profile.is_available %}Available{% else %}Not Available{% endif %}
+            </span>
         </div>
-    </div>
-</div>
-
-<div class="card mt-4">
-    <div class="card-body">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="mb-0">Quick Links</h3>
-        </div>
-        <div class="flex flex-wrap gap-3">
-            <a href="{% url 'dashboard:mf_mentors' %}" class="btn btn-outline"><i data-feather="award"></i> Mentors</a>
-            <a href="{% url 'dashboard:mf_assignments' %}" class="btn btn-outline"><i data-feather="users"></i> Assignments</a>
-            <a href="{% url 'dashboard:mf_mentorships' %}" class="btn btn-outline"><i data-feather="link"></i> Active Mentorships</a>
-            <a href="{% url 'dashboard:mf_inactive_mentorships' %}" class="btn btn-outline"><i data-feather="alert-circle"></i> Inactive</a>
-            <a href="{% url 'dashboard:mf_sessions' %}" class="btn btn-outline"><i data-feather="calendar"></i> Sessions</a>
-            <a href="{% url 'dashboard:mf_onboarding' %}" class="btn btn-outline"><i data-feather="book-open"></i> Onboarding</a>
-            <a href="{% url 'dashboard:mf_backup' %}" class="btn btn-outline"><i data-feather="shield"></i> Backup</a>
-            <a href="{% url 'dashboard:mf_applications' %}" class="btn btn-outline"><i data-feather="file-text"></i> Applications</a>
-            <a href="{% url 'dashboard:mf_disputes' %}" class="btn btn-outline"><i data-feather="alert-triangle"></i> Disputes</a>
-            <a href="{% url 'dashboard:mf_session_reports' %}" class="btn btn-outline"><i data-feather="file-text"></i> Session Reports</a>
-            <a href="{% url 'feed:home' %}" class="btn btn-outline"><i data-feather="layout"></i> Feed</a>
-        </div>
-    </div>
-</div>
-{% else %}
-<div class="card">
-    <div class="card-body">
-        <p class="text-muted mb-0">Your facilitator profile is not set up yet. Please contact admin.</p>
     </div>
 </div>
 {% endif %}
+
+<!-- Mentorship Applications Pending Review -->
+{% if mentorship_applications_pending %}
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="mb-0">Mentorship Applications (Pending Review)</h3>
+            <a href="{% url 'applications:mentor_applications' %}" class="text-primary text-sm">View all</a>
+        </div>
+        {% for app in mentorship_applications_pending %}
+        <div class="flex items-center gap-3 p-4 rounded-lg mb-3" style="background: var(--background-color);">
+            <div class="flex-1">
+                <div class="font-medium">{{ app.name }}</div>
+                <div class="text-sm text-muted">{{ app.email }} • {{ app.school|default:app.program|default:"—" }}</div>
+                <div class="text-xs text-muted">{{ app.tracking_code }}</div>
+            </div>
+            <a href="{% url 'applications:mentor_application_detail' app.pk %}" class="btn btn-sm btn-outline">View</a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Pending Requests -->
+<div class="card">
+    <div class="card-body">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="mb-0">Pending Requests</h3>
+            <a href="{% url 'mentorship:request_list' %}" class="text-primary text-sm">View all</a>
+        </div>
+
+        {% for request in pending_requests %}
+        <div class="flex items-center gap-3 p-4 rounded-lg mb-3" style="background: var(--background-color);">
+            <img src="{{ request.student.get_avatar_url }}" alt="" class="avatar avatar-lg">
+            <div class="flex-1">
+                <div class="font-medium">{{ request.student.get_full_name }}</div>
+                <div class="text-sm font-medium text-primary">{{ request.subject }}</div>
+                <div class="text-sm text-muted">{{ request.message|truncatewords:15 }}</div>
+            </div>
+            <div class="flex gap-2">
+                <form method="post" action="{% url 'mentorship:approve_request' request.pk %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-primary">
+                        <i data-feather="check" style="width:16px;height:16px;"></i> Approve
+                    </button>
+                </form>
+                <form method="post" action="{% url 'mentorship:reject_request' request.pk %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-outline">
+                        <i data-feather="x" style="width:16px;height:16px;"></i> Decline
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% empty %}
+        <p class="text-muted text-center py-4">No pending requests</p>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Mobile Toggle Button -->
+<button class="sidebar-toggle-mobile">
+    <i data-feather="menu"></i>
+</button>
+<div class="sidebar-overlay"></div>
 {% endblock %}

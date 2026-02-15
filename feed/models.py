@@ -1,7 +1,3 @@
-"""
-Feed App Models
-LinkedIn-style feed with posts, comments, likes, shares
-"""
 
 from django.db import models
 from django.conf import settings
@@ -33,6 +29,15 @@ class Post(models.Model):
     # Status
     is_active = models.BooleanField(default=True)
     is_pinned = models.BooleanField(default=False)
+    is_approved = models.BooleanField(default=False)
+    approved_at = models.DateTimeField(null=True, blank=True)
+    approved_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='approved_posts'
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

@@ -360,22 +360,14 @@
             <div class="sidebar-card-public">
                 <h4><i data-feather="trending-up"></i> Trending Topics</h4>
                 <div>
-                    <a href="#" style="display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid #f8fafc; text-decoration: none;">
-                        <span style="font-weight: 600; color: #1e293b;">#shadowing</span>
-                        <span style="font-size: 0.8125rem; color: #94a3b8;">245 posts</span>
+                    {% for hashtag in trending_hashtags %}
+                    <a href="{% url 'feed:home' %}?q=%23{{ hashtag.tag }}" style="display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid #f8fafc; text-decoration: none;">
+                        <span style="font-weight: 600; color: #1e293b;">#{{ hashtag.tag }}</span>
+                        <span style="font-size: 0.8125rem; color: #94a3b8;">{{ hashtag.count }} post{{ hashtag.count|pluralize }}</span>
                     </a>
-                    <a href="#" style="display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid #f8fafc; text-decoration: none;">
-                        <span style="font-weight: 600; color: #1e293b;">#careerinsights</span>
-                        <span style="font-size: 0.8125rem; color: #94a3b8;">189 posts</span>
-                    </a>
-                    <a href="#" style="display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid #f8fafc; text-decoration: none;">
-                        <span style="font-weight: 600; color: #1e293b;">#mentorship</span>
-                        <span style="font-size: 0.8125rem; color: #94a3b8;">156 posts</span>
-                    </a>
-                    <a href="#" style="display: flex; justify-content: space-between; padding: 0.75rem 0; text-decoration: none;">
-                        <span style="font-weight: 600; color: #1e293b;">#healthcare</span>
-                        <span style="font-size: 0.8125rem; color: #94a3b8;">134 posts</span>
-                    </a>
+                    {% empty %}
+                    <p style="color: #94a3b8; font-size: 0.875rem; text-align: center; padding: 1rem 0;">No trending topics yet</p>
+                    {% endfor %}
                 </div>
             </div>
 

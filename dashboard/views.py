@@ -15,9 +15,13 @@ from django.db.models.functions import TruncDate, TruncMonth, TruncWeek
 from django.utils import timezone
 from datetime import timedelta
 import json
+from functools import wraps
 
 from accounts.models import User
+
 from core.models import SiteSettings, ThemeSettings, ActivityLog
+from payments.models import PaymentSettings
+from .forms import SiteSettingsForm
 
 
 class AdminRequiredMixin(UserPassesTestMixin):
@@ -48,6 +52,11 @@ class MentorFacilitatorRequiredMixin(UserPassesTestMixin):
     """Mixin to ensure user is mentor facilitator"""
     def test_func(self):
         return self.request.user.is_authenticated and self.request.user.is_mentor_facilitator
+
+
+def subscription_required(view_func):
+    # Subscription checks removed
+    return _wrapped_view
 
 
 class DashboardRedirectView(View):
@@ -88,12 +97,20 @@ class StudentDashboardView(LoginRequiredMixin, StudentRequiredMixin, TemplateVie
             context['pending_requests'] = MentorshipRequest.objects.filter(
                 student=user, status='pending'
             ).select_related('mentor')[:5]
+            context['pending_requests_count'] = MentorshipRequest.objects.filter(
+                student=user, status='pending'
+            ).count()
             context['approved_sessions'] = MentorshipRequest.objects.filter(
                 student=user, status='approved'
             ).select_related('mentor')[:5]
+            context['active_mentorships_count'] = MentorshipRequest.objects.filter(
+                student=user, status='approved'
+            ).count()
         except Exception:
             context['pending_requests'] = []
+            context['pending_requests_count'] = 0
             context['approved_sessions'] = []
+            context['active_mentorships_count'] = 0
 
         try:
             from profiles.models import MentorProfile
@@ -116,6 +133,18 @@ class StudentDashboardView(LoginRequiredMixin, StudentRequiredMixin, TemplateVie
             context['linked_applications_with_feedback'] = []
         except Exception:
             context['linked_applications_with_feedback'] = []
+
+        try:
+            from payments.models import Subscription, PaymentProof
+            active_subscription = Subscription.objects.filter(user=user, status='active').first()
+            context['active_subscription'] = active_subscription
+            context['has_active_subscription'] = active_subscription and active_subscription.is_active()
+            pending_payment_proofs = PaymentProof.objects.filter(user=user, status='pending').count()
+            context['pending_payment_proofs'] = pending_payment_proofs
+        except Exception:
+            context['active_subscription'] = None
+            context['has_active_subscription'] = False
+            context['pending_payment_proofs'] = 0
 
         return context
 
@@ -486,19 +515,20 @@ class AdminSettingsView(LoginRequiredMixin, AdminRequiredMixin, UpdateView):
     """Admin view to manage site settings"""
     model = SiteSettings
     template_name = 'dashboard/admin_settings.html'
-    fields = [
-        'site_name', 'site_tagline', 'site_logo', 'site_favicon',
-        'contact_email', 'contact_phone', 'contact_address',
-        'facebook_url', 'twitter_url', 'linkedin_url', 'instagram_url',
-        'footer_text', 'enable_chat', 'enable_feed', 'enable_notifications',
-        'enable_text_to_speech', 'maintenance_mode', 'maintenance_message'
-    ]
+    form_class = SiteSettingsForm
     success_url = reverse_lazy('dashboard:admin_settings')
 
     def get_object(self):
         return SiteSettings.get_settings()
 
     def form_valid(self, form):
+        # Handle boolean fields: set to False if missing from POST (unchecked)
+        boolean_fields = [
+            'enable_chat', 'enable_feed', 'enable_notifications', 'enable_text_to_speech', 'maintenance_mode'
+        ]
+        for field in boolean_fields:
+            if field not in self.request.POST:
+                form.instance.__setattr__(field, False)
         messages.success(self.request, 'Site settings have been updated!')
         ActivityLog.objects.create(user=self.request.user, action='admin_action', description='Updated site settings')
         return super().form_valid(form)
@@ -647,7 +677,7 @@ class AdminMentorCreateView(LoginRequiredMixin, AdminRequiredMixin, CreateView):
         return super().form_invalid(form)
 
 
-# ==================== ADMIN: CREATE MENTOR FACILITATOR & FINANCE OFFICER ====================
+# ==================== ADMIN: CREATE MENTOR FACILITATOR, FINANCE OFFICER & ADMIN ====================
 
 class AdminMentorFacilitatorCreateView(LoginRequiredMixin, AdminRequiredMixin, CreateView):
     """Admin view to create a mentor facilitator (staff role)"""
@@ -707,6 +737,37 @@ class AdminFinanceOfficerCreateView(LoginRequiredMixin, AdminRequiredMixin, Crea
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['staff_role'] = 'Finance Officer'
+        return context
+
+
+class AdminAdminCreateView(LoginRequiredMixin, AdminRequiredMixin, CreateView):
+    """Admin view to create an admin (staff role)"""
+    template_name = 'dashboard/admin_staff_form.html'
+    model = User
+    fields = ['email', 'first_name', 'last_name', 'phone']
+    success_url = reverse_lazy('dashboard:admin_users')
+
+    def form_valid(self, form):
+        user = form.save(commit=False)
+        user.role = User.Role.ADMIN
+        user.is_staff = True
+        user.is_superuser = True
+        user.is_verified = True
+        user.email_verified = True
+        user.set_password('MentorConnect2026!')
+        user.save()
+
+        ActivityLog.objects.create(
+            user=self.request.user,
+            action='admin_action',
+            description=f'Created admin: {user.email}'
+        )
+        messages.success(self.request, f'Admin {user.get_full_name()} created. Default password: MentorConnect2026!')
+        return redirect(self.success_url)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['staff_role'] = 'Admin'
         return context
 
 
@@ -880,6 +941,7 @@ class FinanceDashboardView(LoginRequiredMixin, FinanceOfficerRequiredMixin, Temp
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         from applications.models import Application, Payment
+        from payments.models import PaymentProof
 
         context['pending_finance'] = Application.objects.filter(
             status='pending_finance'
@@ -889,6 +951,11 @@ class FinanceDashboardView(LoginRequiredMixin, FinanceOfficerRequiredMixin, Temp
             verified=True
         ).select_related('application', 'verified_by').order_by('-verified_at')[:10]
         context['total_verified_count'] = Payment.objects.filter(verified=True).count()
+        # Subscription payment proofs
+        context['pending_subscription'] = PaymentProof.objects.filter(
+            status='pending', payment_type='subscription'
+        ).select_related('user').order_by('-submitted_at')[:10]
+        context['pending_subscription_count'] = PaymentProof.objects.filter(status='pending', payment_type='subscription').count()
         return context
 
 
@@ -1486,6 +1553,61 @@ class MFSessionsView(LoginRequiredMixin, MentorFacilitatorRequiredMixin, ListVie
         return context
 
 
+class MFCreateSessionView(LoginRequiredMixin, MentorFacilitatorRequiredMixin, View):
+    """Mentor Facilitator: create a session for an assigned mentor"""
+    template_name = 'sessions_app/create_session.html'
+
+    def get(self, request):
+        from sessions_app.forms import SessionCreateForm
+        from mentorship.models import MentorFacilitatorAssignment
+        try:
+            facilitator = request.user.mentor_facilitator_profile
+            mentor_ids = list(MentorFacilitatorAssignment.objects.filter(
+                facilitator=facilitator
+            ).exclude(mentor__isnull=True).values_list('mentor_id', flat=True))
+            from accounts.models import User
+            mentors = User.objects.filter(id__in=mentor_ids, role='mentor')
+        except Exception:
+            mentors = User.objects.none()
+        form = SessionCreateForm()
+        # Limit student queryset to all students? We'll keep default.
+        return render(request, self.template_name, {'form': form, 'mentors': mentors})
+
+    def post(self, request):
+        from sessions_app.forms import SessionCreateForm
+        from mentorship.models import MentorFacilitatorAssignment
+        try:
+            facilitator = request.user.mentor_facilitator_profile
+            mentor_ids = list(MentorFacilitatorAssignment.objects.filter(
+                facilitator=facilitator
+            ).exclude(mentor__isnull=True).values_list('mentor_id', flat=True))
+        except Exception:
+            mentor_ids = []
+        form = SessionCreateForm(request.POST)
+        if form.is_valid():
+            session = form.save(commit=False)
+            # Ensure selected mentor is assigned to facilitator
+            if session.mentor_id not in mentor_ids:
+                messages.error(request, 'You can only create sessions for assigned mentors.')
+                return render(request, self.template_name, {'form': form})
+            session.status = 'approved'
+            session.save()
+            # Notify student
+            try:
+                from notifications.models import Notification
+                Notification.objects.create(
+                    recipient=session.student,
+                    sender=request.user,
+                    notification_type='session_created',
+                    message=f'{request.user.get_full_name()} created a session with you.'
+                )
+            except Exception:
+                pass
+            messages.success(request, 'Session created.')
+            return redirect('dashboard:mf_sessions')
+        return render(request, self.template_name, {'form': form})
+
+
 class MFOnboardingView(LoginRequiredMixin, MentorFacilitatorRequiredMixin, TemplateView):
     """Mentor Facilitator: onboarding and training resources for mentors"""
     template_name = 'dashboard/mf_onboarding.html'
@@ -1558,9 +1680,191 @@ class FinancePaymentsView(LoginRequiredMixin, FinanceOfficerRequiredMixin, ListV
         return context
 
 
+class FinanceSubscriptionPaymentsView(LoginRequiredMixin, FinanceOfficerRequiredMixin, ListView):
+    """Finance Officer: subscription payment proofs for review"""
+    template_name = 'dashboard/finance_subscription_payments.html'
+    context_object_name = 'payment_proofs'
+    paginate_by = 20
+
+    def get_queryset(self):
+        from payments.models import PaymentProof
+        qs = PaymentProof.objects.filter(payment_type='subscription').select_related('user', 'reviewed_by').order_by('-submitted_at')
+        status = self.request.GET.get('status', '')
+        if status:
+            qs = qs.filter(status=status)
+        search = self.request.GET.get('search', '')
+        if search:
+            qs = qs.filter(
+                Q(user__email__icontains=search) |
+                Q(user__first_name__icontains=search) |
+                Q(user__last_name__icontains=search)
+            )
+        return qs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        from payments.models import PaymentProof
+        context['pending_count'] = PaymentProof.objects.filter(status='pending', payment_type='subscription').count()
+        context['approved_count'] = PaymentProof.objects.filter(status='approved', payment_type='subscription').count()
+        context['rejected_count'] = PaymentProof.objects.filter(status='rejected', payment_type='subscription').count()
+        return context
+
+
+@login_required
+def upload_payment_proof(request):
+    """
+    Handle payment proof upload for subscription (outside wizard).
+    Creates a PaymentProof with pending status.
+    """
+    from payments.forms import PaymentProofForm
+    from payments.models import PaymentProof
+    from django.contrib import messages
+
+    if request.method == 'POST':
+        form = PaymentProofForm(request.POST, request.FILES)
+        if form.is_valid():
+            payment_proof = PaymentProof.objects.create(
+                user=request.user,
+                payment_type=form.cleaned_data['payment_type'],
+                amount=float(form.cleaned_data['amount']),
+                proof_image=form.cleaned_data['proof_image'],
+                status='pending',
+            )
+            messages.success(request, 'Payment proof uploaded successfully. It will be reviewed by finance officer.')
+            # Redirect to appropriate page (e.g., subscription wizard step 3 or dashboard)
+            return redirect('dashboard:subscription_wizard_step', step=3)
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = PaymentProofForm(initial={
+            'payment_type': 'subscription',
+            'amount': 0,
+        })
+
+    return render(request, 'dashboard/upload_payment_proof.html', {'form': form})
+
+
+@login_required
+@user_passes_test(lambda u: u.is_finance_officer)
+def finance_subscription_payment_review(request, pk):
+    """
+    Finance officer reviews a subscription payment proof.
+    Approve or reject a PaymentProof.
+    """
+    from payments.models import PaymentProof
+    from django.contrib import messages
+    from django.utils import timezone
+    from core.models import ActivityLog
+
+    payment_proof = get_object_or_404(PaymentProof, pk=pk, payment_type='subscription')
+
+    if request.method == 'POST':
+        action = request.POST.get('action')  # 'approve' or 'reject'
+        if action == 'approve':
+            payment_proof.status = 'approved'
+            payment_proof.reviewed_by = request.user
+            payment_proof.reviewed_at = timezone.now()
+            payment_proof.save()
+            # Update linked subscription if exists
+            from payments.models import Subscription
+            subscription = Subscription.objects.filter(payment_proof=payment_proof).first()
+            if subscription:
+                subscription.status = 'active'
+                subscription.save()
+            ActivityLog.objects.create(
+                user=request.user,
+                action='finance_officer_action',
+                description=f'Approved subscription payment proof #{payment_proof.id} for {payment_proof.user.email}'
+            )
+            messages.success(request, f'Payment proof approved for {payment_proof.user.get_full_name()}.')
+        elif action == 'reject':
+            payment_proof.status = 'rejected'
+            payment_proof.reviewed_by = request.user
+            payment_proof.reviewed_at = timezone.now()
+            payment_proof.save()
+            ActivityLog.objects.create(
+                user=request.user,
+                action='finance_officer_action',
+                description=f'Rejected subscription payment proof #{payment_proof.id} for {payment_proof.user.email}'
+            )
+            messages.warning(request, f'Payment proof rejected for {payment_proof.user.get_full_name()}.')
+        else:
+            messages.error(request, 'Invalid action.')
+        return redirect('dashboard:finance_subscription_payments')
+
+    return render(request, 'dashboard/finance_subscription_payment_review.html', {
+        'payment_proof': payment_proof,
+    })
+
+
 class FinanceReportsView(LoginRequiredMixin, FinanceOfficerRequiredMixin, TemplateView):
     """Finance Officer: revenue charts and summary"""
     template_name = 'dashboard/finance_reports.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        from applications.models import Payment
+        from payments.models import PaymentProof, Subscription
+        from django.db.models import Sum, Count
+        from django.db.models.functions import TruncMonth
+        import json
+
+        # Application payment revenue
+        total_revenue = Payment.objects.filter(verified=True).aggregate(
+            total=Sum('amount')
+        )['total'] or 0
+        context['total_revenue'] = total_revenue
+        context['verified_payments_count'] = Payment.objects.filter(verified=True).count()
+
+        # Subscription revenue
+        subscription_revenue = PaymentProof.objects.filter(
+            status='approved', payment_type='subscription'
+        ).aggregate(total=Sum('amount'))['total'] or 0
+        context['subscription_revenue'] = subscription_revenue
+        context['active_subscriptions_count'] = Subscription.objects.filter(status='active').count()
+        context['pending_subscription_payments_count'] = PaymentProof.objects.filter(
+            status='pending', payment_type='subscription'
+        ).count()
+
+        # Combined revenue
+        context['combined_revenue'] = total_revenue + subscription_revenue
+
+        # Revenue by month for chart (application payments)
+        monthly = Payment.objects.filter(verified=True).annotate(
+            month=TruncMonth('verified_at')
+        ).values('month').annotate(total=Sum('amount')).order_by('month')[:12]
+        context['revenue_monthly_labels'] = json.dumps([m['month'].strftime('%b %Y') for m in monthly])
+        context['revenue_monthly_data'] = json.dumps([float(m['total']) for m in monthly])
+
+        # Subscription revenue by month
+        subscription_monthly = PaymentProof.objects.filter(
+            status='approved', payment_type='subscription'
+        ).annotate(
+            month=TruncMonth('reviewed_at')
+        ).values('month').annotate(total=Sum('amount')).order_by('month')[:12]
+        context['subscription_monthly_labels'] = json.dumps([m['month'].strftime('%b %Y') for m in subscription_monthly])
+        context['subscription_monthly_data'] = json.dumps([float(m['total']) for m in subscription_monthly])
+
+        return context
+
+
+class FinancePaymentSettingsView(LoginRequiredMixin, FinanceOfficerRequiredMixin, UpdateView):
+    """Finance Officer: update subscription and application fees"""
+    model = PaymentSettings
+    fields = ['student_payment_amount', 'application_fee', 'subscription_fee']
+    template_name = 'dashboard/finance_payment_settings.html'
+    success_url = reverse_lazy('dashboard:finance_dashboard')
+
+    def get_object(self, queryset=None):
+        # Get the latest PaymentSettings or create a default one
+        obj = PaymentSettings.objects.order_by('-updated_at').first()
+        if not obj:
+            obj = PaymentSettings.objects.create(
+                student_payment_amount=0,
+                application_fee=0,
+                subscription_fee=0
+            )
+        return obj
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -1778,7 +2082,7 @@ class AdminSessionListView(LoginRequiredMixin, AdminRequiredMixin, ListView):
 
     def get_queryset(self):
         from sessions_app.models import Session
-        queryset = Session.objects.select_related('mentor', 'student').order_by('-scheduled_time')
+        queryset = Session.objects.select_related('mentor', 'student').order_by('-start')
 
         search = self.request.GET.get('search', '')
         if search:
@@ -1806,11 +2110,11 @@ class AdminSessionListView(LoginRequiredMixin, AdminRequiredMixin, ListView):
 
         date_from = self.request.GET.get('date_from', '')
         if date_from:
-            queryset = queryset.filter(scheduled_time__date__gte=date_from)
+            queryset = queryset.filter(start__date__gte=date_from)
 
         date_to = self.request.GET.get('date_to', '')
         if date_to:
-            queryset = queryset.filter(scheduled_time__date__lte=date_to)
+            queryset = queryset.filter(start__date__lte=date_to)
 
         return queryset
 
@@ -1853,6 +2157,10 @@ class AdminPostListView(LoginRequiredMixin, AdminRequiredMixin, ListView):
             queryset = queryset.filter(is_active=False)
         elif status == 'pinned':
             queryset = queryset.filter(is_pinned=True)
+        elif status == 'approved':
+            queryset = queryset.filter(is_approved=True)
+        elif status == 'unapproved':
+            queryset = queryset.filter(is_approved=False)
 
         return queryset
 
@@ -1906,6 +2214,30 @@ def toggle_post_pinned(request, pk):
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         return JsonResponse({'success': True, 'is_pinned': post.is_pinned})
     messages.success(request, f'Post has been {"pinned" if post.is_pinned else "unpinned"}.')
+    return redirect('dashboard:admin_posts')
+
+
+@login_required
+@user_passes_test(lambda u: u.is_admin_user)
+def approve_post(request, pk):
+    """Approve a post (make it visible in feed)"""
+    from feed.models import Post
+    from django.utils import timezone
+    post = get_object_or_404(Post, pk=pk)
+    if not post.is_approved:
+        post.is_approved = True
+        post.approved_at = timezone.now()
+        post.approved_by = request.user
+        post.save()
+
+        ActivityLog.objects.create(
+            user=request.user,
+            action='admin_action',
+            description=f'Approved post #{post.id}'
+        )
+        messages.success(request, 'Post has been approved.')
+    else:
+        messages.info(request, 'Post is already approved.')
     return redirect('dashboard:admin_posts')
 
 
@@ -2195,4 +2527,149 @@ class AdminExportDataView(LoginRequiredMixin, AdminRequiredMixin, View):
             return JsonResponse(data, safe=False)
 
         return JsonResponse({'error': 'Invalid format'}, status=400)
+
+
+# ==================== SUBSCRIPTION WORKFLOW ====================
+
+@login_required
+def subscription_wizard(request, step=None):
+    """
+    Multi-step subscription purchase wizard for students.
+    Steps: 1=Choose Plan, 2=Payment Details, 3=Review & Confirm, 4=Processing
+    """
+    if not request.user.is_student:
+        messages.warning(request, 'Only students can subscribe.')
+        return redirect('dashboard:student_dashboard')
+    
+    # Determine current step
+    if step is None:
+        step = 1
+    else:
+        step = int(step)
+    
+    # Ensure step is between 1 and 4
+    step = max(1, min(4, step))
+    
+    # Get subscription fee from PaymentSettings
+    from payments.models import PaymentSettings
+    settings = PaymentSettings.objects.order_by('-updated_at').first()
+    subscription_fee = settings.subscription_fee if settings else 0
+    
+    # Initialize session data if not present
+    if 'subscription_wizard' not in request.session:
+        request.session['subscription_wizard'] = {
+            'plan': 'monthly',
+            'payment_type': 'subscription',
+            'amount': float(subscription_fee),
+        }
+    
+    wizard_data = request.session['subscription_wizard']
+    
+    # Prepare base context
+    context = {
+        'step': step,
+        'subscription_fee': subscription_fee,
+        'progress_percent': int((step / 4) * 100),
+    }
+    
+    # Handle POST requests
+    if request.method == 'POST':
+        if step == 1:
+            plan = request.POST.get('plan', 'monthly')
+            wizard_data['plan'] = plan
+            request.session.modified = True
+            return redirect('dashboard:subscription_wizard_step', step=2)
+        
+        elif step == 2:
+            from payments.forms import PaymentProofForm
+            form = PaymentProofForm(request.POST, request.FILES)
+            if form.is_valid():
+                # Create PaymentProof with pending status
+                from payments.models import PaymentProof
+                payment_proof = PaymentProof.objects.create(
+                    user=request.user,
+                    payment_type=form.cleaned_data['payment_type'],
+                    amount=float(form.cleaned_data['amount']),
+                    proof_image=form.cleaned_data['proof_image'],
+                    status='pending',
+                )
+                # Store payment proof ID in session
+                wizard_data['payment_proof_id'] = payment_proof.id
+                wizard_data['payment_type'] = form.cleaned_data['payment_type']
+                wizard_data['amount'] = float(form.cleaned_data['amount'])
+                request.session.modified = True
+                return redirect('dashboard:subscription_wizard_step', step=3)
+            else:
+                # Form invalid, re-render with errors
+                context['form'] = form
+        
+        elif step == 3:
+            # Create Subscription linked to the PaymentProof
+            from payments.models import PaymentProof, Subscription
+            from django.utils import timezone
+            
+            payment_proof_id = wizard_data.get('payment_proof_id')
+            if not payment_proof_id:
+                messages.error(request, 'Payment proof missing. Please start over.')
+                return redirect('dashboard:subscription_wizard')
+            
+            payment_proof = PaymentProof.objects.get(id=payment_proof_id, user=request.user)
+            
+            # Determine end date based on plan
+            start_date = timezone.now().date()
+            end_date = None
+            plan = wizard_data.get('plan', 'monthly')
+            if plan == 'monthly':
+                end_date = start_date + timezone.timedelta(days=30)
+            elif plan == 'yearly':
+                end_date = start_date + timezone.timedelta(days=365)
+            # lifetime has no end date
+            
+            subscription = Subscription.objects.create(
+                user=request.user,
+                plan=plan,
+                status='pending',
+                start_date=start_date,
+                end_date=end_date,
+                payment_proof=payment_proof,
+            )
+            
+            # Clear session data
+            del request.session['subscription_wizard']
+            request.session.modified = True
+            
+            # Notify finance officer (optional)
+            # Redirect to processing step
+            return redirect('dashboard:subscription_wizard_step', step=4)
+        
+        elif step == 4:
+            # Processing step - just show success message
+            pass
+    
+    # Fill step-specific context (if not already set by POST error)
+    if step == 1:
+        context['plans'] = [
+            {'value': 'monthly', 'name': 'Monthly', 'price': subscription_fee},
+            {'value': 'yearly', 'name': 'Yearly', 'price': subscription_fee * 12},
+            {'value': 'lifetime', 'name': 'Lifetime', 'price': subscription_fee * 120},
+        ]
+        context['selected_plan'] = wizard_data.get('plan', 'monthly')
+    
+    elif step == 2:
+        if 'form' not in context:
+            from payments.forms import PaymentProofForm
+            context['form'] = PaymentProofForm(initial={
+                'payment_type': wizard_data.get('payment_type', 'subscription'),
+                'amount': wizard_data.get('amount', subscription_fee),
+            })
+    
+    elif step == 3:
+        context['wizard_data'] = wizard_data
+        context['plan_display'] = dict(Subscription.PLAN_CHOICES).get(wizard_data.get('plan', 'monthly'), 'Monthly')
+    
+    elif step == 4:
+        # Show success message
+        pass
+    
+    return render(request, 'dashboard/subscription_wizard_step.html', context)
 

@@ -11,22 +11,22 @@
 
 <div class="dashboard-stats">
     <div class="stat-card">
-        <div class="stat-card-icon"><i data-feather="inbox"></i></div>
+        <div class="stat-card-icon stat-card-icon-primary"><i data-feather="inbox"></i></div>
         <div class="stat-card-value">{{ total_applications|default:0 }}</div>
         <div class="stat-card-label">Total</div>
     </div>
     <div class="stat-card">
-        <div class="stat-card-icon" style="background:#fef3c7;color:#d97706"><i data-feather="clock"></i></div>
+        <div class="stat-card-icon stat-card-icon-warning"><i data-feather="clock"></i></div>
         <div class="stat-card-value">{{ pending_count|default:0 }}</div>
         <div class="stat-card-label">Pending</div>
     </div>
     <div class="stat-card">
-        <div class="stat-card-icon" style="background:#d1fae5;color:#059669"><i data-feather="check"></i></div>
+        <div class="stat-card-icon stat-card-icon-success"><i data-feather="check"></i></div>
         <div class="stat-card-value">{{ approved_count|default:0 }}</div>
         <div class="stat-card-label">Approved</div>
     </div>
     <div class="stat-card">
-        <div class="stat-card-icon" style="background:#fee2e2;color:#dc2626"><i data-feather="user"></i></div>
+        <div class="stat-card-icon stat-card-icon-danger"><i data-feather="user"></i></div>
         <div class="stat-card-value">{{ minor_count|default:0 }}</div>
         <div class="stat-card-label">Minors</div>
     </div>
@@ -126,9 +126,8 @@
                 <span class="pagination-info">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
                 {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}{% for k,v in request.GET.items %}{% if k != 'page' %}&{{ k }}={{ v }}{% endif %}{% endfor %}" class="pagination-btn"><i data-feather="chevron-right"></i></a>{% endif %}
             </nav>
-        </div>
-        {% endif %}
+    </div>
+    {% endif %}
     </div>
 </div>
-<style>.header-icon{width:28px;height:28px;vertical-align:middle;margin-right:0.5rem;color:var(--primary-color);}</style>
 {% endblock %}

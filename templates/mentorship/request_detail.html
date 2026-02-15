@@ -819,6 +819,23 @@
                     </form>
                     {% endif %}
 
+                    {% if user.is_mentor and request.request_type == 'observation' and request.status == 'scheduled' %}
+                    <form method="post" action="{% url 'mentorship:start_session' request.pk %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-action-premium primary">
+                            <i data-feather="play"></i> Start Session
+                        </button>
+                    </form>
+                    {% endif %}
+                    {% if user.is_mentor and request.request_type == 'observation' and request.status == 'in_progress' %}
+                    <form method="post" action="{% url 'mentorship:complete_session' request.pk %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-action-premium success">
+                            <i data-feather="check-circle"></i> Mark as Completed
+                        </button>
+                    </form>
+                    {% endif %}
+
                     {% if request.status in 'approved,scheduled,in_progress' %}
                     <a href="{% if user.is_mentor %}{% url 'chat:start' request.student.id %}{% else %}{% url 'chat:start' request.mentor.id %}{% endif %}" class="btn-action-premium primary">
                         <i data-feather="message-circle"></i> Send Message

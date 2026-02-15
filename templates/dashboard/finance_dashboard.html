@@ -6,7 +6,7 @@
 <div class="dashboard-header">
     <div>
         <h1>Welcome, {{ user.first_name }}! 👋</h1>
-        <p class="text-muted">Verify student payments and manage application revenue</p>
+        <p class="text-muted">Verify student payments and manage subscription revenue</p>
     </div>
     <a href="{% url 'dashboard:finance_payments' %}" class="btn btn-primary">
         <i data-feather="credit-card"></i> Payment Queue
@@ -16,22 +16,29 @@
 <!-- Stats -->
 <div class="dashboard-stats">
     <div class="stat-card">
-        <div class="stat-card-icon" style="background: #fef3c7; color: #d97706;">
+        <div class="stat-card-icon stat-card-icon-warning">
             <i data-feather="clock"></i>
         </div>
         <div class="stat-card-value">{{ pending_finance_count }}</div>
         <div class="stat-card-label">Pending Verification</div>
     </div>
     <div class="stat-card">
-        <div class="stat-card-icon" style="background: #d1fae5; color: #059669;">
+        <div class="stat-card-icon stat-card-icon-success">
             <i data-feather="check-circle"></i>
         </div>
         <div class="stat-card-value">{{ total_verified_count|default:0 }}</div>
         <div class="stat-card-label">Approved Payments</div>
     </div>
+    <div class="stat-card">
+        <div class="stat-card-icon stat-card-icon-info">
+            <i data-feather="dollar-sign"></i>
+        </div>
+        <div class="stat-card-value">{{ pending_subscription_count|default:0 }}</div>
+        <div class="stat-card-label">Pending Subscriptions</div>
+    </div>
 </div>
 
-<div class="grid grid-2">
+<div class="grid grid-3">
     <!-- Pending Payments -->
     <div class="card">
         <div class="card-body">
@@ -72,6 +79,27 @@
             {% endfor %}
         </div>
     </div>
+
+    <!-- Pending Subscription Payments -->
+    <div class="card">
+        <div class="card-body">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="mb-0">Pending Subscription Payments</h3>
+                <a href="{% url 'dashboard:finance_subscription_payments' %}" class="text-primary text-sm">View all</a>
+            </div>
+            {% for proof in pending_subscription %}
+            <div class="flex items-center gap-3 p-4 rounded-lg mb-3" style="background: var(--background-color);">
+                <div class="flex-1">
+                    <div class="font-medium">{{ proof.user.get_full_name|default:proof.user.email }}</div>
+                    <div class="text-sm text-muted">{{ proof.amount }} RWF • {{ proof.submitted_at|date:"M d, Y" }}</div>
+                </div>
+                <a href="{% url 'dashboard:finance_subscription_payment_review' proof.id %}" class="btn btn-sm btn-primary">Review</a>
+            </div>
+            {% empty %}
+            <p class="text-muted text-center py-4">No subscription payments pending</p>
+            {% endfor %}
+        </div>
+    </div>
 </div>
 
 <div class="card mt-4">
@@ -81,7 +109,9 @@
         </div>
         <div class="flex flex-wrap gap-3">
             <a href="{% url 'dashboard:finance_payments' %}" class="btn btn-outline"><i data-feather="credit-card"></i> Payment Queue</a>
+            <a href="{% url 'dashboard:finance_subscription_payments' %}" class="btn btn-outline"><i data-feather="dollar-sign"></i> Subscription Payments</a>
             <a href="{% url 'dashboard:finance_reports' %}" class="btn btn-outline"><i data-feather="bar-chart-2"></i> Revenue Reports</a>
+            <a href="{% url 'dashboard:finance_payment_settings' %}" class="btn btn-outline"><i data-feather="settings"></i> Payment Settings</a>
             <a href="{% url 'dashboard:finance_export' %}?format=csv" class="btn btn-outline"><i data-feather="download"></i> Export CSV</a>
         </div>
     </div>

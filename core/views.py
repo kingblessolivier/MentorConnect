@@ -33,13 +33,29 @@ class HomeView(TemplateView):
 
         # Get featured mentors (will be added later)
         try:
-            from profiles.models import MentorProfile
+            from profiles.models import MentorProfile, StudentProfile
+            from mentorship.models import Review
+            from django.db.models import Count, Avg
+
             context['featured_mentors'] = MentorProfile.objects.filter(
                 is_featured=True,
                 user__is_active=True
             ).select_related('user')[:6]
+
+            # Dynamic hero stats
+            context['hero_professionals'] = MentorProfile.objects.filter(user__is_active=True).count()
+            context['hero_students'] = StudentProfile.objects.filter(user__is_active=True).count()
+            # Professions: count unique job_title in MentorProfile (non-empty)
+            context['hero_professions'] = MentorProfile.objects.filter(job_title__isnull=False).exclude(job_title='').values('job_title').distinct().count()
+            # Average rating: from Review model
+            avg_rating = Review.objects.aggregate(avg=Avg('rating'))['avg']
+            context['hero_avg_rating'] = round(avg_rating, 1) if avg_rating else 0
         except Exception:
             context['featured_mentors'] = []
+            context['hero_professionals'] = 0
+            context['hero_students'] = 0
+            context['hero_professions'] = 0
+            context['hero_avg_rating'] = 0
 
         return context
 
@@ -139,6 +155,34 @@ class ContactView(TemplateView):
     Contact us page
     """
     template_name = 'core/contact.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if 'form' not in context:
+            from dashboard.forms import ContactForm
+            context['form'] = ContactForm()
+        return context
+
+    def post(self, request, *args, **kwargs):
+        from dashboard.forms import ContactForm
+        from django.contrib import messages
+        
+        form = ContactForm(request.POST)
+        if form.is_valid():
+            # Save the contact message
+            contact_message = form.save(commit=False)
+            contact_message.status = 'new'
+            contact_message.save()
+            
+            messages.success(request, 'Your message has been sent successfully! We will get back to you soon.')
+            # Create a new empty form for the next message
+            form = ContactForm()
+        else:
+            messages.error(request, 'Please correct the errors below.')
+        
+        context = self.get_context_data(**kwargs)
+        context['form'] = form
+        return self.render_to_response(context)
 
 
 class PrivacyPolicyView(TemplateView):

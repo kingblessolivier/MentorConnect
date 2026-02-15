@@ -1,0 +1,98 @@
+{% extends 'dashboard/base_dashboard.html' %}
+
+{% block title %}Payment Settings - {{ SITE_NAME }}{% endblock %}
+
+{% block dashboard_content %}
+<div class="dashboard-header">
+    <div>
+        <h1>Payment Settings</h1>
+        <p class="text-muted">Configure subscription and application fees</p>
+    </div>
+    <a href="{% url 'dashboard:finance_dashboard' %}" class="btn btn-outline">
+        <i data-feather="arrow-left"></i> Back to Dashboard
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                {{ form.non_field_errors }}
+            </div>
+            {% endif %}
+            
+            <div class="grid grid-2 gap-4">
+                <div>
+                    <label for="{{ form.student_payment_amount.id_for_label }}" class="form-label">
+                        Student Payment Amount (RWF)
+                    </label>
+                    {{ form.student_payment_amount }}
+                    {% if form.student_payment_amount.errors %}
+                    <div class="text-danger small mt-1">
+                        {{ form.student_payment_amount.errors }}
+                    </div>
+                    {% endif %}
+                    <div class="form-text">
+                        Default payment amount for student applications.
+                    </div>
+                </div>
+                
+                <div>
+                    <label for="{{ form.application_fee.id_for_label }}" class="form-label">
+                        Application Fee (RWF)
+                    </label>
+                    {{ form.application_fee }}
+                    {% if form.application_fee.errors %}
+                    <div class="text-danger small mt-1">
+                        {{ form.application_fee.errors }}
+                    </div>
+                    {% endif %}
+                    <div class="form-text">
+                        Fee charged per mentorship application.
+                    </div>
+                </div>
+                
+                <div>
+                    <label for="{{ form.subscription_fee.id_for_label }}" class="form-label">
+                        Monthly Subscription Fee (RWF)
+                    </label>
+                    {{ form.subscription_fee }}
+                    {% if form.subscription_fee.errors %}
+                    <div class="text-danger small mt-1">
+                        {{ form.subscription_fee.errors }}
+                    </div>
+                    {% endif %}
+                    <div class="form-text">
+                        Monthly subscription fee for premium features.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-6 flex justify-end gap-3">
+                <a href="{% url 'dashboard:finance_dashboard' %}" class="btn btn-outline">Cancel</a>
+                <button type="submit" class="btn btn-primary">
+                    <i data-feather="save" class="mr-2"></i> Save Settings
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .form-control {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        transition: border-color 0.2s;
+    }
+    .form-control:focus {
+        border-color: #8b5cf6;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+    }
+</style>
+{% endblock %}

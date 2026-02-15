@@ -1,0 +1,111 @@
+{% extends 'dashboard/base_dashboard.html' %}
+
+{% block title %}Subscription Payment Proofs - Finance Officer{% endblock %}
+
+{% block dashboard_content %}
+<div class="dashboard-header">
+    <div>
+        <h1><i data-feather="credit-card" class="header-icon"></i> Subscription Payment Proofs</h1>
+        <p class="text-muted">Review subscription payment proofs uploaded by students</p>
+    </div>
+    <a href="{% url 'dashboard:finance_dashboard' %}" class="btn btn-outline"><i data-feather="arrow-left"></i> Dashboard</a>
+</div>
+
+<div class="dashboard-stats">
+    <div class="stat-card">
+        <div class="stat-card-icon stat-card-icon-warning">
+            <i data-feather="clock"></i>
+        </div>
+        <div class="stat-card-value">{{ pending_count|default:0 }}</div>
+        <div class="stat-card-label">Pending</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon stat-card-icon-success">
+            <i data-feather="check-circle"></i>
+        </div>
+        <div class="stat-card-value">{{ approved_count|default:0 }}</div>
+        <div class="stat-card-label">Approved</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon stat-card-icon-danger">
+            <i data-feather="x-circle"></i>
+        </div>
+        <div class="stat-card-value">{{ rejected_count|default:0 }}</div>
+        <div class="stat-card-label">Rejected</div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="filters-form">
+            <div class="filters-row">
+                <div class="filter-group">
+                    <label>Search</label>
+                    <input type="text" name="search" class="form-control" placeholder="Student name, email..." value="{{ request.GET.search }}">
+                </div>
+                <div class="filter-group">
+                    <label>Status</label>
+                    <select name="status" class="form-control">
+                        <option value="">All</option>
+                        <option value="pending" {% if request.GET.status == 'pending' %}selected{% endif %}>Pending</option>
+                        <option value="approved" {% if request.GET.status == 'approved' %}selected{% endif %}>Approved</option>
+                        <option value="rejected" {% if request.GET.status == 'rejected' %}selected{% endif %}>Rejected</option>
+                    </select>
+                </div>
+                <div class="filter-group filter-actions">
+                    <button type="submit" class="btn btn-primary"><i data-feather="search"></i> Filter</button>
+                    <a href="{% url 'dashboard:finance_subscription_payments' %}" class="btn btn-outline">Reset</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Amount</th>
+                        <th>Payment Type</th>
+                        <th>Status</th>
+                        <th>Submitted</th>
+                        <th>Reviewed By</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for proof in payment_proofs %}
+                    <tr>
+                        <td>{{ proof.user.get_full_name|default:proof.user.email }}</td>
+                        <td>${{ proof.amount }}</td>
+                        <td>{{ proof.get_payment_type_display }}</td>
+                        <td><span class="badge badge-{{ proof.status }}">{{ proof.get_status_display }}</span></td>
+                        <td>{{ proof.submitted_at|date:"M d, Y H:i"|default:"—" }}</td>
+                        <td>{% if proof.reviewed_by %}{{ proof.reviewed_by.get_full_name }}{% else %}—{% endif %}</td>
+                        <td>
+                            {% if proof.status == 'pending' %}
+                            <a href="{% url 'dashboard:finance_subscription_payment_review' proof.id %}" class="btn btn-sm btn-primary">Review</a>
+                            {% else %}
+                            <span class="text-muted">{{ proof.get_status_display }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="7" class="text-center text-muted py-4">No payment proofs found</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if is_paginated %}
+        <div class="pagination-bar mt-4">
+            {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" class="pagination-btn"><i data-feather="chevron-left"></i></a>{% endif %}
+            <span class="pagination-info">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" class="pagination-btn"><i data-feather="chevron-right"></i></a>{% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

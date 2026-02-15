@@ -1,0 +1,98 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Reschedule Session - {{ SITE_NAME }}{% endblock %}
+
+{% block dashboard_content %}
+<div class="dashboard-header">
+  <div>
+    <h1>Reschedule Session</h1>
+    <p class="text-muted">Update session details and timing</p>
+  </div>
+</div>
+
+<div class="card" style="max-width: 800px;">
+  <div class="card-body">
+    <form method="post">
+      {% csrf_token %}
+
+      {{ form.non_field_errors }}
+
+      <div class="space-y-6">
+        <!-- Title & Description -->
+        <div>
+          <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <i data-feather="edit-2" class="w-5 h-5"></i>
+            Session Details
+          </h3>
+          <div class="grid grid-cols-1 gap-4">
+            <div class="form-group">
+              <label class="form-label">Title</label>
+              {{ form.title }}
+              {% if form.title.errors %}
+                <div class="form-error">{{ form.title.errors }}</div>
+              {% endif %}
+            </div>
+            <div class="form-group">
+              <label class="form-label">Description</label>
+              {{ form.description }}
+              {% if form.description.errors %}
+                <div class="form-error">{{ form.description.errors }}</div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Date & Time -->
+        <div>
+          <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <i data-feather="calendar" class="w-5 h-5"></i>
+            Date & Time
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="form-group">
+              <label class="form-label">Start</label>
+              {{ form.start }}
+              {% if form.start.errors %}
+                <div class="form-error">{{ form.start.errors }}</div>
+              {% endif %}
+              <p class="form-help">When the session begins</p>
+            </div>
+            <div class="form-group">
+              <label class="form-label">End</label>
+              {{ form.end }}
+              {% if form.end.errors %}
+                <div class="form-error">{{ form.end.errors }}</div>
+              {% endif %}
+              <p class="form-help">When the session ends</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Buttons -->
+      <div class="mt-8 pt-6 border-t border-gray-200 flex flex-wrap gap-3">
+        <button type="submit" class="btn btn-primary px-6 py-3">
+          <i data-feather="save" class="w-5 h-5 mr-2"></i>
+          Update Session
+        </button>
+        <a href="{% url 'sessions_app:list' %}" class="btn btn-outline px-6 py-3">
+          Cancel
+        </a>
+        <a href="{% url 'sessions_app:cancel' object.pk %}" class="btn btn-danger px-6 py-3 ml-auto" onclick="return confirm('Are you sure you want to cancel this session?');">
+          <i data-feather="x-circle" class="w-5 h-5 mr-2"></i>
+          Cancel Session
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  // Ensure datetime-local inputs are properly formatted
+  document.addEventListener('DOMContentLoaded', function() {
+    // Optional: any client-side validation or enhancements
+  });
+</script>
+
+{% endblock %}

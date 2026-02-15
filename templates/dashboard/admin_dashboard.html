@@ -470,6 +470,7 @@
 .action-btn.settings { --action-color: #64748b; --action-bg: linear-gradient(135deg, #64748b, #475569); --action-shadow: rgba(100, 116, 139, 0.4); }
 .action-btn.broadcast { --action-color: #f43f5e; --action-bg: linear-gradient(135deg, #f43f5e, #e11d48); --action-shadow: rgba(244, 63, 94, 0.4); }
 .action-btn.export { --action-color: #14b8a6; --action-bg: linear-gradient(135deg, #14b8a6, #0d9488); --action-shadow: rgba(20, 184, 166, 0.4); }
+.action-btn.contact { --action-color: #0ea5e9; --action-bg: linear-gradient(135deg, #0ea5e9, #0284c7); --action-shadow: rgba(14, 165, 233, 0.4); }
 
 /* Data Cards Row */
 .data-row {
@@ -814,6 +815,12 @@
                 <i data-feather="download"></i>
                 Export Data
             </a>
+            {% if user.is_authenticated and user.role == 'finance_officer' %}
+            <a href="{% url 'payments:set_payment_amount' %}" class="hero-btn hero-btn-light">
+                <i data-feather="dollar-sign"></i>
+                Set Student Payment Amount
+            </a>
+            {% endif %}
         </div>
     </div>
 </div>
@@ -1019,6 +1026,10 @@
         <a href="{% url 'dashboard:admin_export' %}?type=users&format=csv" class="action-btn export">
             <div class="action-icon-wrap"><i data-feather="download"></i></div>
             <span class="action-text">Export Data</span>
+        </a>
+        <a href="/admin/dashboard/contactmessage/" class="action-btn contact">
+            <div class="action-icon-wrap"><i data-feather="mail"></i></div>
+            <span class="action-text">Contact Messages</span>
         </a>
     </div>
 </div>

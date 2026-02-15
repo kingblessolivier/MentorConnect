@@ -588,6 +588,11 @@ a:hover {
     margin-top: 0.25rem;
 }
 
+.text-error {
+    color: var(--error-color);
+    font-size: 0.875rem;
+}
+
 /* ============================================
    DROPDOWN
    ============================================ */

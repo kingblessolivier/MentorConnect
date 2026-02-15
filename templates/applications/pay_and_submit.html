@@ -17,11 +17,13 @@
 
         <div class="p-6">
             <div class="flex items-center justify-between p-4 bg-primary/5 rounded-xl border border-primary/20 mb-6">
-                <span class="text-gray-700 font-medium">Application fee</span>
+                <span class="text-gray-700 font-medium">Application Fee</span>
                 <span class="text-2xl font-bold text-primary">{{ application_fee|floatformat:0 }} <span class="text-sm font-normal text-gray-500">RWF</span></span>
             </div>
 
-            <p class="text-sm text-gray-600 mb-4">After paying (e.g. via mobile money or bank), enter the transaction code and optionally upload your receipt. Finance will verify and your application will move to mentor review.</p>
+            <p class="text-sm text-gray-600 mb-4">
+                Please pay <strong>{{ application_fee|floatformat:0 }} RWF</strong> via <strong>MTN MoMo</strong> or upload your payment receipt below. Enter your transaction code and upload your receipt. The finance officer will verify your payment before your application moves to mentor review.
+            </p>
 
             <form method="post" enctype="multipart/form-data" class="space-y-4">
                 {% csrf_token %}

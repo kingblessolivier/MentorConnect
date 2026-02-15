@@ -8,6 +8,15 @@ from django.conf import settings
 from django.utils import timezone
 
 
+class PaymentSettings(models.Model):
+    student_payment_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    application_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name='Application Fee')
+    subscription_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name='Monthly Subscription Fee')
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Payment Settings (App: {self.application_fee}, Sub: {self.subscription_fee})"
+
 class Invoice(models.Model):
     """Invoice linked to an application (e.g. after approval for billing)."""
     PAYMENT_STATUS_CHOICES = [
@@ -101,3 +110,95 @@ class Payout(models.Model):
 
     def __str__(self):
         return f"Payout #{self.id} - {self.mentor.get_full_name()} - {self.amount}"
+
+
+class PaymentProof(models.Model):
+    """Proof of payment uploaded by student for subscription or application fee."""
+    PAYMENT_TYPE_CHOICES = [
+        ('subscription', 'Subscription'),
+        ('application', 'Application Fee'),
+        ('other', 'Other'),
+    ]
+    STATUS_CHOICES = [
+        ('pending', 'Pending Approval'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+    ]
+    
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='payment_proofs'
+    )
+    payment_type = models.CharField(max_length=20, choices=PAYMENT_TYPE_CHOICES, default='subscription')
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    proof_image = models.FileField(upload_to='payment_proofs/', verbose_name='Proof Document', null=True, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    submitted_at = models.DateTimeField(auto_now_add=True)
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='reviewed_payment_proofs'
+    )
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    notes = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ['-submitted_at']
+        verbose_name = 'Payment Proof'
+        verbose_name_plural = 'Payment Proofs'
+
+    def __str__(self):
+        return f"Payment Proof #{self.id} - {self.user.get_full_name()} - {self.get_status_display()}"
+
+
+class Subscription(models.Model):
+    """Student subscription for premium features."""
+    PLAN_CHOICES = [
+        ('monthly', 'Monthly'),
+        ('yearly', 'Yearly'),
+        ('lifetime', 'Lifetime'),
+    ]
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('active', 'Active'),
+        ('expired', 'Expired'),
+        ('cancelled', 'Cancelled'),
+    ]
+    
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='subscriptions'
+    )
+    plan = models.CharField(max_length=20, choices=PLAN_CHOICES, default='monthly')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
+    payment_proof = models.ForeignKey(
+        PaymentProof,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='subscriptions'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Subscription'
+        verbose_name_plural = 'Subscriptions'
+
+    def __str__(self):
+        return f"Subscription #{self.id} - {self.user.get_full_name()} - {self.get_plan_display()} ({self.get_status_display()})"
+
+    def is_active(self):
+        """Check if subscription is currently active."""
+        if self.status != 'active':
+            return False
+        if self.end_date and timezone.now().date() > self.end_date:
+            return False
+        return True

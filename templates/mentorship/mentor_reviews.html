@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="mentor-reviews-container">
+    <h2>Reviews for {{ mentor.get_full_name }}</h2>
+    <div class="average-rating">
+        Average Rating: {{ average_rating|floatformat:1 }} / 5
+    </div>
+    <div class="reviews-list">
+        {% for review in reviews %}
+        <div class="review-item-card">
+            <div class="review-header">
+                <img src="{% if review.student.avatar %}{{ review.student.avatar.url }}{% else %}{% static 'images/default-avatar.png' %}{% endif %}" alt="{{ review.student.get_full_name }}" class="review-avatar">
+                <div class="review-author">
+                    <div class="review-name">{{ review.student.get_full_name }}</div>
+                    <div class="review-date">{{ review.created_at|date:"M d, Y" }}</div>
+                </div>
+                <div class="review-rating-stars">
+                    {% for i in "12345" %}
+                    {% if forloop.counter <= review.rating %}★{% else %}☆{% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="review-title">{{ review.title }}</div>
+            <p class="review-comment">{{ review.content }}</p>
+        </div>
+        {% empty %}
+        <p>No reviews yet.</p>
+        {% endfor %}
+    </div>
+    {% if is_paginated %}
+    <div class="pagination">
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
+        {% endif %}
+        <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}">Next</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

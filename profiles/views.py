@@ -1,3 +1,14 @@
+from django.views import View
+from django.http import HttpResponse
+
+# Simple views for mentor/mentee application
+class ApplyAsMentorView(View):
+    def get(self, request):
+        return render(request, 'profiles/apply_as_mentor.html')
+
+class ApplyForMentorshipView(View):
+    def get(self, request):
+        return render(request, 'profiles/apply_for_mentorship.html')
 """
 Profiles App Views
 Profile viewing and editing for students and mentors
@@ -5,6 +16,7 @@ Profile viewing and editing for students and mentors
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import DetailView, UpdateView, ListView
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages

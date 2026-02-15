@@ -1,3 +1,26 @@
+from django.contrib.auth.decorators import login_required
+
+@login_required
+def api_slot_detail(request, pk):
+    """Return JSON details for a single availability slot."""
+    slot = get_object_or_404(MentorAvailability, pk=pk)
+    data = {
+        'id': slot.id,
+        'mentor': slot.mentor.get_full_name() if hasattr(slot.mentor, 'get_full_name') else str(slot.mentor),
+        'date': slot.date.isoformat(),
+        'end_date': slot.end_date.isoformat() if slot.end_date else None,
+        'start_time': slot.start_time.strftime('%H:%M'),
+        'end_time': slot.end_time.strftime('%H:%M'),
+        'title': slot.title,
+        'description': slot.description,
+        'location_type': slot.get_location_type_display() if hasattr(slot, 'get_location_type_display') else slot.location_type,
+        'location_address': slot.location_address,
+        'is_booked': slot.is_booked,
+        'max_bookings': slot.max_bookings,
+        'current_bookings': slot.current_bookings,
+        'spots_left': slot.max_bookings - slot.current_bookings,
+    }
+    return JsonResponse(data)
 """
 Mentorship App Views
 """
@@ -20,6 +43,7 @@ from profiles.models import MentorProfile
 from .models import MentorshipRequest, Review, MentorAvailability
 
 
+
 class MentorSearchView(LoginRequiredMixin, ListView):
     """
     Enhanced Mentor Search and Filter View
@@ -30,111 +54,12 @@ class MentorSearchView(LoginRequiredMixin, ListView):
     paginate_by = 12
 
     def get_queryset(self):
-        """Get filtered and sorted mentor queryset"""
-        queryset = MentorProfile.objects.filter(
+        """Show all available mentors, ignoring filters (for debugging)."""
+        return MentorProfile.objects.filter(
             is_available=True,
             user__is_active=True,
             profile_completed=True
-        ).select_related('user').prefetch_related(
-            'user__followers',
-            'user__following'
-        ).annotate(
-            avg_rating=Avg('user__reviews_received__rating')
-        )
-
-        # Text search
-        search = self.request.GET.get('q', '').strip()
-        if search:
-            queryset = queryset.filter(
-                Q(user__first_name__icontains=search) |
-                Q(user__last_name__icontains=search) |
-                Q(expertise__icontains=search) |
-                Q(skills__icontains=search) |
-                Q(company__icontains=search) |
-                Q(bio__icontains=search) |
-                Q(headline__icontains=search) |
-                Q(job_title__icontains=search)
-            )
-
-        # Expertise filter
-        expertise = self.request.GET.get('expertise', '').strip()
-        if expertise:
-            queryset = queryset.filter(expertise__iexact=expertise)
-
-        # Skills filter (all selected skills must match)
-        skills = self.request.GET.get('skills', '').strip()
-        if skills:
-            for skill in skills.split(','):
-                skill = skill.strip()
-                if skill:
-                    queryset = queryset.filter(skills__icontains=skill)
-
-        # Location filter
-        location = self.request.GET.get('location', '').strip()
-        if location:
-            queryset = queryset.filter(
-                Q(city__icontains=location) |
-                Q(country__icontains=location)
-            )
-
-        # Rating filter
-        min_rating = self.request.GET.get('min_rating', '')
-        if min_rating:
-            try:
-                queryset = queryset.filter(rating__gte=float(min_rating))
-            except (ValueError, TypeError):
-                pass
-
-        # Experience filter
-        min_exp = self.request.GET.get('min_experience', '')
-        if min_exp:
-            try:
-                queryset = queryset.filter(experience_years__gte=int(min_exp))
-            except (ValueError, TypeError):
-                pass
-
-        # Price filter
-        price_filter = self.request.GET.get('price', '').strip()
-        if price_filter == 'free':
-            queryset = queryset.filter(hourly_rate=0)
-        elif price_filter == 'paid':
-            queryset = queryset.filter(hourly_rate__gt=0)
-
-        # Session type filter
-        session_type = self.request.GET.get('session_type', '').strip()
-        if session_type == 'in_person':
-            queryset = queryset.filter(accepts_in_person=True)
-        elif session_type == 'virtual':
-            queryset = queryset.filter(accepts_virtual=True)
-
-        # Featured only
-        featured_only = self.request.GET.get('featured_only', '')
-        if featured_only:
-            queryset = queryset.filter(is_featured=True)
-
-        # Verified only
-        verified_only = self.request.GET.get('verified_only', '')
-        if verified_only:
-            queryset = queryset.filter(is_verified=True)
-
-        # Sorting
-        sort = self.request.GET.get('sort', '-rating')
-        if sort == 'experience':
-            queryset = queryset.order_by('-experience_years', '-rating')
-        elif sort == 'newest':
-            queryset = queryset.order_by('-created_at')
-        elif sort == 'reviews':
-            queryset = queryset.order_by('-total_reviews', '-rating')
-        elif sort == 'price_low':
-            queryset = queryset.order_by('hourly_rate', '-rating')
-        elif sort == 'price_high':
-            queryset = queryset.order_by('-hourly_rate', '-rating')
-        elif sort == 'name':
-            queryset = queryset.order_by('user__first_name', 'user__last_name')
-        else:  # default: -rating
-            queryset = queryset.order_by('-is_featured', '-rating', '-total_reviews')
-
-        return queryset.distinct()
+        ).select_related('user').order_by('-is_featured', '-rating', '-created_at')
 
     def get_context_data(self, **kwargs):
         """Build context with filters, stats, and recommendations"""

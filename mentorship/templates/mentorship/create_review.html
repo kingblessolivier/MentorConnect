@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Write a Review for {{ mentor.get_full_name }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="card mx-auto" style="max-width: 540px;">
+        <div class="card-body">
+            <h2 class="mb-3 text-center">Review {{ mentor.get_full_name }}</h2>
+            <form method="post" novalidate>
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="id_rating" class="form-label">Rating</label>
+                    <div class="star-rating mb-2">
+                        {% for i in "54321" %}
+                        <input type="radio" name="rating" id="star{{ i }}" value="{{ i }}" {% if form.rating.value|stringformat:'i' == i %}checked{% endif %}>
+                        <label for="star{{ i }}" title="{{ i }} stars">&#9733;</label>
+                        {% endfor %}
+                    </div>
+                    {{ form.rating.errors }}
+                </div>
+                <div class="mb-3">
+                    <label for="id_title" class="form-label">Title</label>
+                    {{ form.title|as_crispy_field }}
+                </div>
+                <div class="mb-3">
+                    <label for="id_content" class="form-label">Your Review</label>
+                    {{ form.content|as_crispy_field }}
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Submit Review</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.star-rating {
+    direction: rtl;
+    display: flex;
+    justify-content: flex-start;
+    gap: 0.2em;
+}
+.star-rating input[type="radio"] {
+    display: none;
+}
+.star-rating label {
+    font-size: 2rem;
+    color: #e4e5e9;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+.star-rating input[type="radio"]:checked ~ label,
+.star-rating label:hover,
+.star-rating label:hover ~ label {
+    color: #ffc107;
+}
+</style>
+{% endblock %}

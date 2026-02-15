@@ -32,7 +32,10 @@ urlpatterns = [
     # Mentor availability calendar (for mentors to manage)
     path('availability/', views.MentorAvailabilityView.as_view(), name='availability'),
     path('availability/add/', views.add_availability, name='add_availability'),
+
     path('availability/<int:pk>/delete/', views.delete_availability, name='delete_availability'),
+    # Slot detail API
+    path('api/slot/<int:pk>/', views.api_slot_detail, name='api_slot_detail'),
 
     # Mentor calendar view (for students to see)
     path('calendar/<int:mentor_id>/', views.MentorCalendarView.as_view(), name='mentor_calendar'),

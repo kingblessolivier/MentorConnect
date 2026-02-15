@@ -59,22 +59,55 @@
                 <div class="card-body">
                     <form method="post">
                         {% csrf_token %}
+                        
                         <div class="form-group">
-                            <label class="form-label">Your Name</label>
-                            <input type="text" name="name" class="form-input" required>
+                            <label class="form-label" for="{{ form.name.id_for_label }}">Your Name</label>
+                            {{ form.name }}
+                            {% if form.name.errors %}
+                            <div class="form-error">
+                                {% for error in form.name.errors %}
+                                <span class="text-error">{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
                         </div>
+                        
                         <div class="form-group">
-                            <label class="form-label">Email Address</label>
-                            <input type="email" name="email" class="form-input" required>
+                            <label class="form-label" for="{{ form.email.id_for_label }}">Email Address</label>
+                            {{ form.email }}
+                            {% if form.email.errors %}
+                            <div class="form-error">
+                                {% for error in form.email.errors %}
+                                <span class="text-error">{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
                         </div>
+                        
                         <div class="form-group">
-                            <label class="form-label">Subject</label>
-                            <input type="text" name="subject" class="form-input" required>
+                            <label class="form-label" for="{{ form.subject.id_for_label }}">Subject</label>
+                            {{ form.subject }}
+                            {% if form.subject.errors %}
+                            <div class="form-error">
+                                {% for error in form.subject.errors %}
+                                <span class="text-error">{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
                         </div>
+                        
                         <div class="form-group">
-                            <label class="form-label">Message</label>
-                            <textarea name="message" class="form-textarea" rows="5" required></textarea>
+                            <label class="form-label" for="{{ form.message.id_for_label }}">Message</label>
+                            {{ form.message }}
+                            {% if form.message.errors %}
+                            <div class="form-error">
+                                {% for error in form.message.errors %}
+                                <span class="text-error">{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
                         </div>
+                        
                         <button type="submit" class="btn btn-primary btn-block">
                             <i data-feather="send"></i> Send Message
                         </button>

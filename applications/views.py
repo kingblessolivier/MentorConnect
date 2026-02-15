@@ -104,7 +104,9 @@ def pay_and_submit_application(request, request_id):
         messages.info(request, 'This application has already been submitted.')
         return redirect('mentorship:request_detail', pk=request_id)
 
-    application_fee = getattr(django_settings, 'APPLICATION_FEE_AMOUNT', 5000)
+    from payments.models import PaymentSettings
+    settings_obj = PaymentSettings.objects.order_by('-updated_at').first()
+    application_fee = settings_obj.student_payment_amount if settings_obj else 0
 
     if request.method == 'POST':
         form = ApplicationPaymentForm(request.POST, request.FILES)
@@ -202,7 +204,9 @@ def application_wizard(request, step=None):
         current_step = app.current_step
         if step:
             return redirect('applications:wizard_step', step=current_step)
-    application_fee = getattr(django_settings, 'APPLICATION_FEE_AMOUNT', 5000)
+    from payments.models import PaymentSettings
+    settings_obj = PaymentSettings.objects.order_by('-updated_at').first()
+    application_fee = settings_obj.student_payment_amount if settings_obj else 0
     form = None
     slots_qs = None
     availability_by_date = None
@@ -239,8 +243,14 @@ def application_wizard(request, step=None):
                 ws.save(update_fields=['current_step', 'updated_at'])
                 return redirect('applications:wizard_step', step=3)
         elif current_step == 3:
+            filter_only = 'filter_mentor' in request.POST
             form = ApplicationWizardStep3Form(request.POST, mentor_id=request.POST.get('mentor'))
-            if form.is_valid():
+            if filter_only:
+                # This is just a filter request, don't validate or advance step
+                # Clear any validation errors for availability_slot since it's not required for filtering
+                if form.errors:
+                    form.errors.pop('availability_slot', None)
+            elif form.is_valid():
                 app.selected_mentor = form.cleaned_data['mentor']
                 app.selected_availability_slot = form.cleaned_data['availability_slot']
                 app.current_step = 4
@@ -287,6 +297,13 @@ def application_wizard(request, step=None):
             if request.user.is_authenticated:
                 return redirect('applications:my_applications')
             return redirect('applications:track_status')
+    # Compute availability slots for step 3 if form is already created (POST with validation errors or filter)
+    if current_step == 3 and form is not None:
+        slots_qs = form.fields['availability_slot'].queryset
+        availability_by_date = {}
+        for slot in slots_qs:
+            date_str = slot.date.isoformat()
+            availability_by_date.setdefault(date_str, []).append(slot)
     if form is None:
         if current_step == 1:
             form = ApplicationWizardStep1Form(initial={
@@ -349,6 +366,35 @@ def application_wizard(request, step=None):
         'progress_percent': min(100, int((current_step / 5) * 100)),
         'availability_slots': slots_qs,
         'availability_by_date': availability_by_date,
+    })
+
+
+def get_mentor_availability_html(request):
+    """Return HTML for availability slots of a given mentor (AJAX endpoint)."""
+    from django.db.models import F
+    from mentorship.models import MentorAvailability
+    from django.utils import timezone
+    from django.http import HttpResponseBadRequest
+
+    mentor_id = request.GET.get('mentor_id')
+    selected_slot_id = request.GET.get('selected_slot_id')
+    if not mentor_id:
+        return HttpResponseBadRequest('Missing mentor_id')
+
+    today = timezone.now().date()
+    slots_qs = MentorAvailability.objects.filter(
+        mentor_id=mentor_id,
+        date__gte=today
+    ).filter(current_bookings__lt=F('max_bookings')).select_related('mentor').order_by('date', 'start_time')
+
+    availability_by_date = {}
+    for slot in slots_qs:
+        date_str = slot.date.isoformat()
+        availability_by_date.setdefault(date_str, []).append(slot)
+
+    return render(request, 'applications/includes/availability_slots.html', {
+        'availability_by_date': availability_by_date,
+        'selected_slot_id': selected_slot_id,
     })
 
 

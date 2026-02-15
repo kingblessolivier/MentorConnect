@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Mirror - One Experience, Big Insights{% endblock %}
+{% block title %}{{ SITE_NAME }} - One Experience, Big Insights{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -512,7 +512,7 @@
 <!-- Navbar -->
 <nav>
   <div class="nav-container">
-    <div class="logo">Mirror</div>
+    <div class="logo">{{ SITE_NAME }}</div>
     <div class="nav-actions">
       <a href="#how-it-works" class="nav-link">{{ 'How it works'|default:'How it works' }}</a>
       <a href="#for-you" class="nav-link">{{ 'For you'|default:'For you' }}</a>
@@ -532,7 +532,7 @@
       <h1>One Experience,<br>Big Insights</h1>
       <p>Discover a profession up close and make confident choices about your future. Shadow a professional for 1–5 days and experience the reality of your dream career.</p>
       <div class="hero-cta">
-        <a href="{% url 'accounts:signup_student' %}" class="btn btn-primary btn-lg">Start Discovering</a>
+        <a href="/applications/wizard/" class="btn btn-primary btn-lg">Start Discovering</a>
         <a href="{% url 'core:mentors' %}" class="btn btn-secondary btn-lg">Find Professionals</a>
       </div>
     </div>
@@ -543,7 +543,7 @@
 <section class="section-light" id="problem">
   <div class="container">
     <div class="section-header problem-content">
-      <h2>Why Mirror?</h2>
+      <h2>Why {{ SITE_NAME }}?</h2>
       <p>Many students choose their careers based on assumptions, not experience. You talk to friends, read descriptions, and hope for the best. But career guidance works better when you actually see what a profession looks like—the daily reality, the challenges, the rewards. That's what shadowing is for.</p>
     </div>
   </div>
@@ -639,7 +639,7 @@
     </div>
 
     <div class="testimonial">
-      <p class="testimonial-text">"I thought I wanted to be an engineer. But after shadowing a product manager for three days, I realized what I truly loved was connecting with people and solving real problems. Mirror helped me find my actual path."</p>
+      <p class="testimonial-text">"I thought I wanted to be an engineer. But after shadowing a product manager for three days, I realized what I truly loved was connecting with people and solving real problems. {{ SITE_NAME }} helped me find my actual path."</p>
       <p class="testimonial-author">Sarah K., Student</p>
       <p class="testimonial-role">Now studying Product Management</p>
     </div>
@@ -683,7 +683,7 @@
     </div>
   </div>
   <div class="footer-bottom">
-    <p>&copy; 2026 Mirror. All rights reserved.</p>
+    <p>&copy; 2026 {{ SITE_NAME }}. All rights reserved.</p>
     <div>
       <a href="{% url 'core:privacy' %}" style="margin-right: 1.5rem;">Privacy Policy</a>
       <a href="{% url 'core:terms' %}">Terms of Service</a>

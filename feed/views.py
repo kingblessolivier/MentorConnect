@@ -20,7 +20,7 @@ class FeedView(ListView):
     paginate_by = 10
 
     def get_queryset(self):
-        return Post.objects.filter(is_active=True).select_related('author', 'shared_post__author')
+        return Post.objects.filter(is_active=True, is_approved=True).select_related('author', 'shared_post__author')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -49,7 +49,38 @@ class FeedView(ListView):
                 is_available=True
             ).select_related('user')[:5]
 
+        # Add trending hashtags
+        context['trending_hashtags'] = self.get_trending_hashtags()
         return context
+
+    def get_trending_hashtags(self, limit=5):
+        """Extract top hashtags from recent posts"""
+        from django.utils import timezone
+        from datetime import timedelta
+        import re
+
+        # Get posts from the last 7 days (or all time if fewer)
+        week_ago = timezone.now() - timedelta(days=7)
+        posts = Post.objects.filter(
+            is_active=True,
+            is_approved=True,
+            created_at__gte=week_ago
+        ).values_list('content', flat=True)
+
+        hashtag_counter = {}
+        hashtag_pattern = re.compile(r'#(\w+)')
+        for content in posts:
+            matches = hashtag_pattern.findall(content)
+            for tag in matches:
+                tag_lower = tag.lower()
+                hashtag_counter[tag_lower] = hashtag_counter.get(tag_lower, 0) + 1
+
+        # Sort by count descending, then alphabetically
+        sorted_tags = sorted(hashtag_counter.items(), key=lambda x: (-x[1], x[0]))
+        top_tags = sorted_tags[:limit]
+        # Format as list of dicts with tag and count
+        trending = [{'tag': tag, 'count': count} for tag, count in top_tags]
+        return trending
 
 
 class CreatePostView(LoginRequiredMixin, CreateView):
@@ -60,8 +91,19 @@ class CreatePostView(LoginRequiredMixin, CreateView):
     success_url = reverse_lazy('feed:home')
 
     def form_valid(self, form):
+        from django.utils import timezone
         form.instance.author = self.request.user
-        messages.success(self.request, 'Post created successfully!')
+        # Auto-approve posts from mentors, admins, facilitators, finance officers, mentorship department
+        if self.request.user.role in ['mentor', 'admin', 'mentor_facilitator', 'finance_manager', 'mentorship_department']:
+            form.instance.is_approved = True
+            form.instance.approved_at = timezone.now()
+            form.instance.approved_by = self.request.user
+        else:
+            form.instance.is_approved = False
+        if self.request.user.role in ['mentor', 'admin', 'mentor_facilitator', 'finance_manager', 'mentorship_department']:
+            messages.success(self.request, 'Post created successfully!')
+        else:
+            messages.success(self.request, 'Post created successfully! It will be visible after admin approval.')
         return super().form_valid(form)
 
 
@@ -70,6 +112,19 @@ class PostDetailView(DetailView):
     model = Post
     template_name = 'feed/post_detail.html'
     context_object_name = 'post'
+
+    def get_object(self, queryset=None):
+        post = super().get_object(queryset)
+        user = self.request.user
+        # If post is approved, allow viewing
+        if post.is_approved:
+            return post
+        # If user is admin or author, allow viewing
+        if user.is_authenticated and (user.is_admin_user or user == post.author):
+            return post
+        # Otherwise, raise 404
+        from django.http import Http404
+        raise Http404("Post not found")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -214,10 +269,15 @@ def share_post(request, pk):
     comment = request.POST.get('comment', '')
 
     # Create a new post that references the original
+    from django.utils import timezone
     new_post = Post.objects.create(
         author=request.user,
         content=comment,
-        shared_post=original_post
+        shared_post=original_post,
+        is_active=True,
+        is_approved=request.user.role in ['mentor', 'admin', 'mentor_facilitator', 'finance_manager', 'mentorship_department'],
+        approved_at=timezone.now() if request.user.role in ['mentor', 'admin', 'mentor_facilitator', 'finance_manager', 'mentorship_department'] else None,
+        approved_by=request.user if request.user.role in ['mentor', 'admin', 'mentor_facilitator', 'finance_manager', 'mentorship_department'] else None
     )
 
     original_post.update_counts()

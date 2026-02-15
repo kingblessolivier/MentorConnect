@@ -1248,7 +1248,35 @@ function closeAddModal() {
 
 function openSlotDetail(slotId) {
     document.getElementById('slotDetailModal').classList.add('active');
-    document.getElementById('slotDetailContent').innerHTML = '<p style="text-align:center; padding: 2rem;">Loading...</p>';
+    const content = document.getElementById('slotDetailContent');
+    content.innerHTML = '<p style="text-align:center; padding: 2rem;">Loading...</p>';
+    fetch(`/mentorship/api/slot/${slotId}/`)
+        .then(response => {
+            if (!response.ok) throw new Error('Failed to load slot details');
+            return response.json();
+        })
+        .then(data => {
+            content.innerHTML = `
+                <h4>
+                    <i data-feather="calendar"></i> ${data.title}
+                </h4>
+                <div style="margin-bottom: 0.5rem;">
+                    <strong>Date:</strong> ${data.date}${data.end_date && data.end_date !== data.date ? ' - ' + data.end_date : ''}<br>
+                    <strong>Time:</strong> ${data.start_time} - ${data.end_time}<br>
+                    <strong>Mentor:</strong> ${data.mentor}<br>
+                    <strong>Location:</strong> ${data.location_type}${data.location_address ? ' - ' + data.location_address : ''}<br>
+                    <strong>Status:</strong> ${data.is_booked ? 'Fully Booked' : (data.spots_left > 0 ? (data.current_bookings > 0 ? data.spots_left + ' left' : 'Available') : 'Unavailable')}
+                </div>
+                <div style="margin-bottom: 0.5rem;">
+                    <strong>Description:</strong><br>
+                    <span>${data.description ? data.description : '<em>No description provided.</em>'}</span>
+                </div>
+            `;
+            if (typeof feather !== 'undefined') feather.replace();
+        })
+        .catch(() => {
+            content.innerHTML = '<p style="color:red; text-align:center;">Failed to load slot details.</p>';
+        });
 }
 
 function closeSlotDetail() {

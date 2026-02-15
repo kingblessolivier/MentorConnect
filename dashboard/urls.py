@@ -8,21 +8,29 @@ from . import views
 app_name = 'dashboard'
 
 urlpatterns = [
-    # Generic dashboard redirect
+    
     path('', views.DashboardRedirectView.as_view(), name='home'),
 
-    # Role-specific dashboards
+    
     path('student/', views.StudentDashboardView.as_view(), name='student_dashboard'),
     path('mentor/', views.MentorDashboardView.as_view(), name='mentor_dashboard'),
     path('admin/', views.AdminDashboardView.as_view(), name='admin_dashboard'),
     path('finance/', views.FinanceDashboardView.as_view(), name='finance_dashboard'),
     path('mentor-facilitator/', views.MentorFacilitatorDashboardView.as_view(), name='mentor_facilitator_dashboard'),
 
-    # Finance officer: payments, reports, export
+
     path('finance/applications/<int:application_id>/verify/', views.finance_verify_payment, name='finance_verify_payment'),
     path('finance/payments/', views.FinancePaymentsView.as_view(), name='finance_payments'),
     path('finance/reports/', views.FinanceReportsView.as_view(), name='finance_reports'),
     path('finance/export/', views.finance_export, name='finance_export'),
+
+   
+    path('subscription/', views.subscription_wizard, name='subscription_wizard'),
+    path('subscription/<int:step>/', views.subscription_wizard, name='subscription_wizard_step'),
+    path('subscription/payment_proof/upload/', views.upload_payment_proof, name='upload_payment_proof'),
+    path('finance/subscription-payments/', views.FinanceSubscriptionPaymentsView.as_view(), name='finance_subscription_payments'),
+    path('finance/subscription-payments/<int:pk>/review/', views.finance_subscription_payment_review, name='finance_subscription_payment_review'),
+    path('finance/payment-settings/', views.FinancePaymentSettingsView.as_view(), name='finance_payment_settings'),
 
     # Mentor Facilitator: mentors, assignments, mentorships, disputes, session reports
     path('mentor-facilitator/mentors/', views.MFMentorListView.as_view(), name='mf_mentors'),
@@ -38,17 +46,18 @@ urlpatterns = [
     path('mentor-facilitator/session-reports/', views.MFSessionReportsView.as_view(), name='mf_session_reports'),
     path('mentor-facilitator/session-reports/<int:pk>/approve/', views.mf_session_report_approve, name='mf_session_report_approve'),
     path('mentor-facilitator/sessions/', views.MFSessionsView.as_view(), name='mf_sessions'),
+    path('mentor-facilitator/sessions/create/', views.MFCreateSessionView.as_view(), name='mf_create_session'),
     path('mentor-facilitator/onboarding/', views.MFOnboardingView.as_view(), name='mf_onboarding'),
     path('mentor-facilitator/backup/', views.MFBackupView.as_view(), name='mf_backup'),
 
-    # Admin User Management
+    
     path('admin/users/', views.AdminUserListView.as_view(), name='admin_users'),
     path('admin/staff/mentor-facilitator/add/', views.AdminMentorFacilitatorCreateView.as_view(), name='admin_create_mentor_facilitator'),
     path('admin/staff/finance-officer/add/', views.AdminFinanceOfficerCreateView.as_view(), name='admin_create_finance_officer'),
+    path('admin/staff/admin/add/', views.AdminAdminCreateView.as_view(), name='admin_create_admin'),
     path('admin/users/<int:pk>/toggle/', views.toggle_user_status, name='toggle_user'),
     path('admin/users/<int:pk>/delete/', views.delete_user, name='delete_user'),
 
-    # Admin Mentor Management
     path('admin/mentors/', views.AdminMentorListView.as_view(), name='admin_mentors'),
     path('admin/mentors/add/', views.AdminMentorCreateView.as_view(), name='admin_mentor_create'),
     path('admin/mentors/<int:pk>/', views.AdminMentorDetailView.as_view(), name='admin_mentor_detail'),
@@ -74,6 +83,7 @@ urlpatterns = [
     path('admin/posts/', views.AdminPostListView.as_view(), name='admin_posts'),
     path('admin/posts/<int:pk>/toggle-status/', views.toggle_post_status, name='toggle_post_status'),
     path('admin/posts/<int:pk>/toggle-pinned/', views.toggle_post_pinned, name='toggle_post_pinned'),
+    path('admin/posts/<int:pk>/approve/', views.approve_post, name='approve_post'),
     path('admin/posts/<int:pk>/delete/', views.delete_post, name='delete_post'),
 
     # Admin Review Management

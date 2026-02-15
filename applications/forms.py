@@ -9,6 +9,8 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 
+from payments.models import PaymentSettings
+
 class ApplicationPaymentForm(forms.Form):
     """Form for student to submit payment (transaction code + receipt) for application fee."""
     transaction_code = forms.CharField(
@@ -26,6 +28,13 @@ class ApplicationPaymentForm(forms.Form):
             'accept': 'image/*,.pdf',
         })
     )
+    payment_amount = None
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Fetch the latest payment amount set by finance officer
+        settings_obj = PaymentSettings.objects.order_by('-updated_at').first()
+        self.payment_amount = settings_obj.student_payment_amount if settings_obj else 0
 
     def clean_transaction_code(self):
         import re
@@ -114,6 +123,10 @@ class ApplicationWizardStep3Form(forms.Form):
         if mentor_id:
             slot_qs = slot_qs.filter(mentor_id=mentor_id)
         self.fields['availability_slot'].queryset = slot_qs
+        # If no slots available, make the field optional
+        if not slot_qs.exists():
+            self.fields['availability_slot'].required = False
+            self.fields['availability_slot'].empty_label = 'No sessions available'
         for field in self.fields.values():
             field.widget.attrs.setdefault('class', 'form-control')
 

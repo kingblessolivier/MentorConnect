@@ -1,69 +1,329 @@
 {% extends 'dashboard/base_dashboard.html' %}
 
-{% block title %}Add {{ staff_role }} - Admin{% endblock %}
+{% block title %}Add {{ staff_role }} - Admin Dashboard{% endblock %}
 
 {% block dashboard_content %}
 <div class="dashboard-header">
     <div>
         <h1><i data-feather="user-plus" class="header-icon"></i> Add {{ staff_role }}</h1>
-        <p class="text-muted">Create a new {{ staff_role|lower }} account (created by admin)</p>
+        <p class="text-muted">Create a new {{ staff_role|lower }} account on the platform</p>
     </div>
     <a href="{% url 'dashboard:admin_users' %}" class="btn btn-outline">
         <i data-feather="arrow-left"></i> Back to Users
     </a>
 </div>
 
-<div class="card" style="max-width: 32rem;">
-    <div class="card-body">
-        <form method="post" class="form-modern">
-            {% csrf_token %}
-            {% if form.errors %}
-            <div class="alert alert-danger mb-4">
-                <strong>Please correct the errors below.</strong>
-                <ul class="error-list mt-2">
-                    {% for field in form %}{% for error in field.errors %}<li>{{ field.label }}: {{ error }}</li>{% endfor %}{% endfor %}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <div class="lg-col-span-2">
+        <div class="card">
+            <div class="card-body">
+                <form method="post" class="form-modern">
+                    {% csrf_token %}
+
+                    {% if form.errors %}
+                    <div class="alert alert-danger mb-4">
+                        <i data-feather="alert-circle"></i>
+                        <div>
+                            <strong>Please correct the following errors:</strong>
+                            <ul class="error-list">
+                                {% for field in form %}
+                                    {% for error in field.errors %}
+                                    <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                                    {% endfor %}
+                                {% endfor %}
+                                {% for error in form.non_field_errors %}
+                                <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="form-section">
+                        <h3 class="form-section-title">
+                            <i data-feather="user" class="section-icon"></i> Account Information
+                        </h3>
+
+                        <div class="form-group">
+                            <label for="email" class="form-label">Email Address *</label>
+                            <div class="input-icon">
+                                <i data-feather="mail"></i>
+                                <input type="email" name="email" id="email" class="form-control" placeholder="staff@example.com" value="{{ form.email.value|default_if_none:'' }}" required>
+                            </div>
+                            <p class="form-help">This will be their login email</p>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="first_name" class="form-label">First Name *</label>
+                                <input type="text" name="first_name" id="first_name" class="form-control" placeholder="John" value="{{ form.first_name.value|default_if_none:'' }}" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="last_name" class="form-label">Last Name *</label>
+                                <input type="text" name="last_name" id="last_name" class="form-control" placeholder="Doe" value="{{ form.last_name.value|default_if_none:'' }}" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="phone" class="form-label">Phone Number</label>
+                            <div class="input-icon">
+                                <i data-feather="phone"></i>
+                                <input type="text" name="phone" id="phone" class="form-control" placeholder="+250 7XX XXX XXX" value="{{ form.phone.value|default_if_none:'' }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if staff_role == 'Mentor Facilitator' %}
+                    <div class="form-section">
+                        <h3 class="form-section-title">
+                            <i data-feather="file-text" class="section-icon"></i> Facilitator Details
+                        </h3>
+                        <div class="form-group">
+                            <label for="bio" class="form-label">Bio (optional)</label>
+                            <textarea name="bio" id="bio" class="form-control form-textarea" rows="4" placeholder="Short bio for this facilitator...">{{ request.POST.bio|default_if_none:'' }}</textarea>
+                            <p class="form-help">A brief introduction about the facilitator's background and responsibilities.</p>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i data-feather="user-plus"></i> Create {{ staff_role }}
+                        </button>
+                        <a href="{% url 'dashboard:admin_users' %}" class="btn btn-outline btn-lg">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <div class="card mb-4">
+            <div class="card-body">
+                <h3><i data-feather="key" class="card-icon"></i> Default Password</h3>
+                <div class="password-info">
+                    <code class="password-display">{{ SITE_NAME }}2026!</code>
+                    <p class="form-help">{{ staff_role }} should change this after first login</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <h3><i data-feather="info" class="card-icon"></i> Quick Tips</h3>
+                <ul class="tips-list">
+                    <li>
+                        <i data-feather="check" class="tip-check"></i>
+                        Use a valid email – verification link will be sent
+                    </li>
+                    <li>
+                        <i data-feather="check" class="tip-check"></i>
+                        Ensure phone number is correct for communication
+                    </li>
+                    {% if staff_role == 'Mentor Facilitator' %}
+                    <li>
+                        <i data-feather="check" class="tip-check"></i>
+                        Mentor facilitators handle disputes and session reports
+                    </li>
+                    <li>
+                        <i data-feather="check" class="tip-check"></i>
+                        They can be assigned to multiple mentors
+                    </li>
+                    {% elif staff_role == 'Admin' %}
+                    <li>
+                        <i data-feather="check" class="tip-check"></i>
+                        Admins have full access to the platform and can manage all users, settings, and content.
+                    </li>
+                    <li>
+                        <i data-feather="check" class="tip-check"></i>
+                        Admins can create other staff roles and manage system-wide configurations.
+                    </li>
+                    {% else %}
+                    <li>
+                        <i data-feather="check" class="tip-check"></i>
+                        Finance officers verify payments and manage invoices
+                    </li>
+                    <li>
+                        <i data-feather="check" class="tip-check"></i>
+                        They have access to financial reports and payment records
+                    </li>
+                    {% endif %}
                 </ul>
             </div>
-            {% endif %}
-
-            <div class="form-group">
-                <label for="id_email" class="form-label">Email *</label>
-                {{ form.email }}
-            </div>
-            <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                <div class="form-group">
-                    <label for="id_first_name" class="form-label">First name *</label>
-                    {{ form.first_name }}
-                </div>
-                <div class="form-group">
-                    <label for="id_last_name" class="form-label">Last name *</label>
-                    {{ form.last_name }}
-                </div>
-            </div>
-            <div class="form-group">
-                <label for="id_phone" class="form-label">Phone</label>
-                {{ form.phone }}
-            </div>
-            {% if staff_role == 'Mentor Facilitator' %}
-            <div class="form-group">
-                <label for="bio" class="form-label">Bio (optional)</label>
-                <textarea name="bio" id="bio" class="form-control form-textarea" rows="3" placeholder="Short bio for this facilitator..."></textarea>
-            </div>
-            {% endif %}
-
-            <div class="form-actions" style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #e5e7eb;">
-                <button type="submit" class="btn btn-primary">Create {{ staff_role }}</button>
-                <a href="{% url 'dashboard:admin_users' %}" class="btn btn-outline">Cancel</a>
-            </div>
-        </form>
+        </div>
     </div>
 </div>
 
-<div class="card mt-4" style="max-width: 32rem;">
-    <div class="card-body">
-        <h3><i data-feather="key"></i> Default password</h3>
-        <code style="display: block; padding: 0.75rem; background: #fef3c7; border-radius: 8px; margin-top: 0.5rem;">MentorConnect2026!</code>
-        <p class="form-help mt-2">They should change this after first login.</p>
-    </div>
-</div>
+<style>
+.header-icon {
+    width: 28px;
+    height: 28px;
+    vertical-align: middle;
+    margin-right: 0.5rem;
+    color: var(--primary-color, #4f46e5);
+}
+
+.card-icon {
+    width: 20px;
+    height: 20px;
+    vertical-align: middle;
+    margin-right: 0.5rem;
+    color: var(--primary-color, #4f46e5);
+}
+
+.alert {
+    display: flex;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    border-radius: 10px;
+    align-items: flex-start;
+}
+
+.alert svg {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.alert-danger {
+    background: #fee2e2;
+    border: 1px solid #fca5a5;
+    color: #991b1b;
+}
+
+.alert-danger svg {
+    color: #dc2626;
+}
+
+.error-list {
+    margin: 0.5rem 0 0;
+    padding-left: 1.25rem;
+}
+
+.error-list li {
+    margin-bottom: 0.25rem;
+}
+
+.lg-col-span-2 {
+    grid-column: span 2;
+}
+
+@media (max-width: 1024px) {
+    .lg-col-span-2 {
+        grid-column: span 1;
+    }
+}
+
+.form-section {
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border-color, #e5e7eb);
+}
+
+.form-section:last-of-type {
+    border-bottom: none;
+}
+
+.form-section-title {
+    display: flex;
+    align-items: center;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary, #111827);
+    margin-bottom: 1.5rem;
+}
+
+.section-icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 0.625rem;
+    color: var(--primary-color, #4f46e5);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+.input-icon {
+    position: relative;
+}
+
+.input-icon i, .input-icon svg {
+    position: absolute;
+    left: 0.875rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 18px;
+    height: 18px;
+    color: var(--text-muted, #9ca3af);
+    pointer-events: none;
+}
+
+.input-icon .form-control,
+.input-icon .form-input,
+.input-icon .form-select,
+.input-icon .form-textarea {
+    padding-left: 2.75rem;
+}
+
+.form-textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color, #e5e7eb);
+}
+
+.password-info {
+    margin-top: 1rem;
+}
+
+.password-display {
+    display: block;
+    padding: 0.875rem 1rem;
+    background: #fef3c7;
+    color: #92400e;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.tips-list {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0 0;
+}
+
+.tips-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.625rem;
+    padding: 0.5rem 0;
+    font-size: 0.875rem;
+    color: var(--text-secondary, #6b7280);
+}
+
+.tip-check {
+    width: 16px;
+    height: 16px;
+    color: #10b981;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+</style>
 {% endblock %}

@@ -85,8 +85,8 @@
             <section class="legal-section">
                 <h2>7. Contact Us</h2>
                 <p>If you have questions about this Privacy Policy, please contact us at:</p>
-                <p><strong>Email:</strong> privacy@mentorconnect.com</p>
-                <p><strong>Address:</strong> {{ site_settings.contact_address|default:"MentorConnect Headquarters" }}</p>
+                <p><strong>Email:</strong> {{ site_settings.contact_email }}</p>
+                <p><strong>Address:</strong> {{ site_settings.contact_address|default:SITE_NAME }}</p>
             </section>
         </div>
     </div>

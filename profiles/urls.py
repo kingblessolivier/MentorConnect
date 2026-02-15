@@ -18,6 +18,10 @@ urlpatterns = [
     path('student/edit/', views.StudentProfileEditView.as_view(), name='student_edit'),
     path('mentor/edit/', views.MentorProfileEditView.as_view(), name='mentor_edit'),
 
+    # Application pages
+    path('apply-as-mentor/', views.ApplyAsMentorView.as_view(), name='apply_as_mentor'),
+    path('apply-for-mentorship/', views.ApplyForMentorshipView.as_view(), name='apply_for_mentorship'),
+
     # Follow/Unfollow
     path('follow/<int:user_id>/', views.follow_user, name='follow'),
     path('unfollow/<int:user_id>/', views.unfollow_user, name='unfollow'),

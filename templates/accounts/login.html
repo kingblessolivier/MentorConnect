@@ -12,7 +12,7 @@
     <!-- Left Side - Branding -->
     <div class="auth-left">
         <div class="auth-left-content">
-            <h1>Welcome to <span>Mirror</span></h1>
+            <h1>Welcome to <span>{{ SITE_NAME }}</span></h1>
             <p>
                 Discover your future career through real-world observation internships.
                 Shadow professionals and make confident choices about your path.
@@ -55,7 +55,7 @@
                     {% if site_settings.site_logo %}
                     <img src="{{ site_settings.site_logo.url }}" alt="{{ SITE_NAME }}" style="height: 48px;">
                     {% else %}
-                    <span class="auth-logo-text">Mirror</span>
+                    <span class="auth-logo-text">{{ SITE_NAME }}</span>
                     {% endif %}
                 </a>
             </div>

@@ -18,6 +18,7 @@ urlpatterns = [
     # Multi-step application wizard
     path('wizard/', views.application_wizard, name='wizard'),
     path('wizard/<int:step>/', views.application_wizard, name='wizard_step'),
+    path('wizard/availability/', views.get_mentor_availability_html, name='wizard_availability'),
     path('track/', views.application_track_status, name='track_status'),
     path('my-applications/', views.StudentApplicationsListView.as_view(), name='my_applications'),
 ]

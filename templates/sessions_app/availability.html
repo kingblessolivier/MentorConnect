@@ -33,12 +33,17 @@
                     </div>
                     {% endif %}
                 </div>
-                <form method="post" action="{% url 'sessions_app:delete_availability' slot.pk %}">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-sm btn-ghost text-danger" onclick="return confirm('Remove this time slot?')">
-                        <i data-feather="trash-2"></i>
-                    </button>
-                </form>
+                <div class="flex items-center gap-2">
+                    <a href="{% url 'sessions_app:edit_availability' slot.pk %}" class="btn btn-sm btn-ghost text-primary" title="Edit">
+                        <i data-feather="edit-2"></i>
+                    </a>
+                    <form method="post" action="{% url 'sessions_app:delete_availability' slot.pk %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-ghost text-danger" onclick="return confirm('Remove this time slot?')" title="Delete">
+                            <i data-feather="trash-2"></i>
+                        </button>
+                    </form>
+                </div>
             </div>
             {% endfor %}
         </div>

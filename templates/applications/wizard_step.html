@@ -13,14 +13,14 @@
 }
 
 .wizard-hero {
-    background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 50%, #3b7fb8 100%);
+    background: linear-gradient(135deg, rgba(103, 174, 209, 0.06) 0%, rgba(36, 131, 177, 0.05) 50%, rgba(114, 189, 186, 0.08) 100%);
     border-radius: 24px;
     padding: 3rem;
     margin-bottom: 3rem;
     position: relative;
     overflow: hidden;
-    box-shadow: 0 20px 60px rgba(30, 58, 95, 0.35);
-    color: white;
+    box-shadow: 0 20px 60px rgba(30, 58, 95, 0.03);
+    color: #070610;
     text-align: center;
 }
 
@@ -572,6 +572,60 @@
     }
 }
 
+/* Extra small devices (phones, 480px and down) */
+@media (max-width: 480px) {
+    .wizard-hero {
+        padding: 1.5rem;
+        border-radius: 12px;
+    }
+    
+    .wizard-hero h1 {
+        font-size: 1.75rem;
+    }
+    
+    .wizard-hero p {
+        font-size: 1rem;
+    }
+    
+    .step-circle {
+        width: 40px;
+        height: 40px;
+        border-width: 3px;
+    }
+    
+    .wizard-card {
+        padding: 1.25rem;
+    }
+    
+    .form-grid {
+        gap: 1rem;
+    }
+    
+    .option-grid,
+    .payment-methods {
+        grid-template-columns: 1fr;
+    }
+    
+    .review-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .review-value {
+        text-align: left;
+        max-width: 100%;
+    }
+    
+    .payment-card {
+        padding: 1.5rem;
+    }
+    
+    .payment-amount {
+        font-size: 2rem;
+    }
+}
+
 /* Calendar list view styles */
 .calendar-list-view {
     background: #f8fafc;
@@ -1024,32 +1078,84 @@
         
         <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const slotItems = document.querySelectorAll('.session-slot');
             const hiddenInput = document.getElementById('id_availability_slot');
-            
-            slotItems.forEach(item => {
-                item.addEventListener('click', function() {
-                    // Remove selected class from all slots
-                    slotItems.forEach(s => s.classList.remove('selected'));
-                    // Add selected class to clicked slot
-                    this.classList.add('selected');
-                    // Set hidden input value
-                    hiddenInput.value = this.dataset.slotId;
-                });
-            });
-            
-            // Mentor change event - reload page with mentor filter (simple page reload)
             const mentorSelect = document.getElementById('id_mentor');
+            const sessionCalendar = document.getElementById('sessionCalendar');
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            const availabilityUrl = "{% url 'applications:wizard_availability' %}";
+            
+            // Function to attach click handlers to slot items
+            function attachSlotHandlers() {
+                const slotItems = document.querySelectorAll('.session-slot');
+                slotItems.forEach(item => {
+                    item.addEventListener('click', function() {
+                        // Remove selected class from all slots
+                        slotItems.forEach(s => s.classList.remove('selected'));
+                        // Add selected class to clicked slot
+                        this.classList.add('selected');
+                        // Set hidden input value
+                        hiddenInput.value = this.dataset.slotId;
+                    });
+                });
+            }
+            
+            // Initial attachment
+            attachSlotHandlers();
+            
+            // Mentor change event - fetch availability slots via AJAX
             mentorSelect.addEventListener('change', function() {
-                // Submit the form to reload with new mentor filter
-                // We'll add a hidden input to indicate filter-only
-                const form = this.closest('form');
-                const filterInput = document.createElement('input');
-                filterInput.type = 'hidden';
-                filterInput.name = 'filter_mentor';
-                filterInput.value = '1';
-                form.appendChild(filterInput);
-                form.submit();
+                const mentorId = this.value;
+                if (!mentorId) {
+                    // Clear calendar and hidden input
+                    sessionCalendar.innerHTML = '<div class="empty-list"><div class="empty-icon"><i data-feather="calendar"></i></div><h3>No available sessions</h3><p>Please select a mentor to see available sessions.</p></div>';
+                    hiddenInput.value = '';
+                    return;
+                }
+                
+                // Show loading indicator
+                sessionCalendar.innerHTML = '<div class="empty-list"><div class="empty-icon"><i data-feather="clock"></i></div><h3>Loading sessions...</h3></div>';
+                
+                // Fetch slots for selected mentor
+                const params = new URLSearchParams({
+                    mentor_id: mentorId,
+                    selected_slot_id: hiddenInput.value || ''
+                });
+                fetch(`${availabilityUrl}?${params}`, {
+                    method: 'GET',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': csrfToken
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.text();
+                })
+                .then(html => {
+                    sessionCalendar.innerHTML = html;
+                    // Reattach handlers to new slot items
+                    attachSlotHandlers();
+                    // If there is a selected slot in the new list, ensure it's selected
+                    if (hiddenInput.value) {
+                        const selectedSlot = sessionCalendar.querySelector(`.session-slot[data-slot-id="${hiddenInput.value}"]`);
+                        if (selectedSlot) {
+                            selectedSlot.classList.add('selected');
+                        } else {
+                            // Selected slot not available for this mentor, clear selection
+                            hiddenInput.value = '';
+                        }
+                    }
+                    // Trigger feather icons replacement (if needed)
+                    if (window.feather) {
+                        window.feather.replace();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching availability slots:', error);
+                    sessionCalendar.innerHTML = '<div class="empty-list"><div class="empty-icon"><i data-feather="alert-circle"></i></div><h3>Error loading sessions</h3><p>Please try again later.</p></div>';
+                });
             });
         });
         </script>

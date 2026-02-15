@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="review-form-container">
+    <h2>Leave a Review for {{ mentor.get_full_name }}</h2>
+    <form method="post" id="review-form">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="id_rating">Rating (1-5):</label>
+            {{ form.rating }}
+        </div>
+        <div class="form-group">
+            <label for="id_title">Title:</label>
+            {{ form.title }}
+        </div>
+        <div class="form-group">
+            <label for="id_content">Review:</label>
+            {{ form.content }}
+        </div>
+        <button type="submit" class="btn btn-primary">Submit Review</button>
+    </form>
+</div>
+{% endblock %}

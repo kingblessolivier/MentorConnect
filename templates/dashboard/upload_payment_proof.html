@@ -1,0 +1,49 @@
+{% extends 'dashboard/base_dashboard.html' %}
+
+{% block title %}Upload Payment Proof{% endblock %}
+
+{% block dashboard_content %}
+<div class="dashboard-header">
+    <div>
+        <h1><i data-feather="upload" class="header-icon"></i> Upload Payment Proof</h1>
+        <p class="text-muted">Upload proof of payment for subscription or application fee</p>
+    </div>
+    <a href="{% url 'dashboard:student_dashboard' %}" class="btn btn-outline"><i data-feather="arrow-left"></i> Back to Dashboard</a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="{{ form.payment_type.id_for_label }}">Payment Type</label>
+                    {{ form.payment_type }}
+                    {% if form.payment_type.errors %}
+                    <div class="form-error">{{ form.payment_type.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.amount.id_for_label }}">Amount Paid</label>
+                    {{ form.amount }}
+                    {% if form.amount.errors %}
+                    <div class="form-error">{{ form.amount.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.proof_image.id_for_label }}">Proof Document</label>
+                    {{ form.proof_image }}
+                    <small class="text-muted">Upload an image or PDF of your payment receipt (max 5MB).</small>
+                    {% if form.proof_image.errors %}
+                    <div class="form-error">{{ form.proof_image.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary"><i data-feather="upload"></i> Upload Proof</button>
+                <a href="{% url 'dashboard:student_dashboard' %}" class="btn btn-outline">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

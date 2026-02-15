@@ -4,5 +4,5 @@ from . import views
 app_name = 'payments'
 
 urlpatterns = [
-    # Payment views can be added here (e.g. submit receipt, success callback)
+    path('set-amount/', views.set_payment_amount, name='set_payment_amount'),
 ]

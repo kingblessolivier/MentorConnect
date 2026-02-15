@@ -13,6 +13,7 @@ User = get_user_model()
 from django.utils import timezone
 
 
+
 class AddAvailabilityView(LoginRequiredMixin, CreateView):
     model = Availability
     form_class = AvailabilityForm
@@ -107,6 +108,17 @@ class BookAvailabilityView(LoginRequiredMixin, View):
             s.address = av.address
             s.status = 'pending'
             s.save()
+            # Notify mentor
+            try:
+                from notifications.models import Notification
+                Notification.objects.create(
+                    recipient=av.mentor,
+                    sender=request.user,
+                    notification_type='session_requested',
+                    message=f'{request.user.get_full_name()} requested a session with you.'
+                )
+            except Exception:
+                pass
             messages.success(request, 'Session request sent to mentor.')
             return redirect('sessions_app:student-schedule')
         messages.error(request, 'Invalid request.')
@@ -121,6 +133,17 @@ class ApproveSessionView(LoginRequiredMixin, View):
         try:
             s.approve(by_user=request.user)
             messages.success(request, 'Session approved — slot marked as booked.')
+            # Notify student
+            try:
+                from notifications.models import Notification
+                Notification.objects.create(
+                    recipient=s.student,
+                    sender=request.user,
+                    notification_type='session_approved',
+                    message=f'Your session "{s.title}" has been approved by {request.user.get_full_name()}.'
+                )
+            except Exception:
+                pass
         except Exception as e:
             messages.error(request, str(e))
         return redirect(request.META.get('HTTP_REFERER', '/'))
@@ -133,6 +156,17 @@ class RejectSessionView(LoginRequiredMixin, View):
             return HttpResponseForbidden()
         s.reject()
         messages.success(request, 'Session rejected.')
+        # Notify student
+        try:
+            from notifications.models import Notification
+            Notification.objects.create(
+                recipient=s.student,
+                sender=request.user,
+                notification_type='session_rejected',
+                message=f'Your session "{s.title}" has been rejected by {request.user.get_full_name()}.'
+            )
+        except Exception:
+            pass
         return redirect(request.META.get('HTTP_REFERER', '/'))
 
 
@@ -151,6 +185,17 @@ class StartSessionView(LoginRequiredMixin, View):
         s.status = 'in_progress'
         s.save()
         messages.success(request, 'Session marked as in progress.')
+        # Notify student
+        try:
+            from notifications.models import Notification
+            Notification.objects.create(
+                recipient=s.student,
+                sender=request.user,
+                notification_type='session_started',
+                message=f'Session "{s.title}" has started.'
+            )
+        except Exception:
+            pass
         return redirect(request.META.get('HTTP_REFERER', '/'))
 
 
@@ -172,6 +217,17 @@ class CompleteSessionView(LoginRequiredMixin, View):
             s.availability.is_booked = True
             s.availability.save()
         messages.success(request, 'Session marked as completed.')
+        # Notify student
+        try:
+            from notifications.models import Notification
+            Notification.objects.create(
+                recipient=s.student,
+                sender=request.user,
+                notification_type='session_completed',
+                message=f'Session "{s.title}" has been completed.'
+            )
+        except Exception:
+            pass
         return redirect(request.META.get('HTTP_REFERER', '/'))
 
 
@@ -180,7 +236,14 @@ class StudentScheduleView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx['sessions'] = Session.objects.filter(student=self.request.user).order_by('-start')
+        sessions = Session.objects.filter(student=self.request.user).order_by('-start')
+        ctx['sessions'] = sessions
+        ctx['total_count'] = sessions.count()
+        ctx['approved_count'] = sessions.filter(status='approved').count()
+        ctx['pending_count'] = sessions.filter(status='pending').count()
+        ctx['rejected_count'] = sessions.filter(status='rejected').count()
+        ctx['completed_count'] = sessions.filter(status='completed').count()
+        ctx['in_progress_count'] = sessions.filter(status='in_progress').count()
         return ctx
 
 
@@ -214,6 +277,17 @@ class MentorCreateSessionView(LoginRequiredMixin, View):
             s.availability = None
             s.status = 'approved'
             s.save()
+            # Notify student
+            try:
+                from notifications.models import Notification
+                Notification.objects.create(
+                    recipient=s.student,
+                    sender=request.user,
+                    notification_type='session_created',
+                    message=f'{request.user.get_full_name()} created a session with you.'
+                )
+            except Exception:
+                pass
             messages.success(request, 'Session created.')
             return redirect('sessions_app:mentor-sessions')
         return render(request, self.template_name, {'form': form})
@@ -222,7 +296,7 @@ Sessions App Views
 """
 
 from django.shortcuts import render, redirect, get_object_or_404
-from django.views.generic import ListView, DetailView, CreateView, TemplateView
+from django.views.generic import ListView, DetailView, CreateView, TemplateView, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -231,8 +305,10 @@ from django.urls import reverse_lazy
 from django.db.models import Q
 from django.utils import timezone
 
+
 from accounts.models import User
 from .models import Session, Availability
+from .forms import SessionRescheduleForm
 
 
 class SessionListView(LoginRequiredMixin, ListView):
@@ -244,8 +320,29 @@ class SessionListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         user = self.request.user
         if user.is_mentor:
-            return Session.objects.filter(mentor=user).select_related('student')
-        return Session.objects.filter(student=user).select_related('mentor')
+            qs = Session.objects.filter(mentor=user).select_related('student')
+        else:
+            qs = Session.objects.filter(student=user).select_related('mentor')
+        
+        # Filter by status
+        status = self.request.GET.get('status', '')
+        if status:
+            qs = qs.filter(status=status)
+        
+        # Filter by date range
+        date_from = self.request.GET.get('date_from', '')
+        date_to = self.request.GET.get('date_to', '')
+        if date_from:
+            qs = qs.filter(start__date__gte=date_from)
+        if date_to:
+            qs = qs.filter(start__date__lte=date_to)
+        
+        # Search by title or description
+        search = self.request.GET.get('search', '')
+        if search:
+            qs = qs.filter(Q(title__icontains=search) | Q(description__icontains=search))
+        
+        return qs.order_by('-start')
 
 
 class SessionDetailView(LoginRequiredMixin, DetailView):
@@ -335,6 +432,38 @@ def cancel_session(request, pk):
     return redirect('sessions_app:list')
 
 
+class RescheduleSessionView(LoginRequiredMixin, UpdateView):
+    """Reschedule a session (update start/end, title, description)"""
+    model = Session
+    form_class = SessionRescheduleForm
+    template_name = 'sessions_app/reschedule_session.html'
+    success_url = reverse_lazy('sessions_app:list')
+
+    def get_queryset(self):
+        # Only allow rescheduling if user is mentor or student of the session
+        user = self.request.user
+        return Session.objects.filter(Q(mentor=user) | Q(student=user))
+
+    def form_valid(self, form):
+        session = form.save(commit=False)
+        # Ensure status remains unchanged
+        session.save()
+        # Notify the other party
+        recipient = session.student if self.request.user == session.mentor else session.mentor
+        try:
+            from notifications.models import Notification
+            Notification.objects.create(
+                recipient=recipient,
+                sender=self.request.user,
+                notification_type='session_rescheduled',
+                message=f'Session "{session.title}" has been rescheduled.'
+            )
+        except Exception:
+            pass
+        messages.success(self.request, 'Session rescheduled successfully!')
+        return super().form_valid(form)
+
+
 @login_required
 def complete_session(request, pk):
     """Mark session as completed (mentor only)"""
@@ -375,6 +504,22 @@ class AddAvailabilityView(LoginRequiredMixin, CreateView):
     def form_valid(self, form):
         form.instance.mentor = self.request.user
         messages.success(self.request, 'Availability added!')
+        return super().form_valid(form)
+
+
+class EditAvailabilityView(LoginRequiredMixin, UpdateView):
+    """Edit an existing availability slot"""
+    model = Availability
+    form_class = AvailabilityForm
+    template_name = 'sessions_app/edit_availability.html'
+    success_url = reverse_lazy('sessions_app:availability')
+
+    def get_queryset(self):
+        # Ensure mentor can only edit their own availability
+        return Availability.objects.filter(mentor=self.request.user)
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Availability updated!')
         return super().form_valid(form)
 
 

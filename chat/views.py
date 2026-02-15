@@ -15,6 +15,7 @@ from accounts.models import User
 from .models import Conversation, Message
 
 
+
 class ConversationListView(LoginRequiredMixin, ListView):
     """List all conversations"""
     template_name = 'chat/list.html'

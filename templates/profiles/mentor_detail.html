@@ -806,6 +806,14 @@
                             Request Mentorship
                         </a>
                         {% endif %}
+
+                        <!-- Leave a Review Button -->
+                        {% if user.is_student %}
+                        <a href="{% url 'mentorship:create_review' profile.user.id %}" class="btn-action primary">
+                            <i data-feather="star"></i>
+                            Leave a Review
+                        </a>
+                        {% endif %}
                     {% else %}
                         <a href="{% url 'accounts:login' %}?next={{ request.path }}" class="btn-action primary">
                             <i data-feather="log-in"></i>

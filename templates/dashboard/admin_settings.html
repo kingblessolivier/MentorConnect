@@ -11,6 +11,26 @@
 </div>
 
 <form method="post" enctype="multipart/form-data">
+        {% if form.errors %}
+        <div class="alert alert-danger shadow-lg rounded-lg p-4 flex items-start gap-3 mb-4" style="background: #fff0f0; border: 1px solid #ffb3b3; color: #b91c1c;">
+            <div style="flex-shrink:0;">
+                <i data-feather="alert-circle" style="width: 32px; height: 32px; color: #b91c1c;"></i>
+            </div>
+            <div>
+                <div class="font-bold text-lg mb-1">There were errors with your submission:</div>
+                <ul class="list-disc pl-5 space-y-1">
+                {% for field in form %}
+                    {% for error in field.errors %}
+                        <li><span class="font-semibold">{{ field.label }}:</span> {{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+                {% for error in form.non_field_errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% endif %}
     {% csrf_token %}
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -21,41 +41,45 @@
 
                 <div class="form-group">
                     <label class="form-label">Site Name *</label>
-                    <input type="text" name="site_name" value="{{ object.site_name }}" class="form-control" required>
+                    {{ form.site_name }}
                     <p class="form-help">This will appear in the header and page titles</p>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">Tagline</label>
-                    <input type="text" name="site_tagline" value="{{ object.site_tagline }}" class="form-control" placeholder="Your catchy tagline here">
+                    {{ form.site_tagline }}
                     <p class="form-help">A short description of your platform</p>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
                         <label class="form-label">Site Logo</label>
-                        <div class="file-upload">
-                            <input type="file" name="site_logo" class="form-control" accept="image/*">
-                            {% if object.site_logo %}
-                            <p class="form-help current-file">
-                                <i data-feather="image" style="width: 14px; height: 14px;"></i>
+                        {{ form.site_logo }}
+                        {% if object.site_logo %}
+                        <div class="form-help current-file flex items-center gap-2 mt-2">
+                            <img src="{{ object.site_logo.url }}" alt="Current Logo" style="max-height: 80px; max-width: 220px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); background: #fff; padding: 4px;">
+                            <span>
+                                <i data-feather="image" style="width: 18px; height: 18px;"></i>
                                 Current: {{ object.site_logo.name|truncatechars:30 }}
-                            </p>
-                            {% endif %}
+                            </span>
                         </div>
+                        {% endif %}
                     </div>
                     <div class="form-group">
                         <label class="form-label">Favicon</label>
-                        <div class="file-upload">
-                            <input type="file" name="site_favicon" class="form-control" accept="image/*">
-                            {% if object.site_favicon %}
-                            <p class="form-help current-file">
-                                <i data-feather="image" style="width: 14px; height: 14px;"></i>
-                                Current: {{ object.site_favicon.name|truncatechars:30 }}
-                            </p>
-                            {% endif %}
-                        </div>
+                        {{ form.site_favicon }}
+                        {% if object.site_favicon %}
+                        <p class="form-help current-file">
+                            <i data-feather="image" style="width: 14px; height: 14px;"></i>
+                            Current: {{ object.site_favicon.name|truncatechars:30 }}
+                        </p>
+                        {% endif %}
                     </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Footer Text</label>
+                    {{ form.footer_text }}
+                    <p class="form-help">This text appears at the bottom of every page.</p>
                 </div>
             </div>
         </div>
@@ -67,23 +91,33 @@
 
                 <div class="form-group">
                     <label class="form-label">Contact Email</label>
-                    <div class="input-icon">
-                        <i data-feather="mail"></i>
-                        <input type="email" name="contact_email" value="{{ object.contact_email }}" class="form-control" placeholder="contact@example.com">
-                    </div>
+                    {{ form.contact_email }}
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">Contact Phone</label>
-                    <div class="input-icon">
-                        <i data-feather="phone"></i>
-                        <input type="tel" name="contact_phone" value="{{ object.contact_phone }}" class="form-control" placeholder="+1 (555) 123-4567">
-                    </div>
+                    {{ form.contact_phone }}
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">Address</label>
-                    <textarea name="contact_address" class="form-control form-textarea" rows="3" placeholder="Enter your address">{{ object.contact_address }}</textarea>
+                    {{ form.contact_address }}
+                </div>
+            </div>
+        </div>
+        <!-- Maintenance Mode -->
+        <div class="card">
+            <div class="card-body">
+                <h3 class="mb-4"><i data-feather="alert-triangle" class="card-icon"></i> Maintenance Mode</h3>
+                <div class="form-group">
+                    <label class="form-label">Enable Maintenance Mode</label>
+                    {{ form.maintenance_mode }}
+                    <p class="form-help">If enabled, users will see a maintenance message and most features will be disabled.</p>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Maintenance Message</label>
+                    {{ form.maintenance_message }}
+                    <p class="form-help">Displayed to users when maintenance mode is active.</p>
                 </div>
             </div>
         </div>
@@ -95,34 +129,22 @@
 
                 <div class="form-group">
                     <label class="form-label">Facebook URL</label>
-                    <div class="input-icon">
-                        <i data-feather="facebook"></i>
-                        <input type="url" name="facebook_url" value="{{ object.facebook_url }}" class="form-control" placeholder="https://facebook.com/yourpage">
-                    </div>
+                    {{ form.facebook_url }}
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">Twitter URL</label>
-                    <div class="input-icon">
-                        <i data-feather="twitter"></i>
-                        <input type="url" name="twitter_url" value="{{ object.twitter_url }}" class="form-control" placeholder="https://twitter.com/yourhandle">
-                    </div>
+                    {{ form.twitter_url }}
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">LinkedIn URL</label>
-                    <div class="input-icon">
-                        <i data-feather="linkedin"></i>
-                        <input type="url" name="linkedin_url" value="{{ object.linkedin_url }}" class="form-control" placeholder="https://linkedin.com/company/yourcompany">
-                    </div>
+                    {{ form.linkedin_url }}
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">Instagram URL</label>
-                    <div class="input-icon">
-                        <i data-feather="instagram"></i>
-                        <input type="url" name="instagram_url" value="{{ object.instagram_url }}" class="form-control" placeholder="https://instagram.com/yourhandle">
-                    </div>
+                    {{ form.instagram_url }}
                 </div>
             </div>
         </div>
@@ -245,48 +267,48 @@
     color: var(--primary-color, #4f46e5);
 }
 
-.toggle-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-.toggle-option {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    padding: 1rem;
-    background: var(--background-color, #f9fafb);
-    border-radius: 10px;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-
-.toggle-option:hover {
-    background: #f3f4f6;
-}
-
-.toggle-info {
-    display: flex;
-    flex-direction: column;
-    gap: 0.125rem;
-}
-
-.toggle-title {
-    font-weight: 600;
-    color: var(--text-primary, #111827);
-    font-size: 0.9375rem;
-}
-
-.toggle-desc {
-    font-size: 0.8125rem;
-    color: var(--text-muted, #9ca3af);
-}
-
-.toggle-switch {
-    position: relative;
-    width: 48px;
+                <div class="toggle-list">
+                    <label class="toggle-option">
+                        <div class="toggle-info">
+                            <span class="toggle-title">Enable Chat</span>
+                            <span class="toggle-desc">Allow users to message each other</span>
+                        </div>
+                        <div class="toggle-switch">
+                            {{ form.enable_chat }}
+                            <span class="toggle-slider"></span>
+                        </div>
+                    </label>
+                    <label class="toggle-option">
+                        <div class="toggle-info">
+                            <span class="toggle-title">Enable Feed</span>
+                            <span class="toggle-desc">Show the community feed section</span>
+                        </div>
+                        <div class="toggle-switch">
+                            {{ form.enable_feed }}
+                            <span class="toggle-slider"></span>
+                        </div>
+                    </label>
+                    <label class="toggle-option">
+                        <div class="toggle-info">
+                            <span class="toggle-title">Enable Notifications</span>
+                            <span class="toggle-desc">Send notifications to users</span>
+                        </div>
+                        <div class="toggle-switch">
+                            {{ form.enable_notifications }}
+                            <span class="toggle-slider"></span>
+                        </div>
+                    </label>
+                    <label class="toggle-option">
+                        <div class="toggle-info">
+                            <span class="toggle-title">Text-to-Speech</span>
+                            <span class="toggle-desc">Accessibility feature for reading content aloud</span>
+                        </div>
+                        <div class="toggle-switch">
+                            {{ form.enable_text_to_speech }}
+                            <span class="toggle-slider"></span>
+                        </div>
+                    </label>
+                </div>
     height: 26px;
     flex-shrink: 0;
 }
