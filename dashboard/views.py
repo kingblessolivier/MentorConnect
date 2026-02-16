@@ -286,7 +286,9 @@ class AdminDashboardView(LoginRequiredMixin, AdminRequiredMixin, TemplateView):
         context['role_distribution'] = json.dumps([
             context['total_students'],
             context['total_mentors'],
-            context['total_admins']
+            context['total_admins'],
+            User.objects.filter(role='mentor_facilitator').count(),
+            User.objects.filter(role='finance_officer').count()
         ])
 
         # Mentorship Statistics

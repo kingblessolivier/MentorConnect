@@ -4,17 +4,27 @@
 {% block title %}Payment Settings - {{ SITE_NAME }}{% endblock %}
 
 {% block dashboard_content %}
+
 <div class="container-fluid fade-in">
-    <!-- Header Section -->
-    <div class="d-flex justify-content-between align-items-center mb-4 dashboard-header-custom">
-        <div>
-            <h1 class="h3 fw-bold text-gray-900 mb-1">Payment Settings</h1>
-            <p class="text-muted small">Configure global fees and payment reception methods.</p>
+    <!-- Enhanced Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center bg-white rounded-4 shadow-sm px-4 py-3 border border-1 border-light-subtle">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="icon-box bg-primary text-white rounded-circle p-2">
+                        <i data-feather="settings"></i>
+                    </div>
+                    <div>
+                        <h1 class="h4 fw-bold text-gray-900 mb-1">Payment Settings</h1>
+                        <p class="text-muted small mb-0">Configure global fees and payment reception methods.</p>
+                    </div>
+                </div>
+                <a href="{% url 'dashboard:finance_dashboard' %}"
+                    class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-2 back-btn">
+                    <i data-feather="arrow-left" class="icon-sm"></i> Back to Dashboard
+                </a>
+            </div>
         </div>
-        <a href="{% url 'dashboard:finance_dashboard' %}"
-            class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-2 back-btn">
-            <i data-feather="arrow-left" class="icon-sm"></i> Back to Dashboard
-        </a>
     </div>
 
     <form method="post" class="needs-validation" novalidate>
@@ -28,13 +38,17 @@
         {% endif %}
 
         <div class="row g-4">
+            <!-- Section Divider -->
+            <div class="col-12">
+                <div class="my-2" style="height: 2px; background: linear-gradient(90deg, #f3e8ff 0%, #dcfce7 100%); border-radius: 1px;"></div>
+            </div>
             <!-- Left Column: Fee Configuration -->
             <div class="col-lg-6">
                 <!-- Fee Card -->
-                <div class="card border-0 shadow-sm h-100 settings-card">
+                <div class="card border-0 shadow-sm h-100 settings-card px-2 py-1">
                     <div class="card-header bg-transparent border-0 pt-4 pb-2 px-4">
                         <div class="d-flex align-items-center gap-3">
-                            <div class="icon-box bg-purple-light text-purple rounded-circle p-2">
+                            <div class="icon-box bg-purple-light text-purple rounded-circle p-2 border border-1 border-purple">
                                 <i data-feather="dollar-sign"></i>
                             </div>
                             <h5 class="card-title fw-bold mb-0 text-dark">Fee Configuration</h5>
@@ -104,10 +118,10 @@
             <!-- Right Column: Payment Reception -->
             <div class="col-lg-6">
                 <!-- Reception Details Card -->
-                <div class="card border-0 shadow-sm h-100 settings-card">
+                <div class="card border-0 shadow-sm h-100 settings-card px-2 py-1">
                     <div class="card-header bg-transparent border-0 pt-4 pb-2 px-4">
                         <div class="d-flex align-items-center gap-3">
-                            <div class="icon-box bg-green-light text-green rounded-circle p-2">
+                            <div class="icon-box bg-green-light text-green rounded-circle p-2 border border-1 border-green">
                                 <i data-feather="smartphone"></i>
                             </div>
                             <h5 class="card-title fw-bold mb-0 text-dark">Payment Reception</h5>
@@ -232,7 +246,8 @@
         </div>
 
         <!-- Action Bar -->
-        <div class="d-flex justify-content-end align-items-center gap-3 mt-4 pt-3 border-top">
+        <!-- Action Bar -->
+        <div class="d-flex justify-content-end align-items-center gap-3 mt-5 pt-4 border-top" style="background: #f9fafb; border-radius: 0 0 16px 16px;">
             <a href="{% url 'dashboard:finance_dashboard' %}" class="btn btn-light text-muted px-4 fw-medium">Cancel</a>
             <button type="submit" class="btn btn-primary px-4 py-2 d-flex align-items-center gap-2 shadow-sm btn-save">
                 <i data-feather="save" class="icon-sm"></i> Save Changes
@@ -240,68 +255,68 @@
         </div>
     </form>
 
-    <!-- Preview Modal -->
-    <div class="modal fade" id="previewModal" tabindex="-1" aria-labelledby="previewModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content border-0 shadow-lg">
-                <div class="modal-header border-0 pb-0">
-                    <h5 class="modal-title fw-bold text-gray-900" id="previewModalLabel">Payment Instructions Preview</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body pt-0">
-                    <p class="text-muted small mb-4">This is how the instructions will appear to students on the checkout page.</p>
-                    <div class="card border-0 bg-light">
-                        <div class="card-body p-4">
-                            <div class="d-flex align-items-center gap-3 mb-3">
-                                <div class="icon-box bg-primary text-white rounded-circle p-2">
-                                    <i data-feather="info"></i>
-                                </div>
-                                <h6 class="fw-bold mb-0">How to Pay</h6>
+
+<!-- Preview Modal (moved outside main content for correct modal behavior) -->
+<div class="modal fade" id="previewModal" tabindex="-1" aria-labelledby="previewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold text-gray-900" id="previewModalLabel">Payment Instructions Preview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body pt-0">
+                <p class="text-muted small mb-4">This is how the instructions will appear to students on the checkout page.</p>
+                <div class="card border-0 bg-light">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div class="icon-box bg-primary text-white rounded-circle p-2">
+                                <i data-feather="info"></i>
                             </div>
-                            <div id="previewContent" class="text-muted">
-                                <!-- Preview will be inserted here -->
-                                {{ form.payment_instructions.value|default:"No instructions provided yet." }}
-                            </div>
+                            <h6 class="fw-bold mb-0">How to Pay</h6>
                         </div>
-                    </div>
-                    <div class="mt-4">
-                        <h6 class="fw-semibold mb-2">Payment Details</h6>
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <div class="d-flex align-items-center gap-2">
-                                    <i data-feather="bank" class="text-primary icon-xs"></i>
-                                    <span class="small">Bank:</span>
-                                    <strong id="previewBankName">{{ form.bank_name.value|default:"Bank of Kigali (BK)" }}</strong>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="d-flex align-items-center gap-2">
-                                    <i data-feather="credit-card" class="text-primary icon-xs"></i>
-                                    <span class="small">Account:</span>
-                                    <strong id="previewAccountNumber">{{ form.account_number.value|default:"00040-0065432-12" }}</strong>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="d-flex align-items-center gap-2">
-                                    <i data-feather="user" class="text-primary icon-xs"></i>
-                                    <span class="small">Account Name:</span>
-                                    <strong id="previewAccountName">{{ form.account_name.value|default:"MentorConnect Ltd" }}</strong>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="d-flex align-items-center gap-2">
-                                    <i data-feather="smartphone" class="text-primary icon-xs"></i>
-                                    <span class="small">Mobile Money:</span>
-                                    <strong id="previewMobileMoney">{{ form.mobile_money_number.value|default:"*182*8*1*556644#" }}</strong>
-                                </div>
-                            </div>
+                        <div id="previewContent" class="text-muted">
+                            <!-- Preview will be inserted here -->
+                            {{ form.payment_instructions.value|default:"No instructions provided yet." }}
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Got it</button>
+                <div class="mt-4">
+                    <h6 class="fw-semibold mb-2">Payment Details</h6>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center gap-2">
+                                <i data-feather="bank" class="text-primary icon-xs"></i>
+                                <span class="small">Bank:</span>
+                                <strong id="previewBankName">{{ form.bank_name.value|default:"Bank of Kigali (BK)" }}</strong>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center gap-2">
+                                <i data-feather="credit-card" class="text-primary icon-xs"></i>
+                                <span class="small">Account:</span>
+                                <strong id="previewAccountNumber">{{ form.account_number.value|default:"00040-0065432-12" }}</strong>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center gap-2">
+                                <i data-feather="user" class="text-primary icon-xs"></i>
+                                <span class="small">Account Name:</span>
+                                <strong id="previewAccountName">{{ form.account_name.value|default:"MentorConnect Ltd" }}</strong>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center gap-2">
+                                <i data-feather="smartphone" class="text-primary icon-xs"></i>
+                                <span class="small">Mobile Money:</span>
+                                <strong id="previewMobileMoney">{{ form.mobile_money_number.value|default:"*182*8*1*556644#" }}</strong>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Got it</button>
             </div>
         </div>
     </div>

@@ -18,6 +18,17 @@
         <div class="stat-card-icon">
             <i data-feather="bell"></i>
         </div>
+        {% if is_paginated %}
+        <div class="pagination-bar mt-4">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.type %}&type={{ request.GET.type }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" class="pagination-btn"><i data-feather="chevron-left"></i></a>
+            {% endif %}
+            <span class="pagination-info">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.type %}&type={{ request.GET.type }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" class="pagination-btn"><i data-feather="chevron-right"></i></a>
+            {% endif %}
+        </div>
+        {% endif %}
         <div class="stat-card-value">{{ total_notifications|default:0 }}</div>
         <div class="stat-card-label">Total Notifications</div>
     </div>

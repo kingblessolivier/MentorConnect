@@ -527,39 +527,7 @@
         margin-bottom: 0.25rem;
     }
 
-    /* Social Links Card */
-    .social-card {
-        background: var(--surface-color, #ffffff);
-        border-radius: 20px;
-        padding: 2rem;
-        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
-        border: 1px solid rgba(0, 0, 0, 0.04);
-    }
-
-    .social-card h4 {
-        font-size: 1rem;
-        font-weight: 700;
-        color: var(--text-primary);
-        margin-bottom: 1.25rem;
-        text-align: center;
-    }
-
-    .social-links {
-        display: flex;
-        justify-content: center;
-        gap: 0.75rem;
-    }
-
-    .social-link {
-        width: 48px;
-        height: 48px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.3s ease;
-        text-decoration: none;
-    }
+            <!-- Social Links removed as requested -->
 
     .social-link svg,
     .social-link i {
@@ -870,8 +838,7 @@
             </div>
 
             <!-- Social Links -->
-            {% if site_settings.facebook_url or site_settings.twitter_url or site_settings.linkedin_url or
-            site_settings.instagram_url %}
+            {% if site_settings.facebook_url or site_settings.twitter_url or site_settings.linkedin_url or  site_settings.instagram_url %}
             <div class="social-card">
                 <h4>Connect With Us</h4>
                 <div class="social-links">
@@ -902,6 +869,7 @@
                 </div>
             </div>
             {% endif %}
+            <!-- end social links section -->
         </div>
     </div>
 
@@ -926,7 +894,9 @@
     </div>
     {% endif %}
 </div>
-{% endblock %}
+</style>
+
+
 
 {% block extra_js %}
 <script>
@@ -935,4 +905,6 @@
         feather.replace();
     }
 </script>
-{% endblock %}endblock %}
+{% endblock %}
+
+{% endblock %}
