@@ -92,7 +92,8 @@
                     <strong style="color: #3b82f6;">1-5 days</strong> where students literally become
                     the shadow of a professional. Discover what a profession looks like in practice.
                 </p>
-                <div style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); padding: 1.5rem; border-radius: 16px; border-left: 4px solid #3b82f6;">
+                <div
+                    style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); padding: 1.5rem; border-radius: 16px; border-left: 4px solid #3b82f6;">
                     <p style="font-size: 1.125rem; font-weight: 600; color: #1e3a5f; margin: 0; font-style: italic;">
                         "An experience that is richer than any conversation."
                     </p>
@@ -134,232 +135,202 @@
             </div>
             <h2 class="section-title-premium">How Does It Work?</h2>
             <p class="section-subtitle-premium">
-                Your journey to discovering your dream profession in 6 simple steps
+                Choose your role and discover the process
             </p>
-        </div>
-
-        <div class="grid grid-3" style="gap: 1.5rem;">
-            <div class="card-premium">
-                <div class="card-icon-premium blue">
-                    <i data-feather="search"></i>
-                </div>
-                <div style="display: inline-block; padding: 0.25rem 0.75rem; background: #dbeafe; color: #2563eb; font-size: 0.75rem; font-weight: 700; border-radius: 50px; margin-bottom: 1rem;">STEP 1</div>
-                <h3 class="card-title-premium">Discover</h3>
-                <p class="card-text-premium">Find a professional in the field that interests you. Browse our extensive network of mentors.</p>
-            </div>
-
-            <div class="card-premium">
-                <div class="card-icon-premium purple">
-                    <i data-feather="send"></i>
-                </div>
-                <div style="display: inline-block; padding: 0.25rem 0.75rem; background: #ede9fe; color: #7c3aed; font-size: 0.75rem; font-weight: 700; border-radius: 50px; margin-bottom: 1rem;">STEP 2</div>
-                <h3 class="card-title-premium">Request</h3>
-                <p class="card-text-premium">Submit your application for an observation internship with the professional of your choice.</p>
-            </div>
-
-            <div class="card-premium">
-                <div class="card-icon-premium green">
-                    <i data-feather="check-circle"></i>
-                </div>
-                <div style="display: inline-block; padding: 0.25rem 0.75rem; background: #dcfce7; color: #16a34a; font-size: 0.75rem; font-weight: 700; border-radius: 50px; margin-bottom: 1rem;">STEP 3</div>
-                <h3 class="card-title-premium">Get Confirmed</h3>
-                <p class="card-text-premium">Receive confirmation once approved. Get all practical information you need.</p>
-            </div>
-
-            <div class="card-premium">
-                <div class="card-icon-premium orange">
-                    <i data-feather="eye"></i>
-                </div>
-                <div style="display: inline-block; padding: 0.25rem 0.75rem; background: #fef3c7; color: #d97706; font-size: 0.75rem; font-weight: 700; border-radius: 50px; margin-bottom: 1rem;">STEP 4</div>
-                <h3 class="card-title-premium">Watch & Learn</h3>
-                <p class="card-text-premium">Shadow for 1-5 days and discover the daily work of your chosen profession.</p>
-            </div>
-
-            <div class="card-premium">
-                <div class="card-icon-premium pink">
-                    <i data-feather="heart"></i>
-                </div>
-                <div style="display: inline-block; padding: 0.25rem 0.75rem; background: #fce7f3; color: #db2777; font-size: 0.75rem; font-weight: 700; border-radius: 50px; margin-bottom: 1rem;">STEP 5</div>
-                <h3 class="card-title-premium">Reflect</h3>
-                <p class="card-text-premium">What did you learn? Does this profession suit you? Take time to process your experience.</p>
-            </div>
-
-            <div class="card-premium">
-                <div class="card-icon-premium cyan">
-                    <i data-feather="award"></i>
-                </div>
-                <div style="display: inline-block; padding: 0.25rem 0.75rem; background: #cffafe; color: #0891b2; font-size: 0.75rem; font-weight: 700; border-radius: 50px; margin-bottom: 1rem;">STEP 6</div>
-                <h3 class="card-title-premium">Choose Wisely</h3>
-                <p class="card-text-premium">Make your study choice with confidence, backed by real-world experience.</p>
+            <!-- Student/Mentor Toggle -->
+            <div class="role-toggle">
+                <button class="role-toggle-btn active" id="toggle-student" onclick="showStudentFlow()">
+                    <i data-feather="book-open"></i>
+                    I'm a Student
+                </button>
+                <button class="role-toggle-btn" id="toggle-mentor" onclick="showMentorFlow()">
+                    <i data-feather="briefcase"></i>
+                    I'm a Mentor
+                </button>
             </div>
         </div>
-    </div>
-</section>
 
-<!-- Featured Professionals -->
-<section class="section-premium section-premium-white">
-    <div class="container">
-        <div class="section-header-premium">
-            <div class="section-badge">
-                <i data-feather="users"></i>
-                Our Mentors
-            </div>
-            <h2 class="section-title-premium">Featured Professionals</h2>
-            <p class="section-subtitle-premium">
-                Shadow these experienced professionals and discover your future career
-            </p>
-        </div>
-
-        <div class="grid grid-3" style="gap: 1.5rem;">
-            {% for mentor in featured_mentors %}
-            <div class="mentor-card-premium">
-                <div class="mentor-card-cover">
-                    <div class="mentor-card-avatar">
-                        {% static 'images/default-avatar.png' as default_avatar %}
-                        <img src="{{ mentor.user.get_avatar_url|default:default_avatar }}" alt="{{ mentor.user.get_full_name }}" class="avatar avatar-xl">
-                         {% if mentor.is_verified %}
-                         <div class="mentor-card-verified">
-                             <i data-feather="check"></i>
-                         </div>
-                         {% endif %}
-                     </div>
-                 </div>
-                <div class="mentor-card-body">
-                    <h3 class="mentor-card-name">{{ mentor.user.get_full_name }}</h3>
-                    <p class="mentor-card-title">{{ mentor.job_title }}{% if mentor.company %} @ {{ mentor.company }}{% endif %}</p>
-                    {% if mentor.city %}
-                    <div class="mentor-card-location">
-                        <i data-feather="map-pin"></i>
-                        {{ mentor.city }}{% if mentor.country %}, {{ mentor.country }}{% endif %}
+        <!-- Student Flow (visible by default) -->
+        <div id="how-it-works-student">
+            <div class="grid grid-3" style="gap: 1.5rem;">
+                <div class="card-premium">
+                    <div class="card-icon-premium blue"
+                        style="padding: 0; overflow: hidden; width: 120px; height: 120px;">
+                        <img src="{% static 'images/Discover.png' %}" alt="Discover"
+                            style="width: 100%; height: 100%; object-fit: cover; border-radius: 16px;">
                     </div>
-                    {% endif %}
-                    <div class="mentor-card-tags">
-                        {% for skill in mentor.get_skills_list|slice:":3" %}
-                        <span class="mentor-tag">{{ skill }}</span>
-                        {% endfor %}
+                    <div
+                        style="display: inline-block; padding: 0.25rem 0.75rem; background: #dbeafe; color: #2563eb; font-size: 0.75rem; font-weight: 700; border-radius: 50px; margin-bottom: 1rem;">
+                        STEP 1</div>
+                    <h3 class="card-title-premium">Discover</h3>
+                    <p class="card-text-premium">Find a professional in the field that interests you. Browse our
+                        extensive
+                        network of mentors.</p>
+                </div>
+
+                <div class="card-premium">
+                    <div class="card-icon-premium purple"
+                        style="padding: 0; overflow: hidden; width: 120px; height: 120px;">
+                        <img src="{% static 'images/request.png' %}" alt="Request"
+                            style="width: 100%; height: 100%; object-fit: cover; border-radius: 16px;">
                     </div>
-                    <div class="mentor-card-stats">
-                        <div class="mentor-stat">
-                            <div class="mentor-stat-value">{{ mentor.rating|floatformat:1 }}</div>
-                            <div class="mentor-stat-label">Rating</div>
-                        </div>
-                        <div class="mentor-stat">
-                            <div class="mentor-stat-value">{{ mentor.experience_years }}</div>
-                            <div class="mentor-stat-label">Years</div>
-                        </div>
-                        <div class="mentor-stat">
-                            <div class="mentor-stat-value">{{ mentor.min_internship_days|default:1 }}-{{ mentor.max_internship_days|default:5 }}</div>
-                            <div class="mentor-stat-label">Days</div>
-                        </div>
+                    <div
+                        style="display: inline-block; padding: 0.25rem 0.75rem; background: #ede9fe; color: #7c3aed; font-size: 0.75rem; font-weight: 700; border-radius: 50px; margin-bottom: 1rem;">
+                        STEP 2</div>
+                    <h3 class="card-title-premium">Request</h3>
+                    <p class="card-text-premium">Submit your application for an observation internship with the
+                        professional
+                        of your choice.</p>
+                </div>
+
+                <div class="card-premium">
+                    <div class="card-icon-premium green"
+                        style="padding: 0; overflow: hidden; width: 120px; height: 120px;">
+                        <img src="{% static 'images/receive_confirm.png' %}" alt="Get Confirmed"
+                            style="width: 100%; height: 100%; object-fit: cover; border-radius: 16px;">
                     </div>
-                    <div class="mentor-card-footer">
-                        <a href="{% url 'profiles:mentor_detail' mentor.user.id %}" class="btn-mentor-view">
-                            <i data-feather="eye"></i>
-                            View Profile
-                        </a>
+                    <div
+                        style="display: inline-block; padding: 0.25rem 0.75rem; background: #dcfce7; color: #16a34a; font-size: 0.75rem; font-weight: 700; border-radius: 50px; margin-bottom: 1rem;">
+                        STEP 3</div>
+                    <h3 class="card-title-premium">Get Confirmed</h3>
+                    <p class="card-text-premium">Receive confirmation once approved. Get all practical information you
+                        need.
+                    </p>
+                </div>
+
+                <div class="card-premium">
+                    <div class="card-icon-premium orange"
+                        style="padding: 0; overflow: hidden; width: 120px; height: 120px;">
+                        <img src="{% static 'images/watch.png' %}" alt="Watch and Learn"
+                            style="width: 100%; height: 100%; object-fit: cover; border-radius: 16px;">
                     </div>
+                    <div
+                        style="display: inline-block; padding: 0.25rem 0.75rem; background: #fef3c7; color: #d97706; font-size: 0.75rem; font-weight: 700; border-radius: 50px; margin-bottom: 1rem;">
+                        STEP 4</div>
+                    <h3 class="card-title-premium">Watch & Learn</h3>
+                    <p class="card-text-premium">Shadow for 1-5 days and discover the daily work of your chosen
+                        profession.
+                    </p>
+                </div>
+
+                <div class="card-premium">
+                    <div class="card-icon-premium pink"
+                        style="padding: 0; overflow: hidden; width: 120px; height: 120px;">
+                        <img src="{% static 'images/reflect.png' %}" alt="Reflect"
+                            style="width: 100%; height: 100%; object-fit: cover; border-radius: 16px;">
+                    </div>
+                    <div
+                        style="display: inline-block; padding: 0.25rem 0.75rem; background: #fce7f3; color: #db2777; font-size: 0.75rem; font-weight: 700; border-radius: 50px; margin-bottom: 1rem;">
+                        STEP 5</div>
+                    <h3 class="card-title-premium">Reflect</h3>
+                    <p class="card-text-premium">What did you learn? Does this profession suit you? Take time to process
+                        your experience.</p>
+                </div>
+
+                <div class="card-premium">
+                    <div class="card-icon-premium cyan"
+                        style="padding: 0; overflow: hidden; width: 120px; height: 120px;">
+                        <img src="{% static 'images/choose.png' %}" alt="Choose Wisely"
+                            style="width: 100%; height: 100%; object-fit: cover; border-radius: 16px;">
+                    </div>
+                    <div
+                        style="display: inline-block; padding: 0.25rem 0.75rem; background: #cffafe; color: #0891b2; font-size: 0.75rem; font-weight: 700; border-radius: 50px; margin-bottom: 1rem;">
+                        STEP 6</div>
+                    <h3 class="card-title-premium">Choose Wisely</h3>
+                    <p class="card-text-premium">Make your study choice with confidence, backed by real-world
+                        experience.
+                    </p>
                 </div>
             </div>
-            {% empty %}
-            <div style="grid-column: 1/-1; text-align: center; padding: 4rem 2rem;">
-                <div style="width: 80px; height: 80px; margin: 0 auto 1.5rem; background: #f1f5f9; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                    <i data-feather="users" style="width: 32px; height: 32px; color: #94a3b8;"></i>
+        </div>
+
+        <!-- Mentor Flow (hidden by default, shown in same location as student) -->
+        <div id="how-it-works-mentor" style="display: none;">
+            <div class="grid grid-3" style="gap: 1.5rem;">
+                <div class="card-premium">
+                    <div class="card-icon-premium blue"
+                        style="padding: 0; overflow: hidden; width: 120px; height: 120px;">
+                        <img src="{% static 'images/signup.png' %}" alt="Sign Up"
+                            style="width: 100%; height: 100%; object-fit: cover; border-radius: 16px;">
+                    </div>
+                    <div
+                        style="display: inline-block; padding: 0.25rem 0.75rem; background: #dbeafe; color: #2563eb; font-size: 0.75rem; font-weight: 700; border-radius: 50px; margin-bottom: 1rem;">
+                        STEP 1</div>
+                    <h3 class="card-title-premium">Sign Up</h3>
+                    <p class="card-text-premium">Create your account and build your professional profile to showcase
+                        your expertise.</p>
                 </div>
-                <h3 style="color: #64748b; margin-bottom: 0.5rem;">No featured professionals yet</h3>
-                <p style="color: #94a3b8;">Check back soon for amazing mentors!</p>
+
+                <div class="card-premium">
+                    <div class="card-icon-premium purple"
+                        style="padding: 0; overflow: hidden; width: 120px; height: 120px;">
+                        <img src="{% static 'images/receiving_requests.png' %}" alt="Receive Requests"
+                            style="width: 100%; height: 100%; object-fit: cover; border-radius: 16px;">
+                    </div>
+                    <div
+                        style="display: inline-block; padding: 0.25rem 0.75rem; background: #ede9fe; color: #7c3aed; font-size: 0.75rem; font-weight: 700; border-radius: 50px; margin-bottom: 1rem;">
+                        STEP 2</div>
+                    <h3 class="card-title-premium">Receive Requests</h3>
+                    <p class="card-text-premium">Students send you shadowing requests. Review their applications at your
+                        convenience.</p>
+                </div>
+
+                <div class="card-premium">
+                    <div class="card-icon-premium green"
+                        style="padding: 0; overflow: hidden; width: 120px; height: 120px;">
+                        <img src="{% static 'images/you_decide.png' %}" alt="You Decide"
+                            style="width: 100%; height: 100%; object-fit: cover; border-radius: 16px;">
+                    </div>
+                    <div
+                        style="display: inline-block; padding: 0.25rem 0.75rem; background: #dcfce7; color: #16a34a; font-size: 0.75rem; font-weight: 700; border-radius: 50px; margin-bottom: 1rem;">
+                        STEP 3</div>
+                    <h3 class="card-title-premium">You Decide</h3>
+                    <p class="card-text-premium">Accept or decline requests. You choose when and how to meet the
+                        student.</p>
+                </div>
+
+                <div class="card-premium">
+                    <div class="card-icon-premium orange"
+                        style="padding: 0; overflow: hidden; width: 120px; height: 120px;">
+                        <img src="{% static 'images/practical_information.png' %}" alt="Provide Info"
+                            style="width: 100%; height: 100%; object-fit: cover; border-radius: 16px;">
+                    </div>
+                    <div
+                        style="display: inline-block; padding: 0.25rem 0.75rem; background: #fef3c7; color: #d97706; font-size: 0.75rem; font-weight: 700; border-radius: 50px; margin-bottom: 1rem;">
+                        STEP 4</div>
+                    <h3 class="card-title-premium">Provide Info</h3>
+                    <p class="card-text-premium">Share practical details so the student arrives prepared for their
+                        shadowing experience.</p>
+                </div>
+
+                <div class="card-premium">
+                    <div class="card-icon-premium pink"
+                        style="padding: 0; overflow: hidden; width: 120px; height: 120px;">
+                        <img src="{% static 'images/share.png' %}" alt="Share & Inspire"
+                            style="width: 100%; height: 100%; object-fit: cover; border-radius: 16px;">
+                    </div>
+                    <div
+                        style="display: inline-block; padding: 0.25rem 0.75rem; background: #fce7f3; color: #db2777; font-size: 0.75rem; font-weight: 700; border-radius: 50px; margin-bottom: 1rem;">
+                        STEP 5</div>
+                    <h3 class="card-title-premium">Share & Inspire</h3>
+                    <p class="card-text-premium">Guide the student for 1-5 days and inspire the next generation with
+                        your experience.</p>
+                </div>
             </div>
-            {% endfor %}
-        </div>
 
-        {% if featured_mentors %}
-        <div style="text-align: center; margin-top: 3rem;">
-            <a href="{% url 'core:mentors' %}" class="btn-hero-primary" style="background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%);">
-                <i data-feather="users"></i>
-                Browse All Professionals
-            </a>
-        </div>
-        {% endif %}
-    </div>
-</section>
-
-<!-- For Professionals Section -->
-<section class="section-premium section-premium-dark">
-    <div class="container">
-        <div class="grid grid-2" style="align-items: center; gap: 4rem;">
-            <div>
-                <div class="section-badge" style="background: rgba(245, 158, 11, 0.2); color: #fbbf24;">
-                    <i data-feather="award"></i>
-                    For Professionals
-                </div>
-                <h2 class="section-title-premium light" style="margin-top: 1rem;">Become a Mentor</h2>
-                <p class="section-subtitle-premium light" style="text-align: left; margin: 0 0 2rem;">
-                    Share your expertise and inspire the next generation. As a mentor, you make a double difference.
-                </p>
-
-                <ul class="auth-features">
-                    <li>
-                        <div class="auth-feature-icon orange">
-                            <i data-feather="globe"></i>
-                        </div>
-                        <div>
-                            <strong>Social Impact</strong>
-                            <p style="color: #94a3b8; margin: 0.25rem 0 0; font-size: 0.9375rem;">Send the next generation better prepared towards study and work</p>
-                        </div>
-                    </li>
-                    <li>
-                        <div class="auth-feature-icon green">
-                            <i data-feather="heart"></i>
-                        </div>
-                        <div>
-                            <strong>Personal Fulfillment</strong>
-                            <p style="color: #94a3b8; margin: 0.25rem 0 0; font-size: 0.9375rem;">Give one young person an experience that can change their future</p>
-                        </div>
-                    </li>
-                    <li>
-                        <div class="auth-feature-icon purple">
-                            <i data-feather="refresh-cw"></i>
-                        </div>
-                        <div>
-                            <strong>Self-Discovery</strong>
-                            <p style="color: #94a3b8; margin: 0.25rem 0 0; font-size: 0.9375rem;">Rediscover why you chose your profession in the first place</p>
-                        </div>
-                    </li>
-                </ul>
-
-                <a href="{% url 'accounts:signup_mentor' %}" class="btn-hero-primary" style="margin-top: 2rem;">
+            <div style="text-align: center; margin-top: 2rem;">
+                <a href="{% url 'accounts:signup_mentor' %}" class="btn-hero-primary"
+                    style="background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%);">
                     <i data-feather="user-plus"></i>
                     Sign Up as Mentor
                 </a>
             </div>
-
-            <div style="background: rgba(255,255,255,0.05); border-radius: 24px; padding: 2rem; border: 1px solid rgba(255,255,255,0.1);">
-                <h3 style="color: white; margin-bottom: 1.5rem; font-size: 1.25rem;">How It Works for Mentors</h3>
-                <div style="display: flex; flex-direction: column; gap: 1rem;">
-                    <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: rgba(255,255,255,0.03); border-radius: 12px;">
-                        <div style="width: 32px; height: 32px; background: linear-gradient(135deg, #3b82f6, #2563eb); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 0.875rem;">1</div>
-                        <span style="color: #e2e8f0;">Sign up & build your profile</span>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: rgba(255,255,255,0.03); border-radius: 12px;">
-                        <div style="width: 32px; height: 32px; background: linear-gradient(135deg, #8b5cf6, #7c3aed); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 0.875rem;">2</div>
-                        <span style="color: #e2e8f0;">Receive student requests</span>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: rgba(255,255,255,0.03); border-radius: 12px;">
-                        <div style="width: 32px; height: 32px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 0.875rem;">3</div>
-                        <span style="color: #e2e8f0;">You decide when to meet</span>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: rgba(255,255,255,0.03); border-radius: 12px;">
-                        <div style="width: 32px; height: 32px; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 0.875rem;">4</div>
-                        <span style="color: #e2e8f0;">Guide for 1-5 days</span>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: rgba(255,255,255,0.03); border-radius: 12px;">
-                        <div style="width: 32px; height: 32px; background: linear-gradient(135deg, #ec4899, #db2777); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 0.875rem;">5</div>
-                        <span style="color: #e2e8f0;">Inspire the next generation</span>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 </section>
+
+<!-- ...existing code... -->
+
 
 <!-- Testimonials -->
 <section class="section-premium section-premium-light">
@@ -384,10 +355,12 @@
                 <p class="testimonial-content-premium">"{{ testimonial.content }}"</p>
                 <div class="testimonial-author-premium">
                     {% if testimonial.photo %}
-                    <img src="{{ testimonial.photo.url }}" alt="{{ testimonial.name }}" class="testimonial-author-avatar">
+                    <img src="{{ testimonial.photo.url }}" alt="{{ testimonial.name }}"
+                        class="testimonial-author-avatar">
                     {% else %}
-                    <div class="testimonial-author-avatar" style="background: linear-gradient(135deg, #3b82f6, #8b5cf6); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">
-                        {{ testimonial.name|slice:":1" }}
+                    <div class="testimonial-author-avatar"
+                        style="background: linear-gradient(135deg, #3b82f6, #8b5cf6); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">
+                        {{ testimonial.name|slice:':1' }}
                     </div>
                     {% endif %}
                     <div class="testimonial-author-info">
@@ -401,9 +374,12 @@
                 <div class="testimonial-quote-icon">
                     <i data-feather="message-circle"></i>
                 </div>
-                <p class="testimonial-content-premium">"It gave me energy to explain my profession to someone who really wanted to learn."</p>
+                <p class="testimonial-content-premium">"It gave me energy to explain my profession to someone who really
+                    wanted to learn."</p>
                 <div class="testimonial-author-premium">
-                    <div class="testimonial-author-avatar" style="background: linear-gradient(135deg, #f59e0b, #d97706); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">M</div>
+                    <div class="testimonial-author-avatar"
+                        style="background: linear-gradient(135deg, #f59e0b, #d97706); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">
+                        M</div>
                     <div class="testimonial-author-info">
                         <h4>Medical Professional</h4>
                         <p>Mentor</p>
@@ -414,9 +390,12 @@
                 <div class="testimonial-quote-icon">
                     <i data-feather="message-circle"></i>
                 </div>
-                <p class="testimonial-content-premium">"I learned so much about how the profession actually works. It helped me decide my future."</p>
+                <p class="testimonial-content-premium">"I learned so much about how the profession actually works. It
+                    helped me decide my future."</p>
                 <div class="testimonial-author-premium">
-                    <div class="testimonial-author-avatar" style="background: linear-gradient(135deg, #10b981, #059669); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">S</div>
+                    <div class="testimonial-author-avatar"
+                        style="background: linear-gradient(135deg, #10b981, #059669); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">
+                        S</div>
                     <div class="testimonial-author-info">
                         <h4>Sarah K.</h4>
                         <p>Student</p>
@@ -427,9 +406,12 @@
                 <div class="testimonial-quote-icon">
                     <i data-feather="message-circle"></i>
                 </div>
-                <p class="testimonial-content-premium">"By being a mentor, I rediscovered why I chose my profession. Renewed motivation!"</p>
+                <p class="testimonial-content-premium">"By being a mentor, I rediscovered why I chose my profession.
+                    Renewed motivation!"</p>
                 <div class="testimonial-author-premium">
-                    <div class="testimonial-author-avatar" style="background: linear-gradient(135deg, #3b82f6, #2563eb); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">L</div>
+                    <div class="testimonial-author-avatar"
+                        style="background: linear-gradient(135deg, #3b82f6, #2563eb); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">
+                        L</div>
                     <div class="testimonial-author-info">
                         <h4>Legal Professional</h4>
                         <p>Mentor</p>
@@ -437,26 +419,6 @@
                 </div>
             </div>
             {% endfor %}
-        </div>
-    </div>
-</section>
-
-<!-- CTA Section -->
-<section class="section-premium" style="background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 50%, #1e3a5f 100%); padding: 5rem 0;">
-    <div class="container" style="text-align: center;">
-        <h2 style="font-size: 2.5rem; font-weight: 800; color: white; margin-bottom: 1rem;">Ready to Discover Your Future?</h2>
-        <p style="font-size: 1.25rem; color: rgba(255,255,255,0.8); max-width: 600px; margin: 0 auto 2rem;">
-            Join {{ SITE_NAME }} today. One experience can make all the difference in your career journey.
-        </p>
-        <div class="hero-buttons-premium" style="justify-content: center;">
-            <a href="{% url 'accounts:signup_student' %}" class="btn-hero-primary" style="background: white; color: #1e3a5f;">
-                <i data-feather="eye"></i>
-                Start Shadowing
-            </a>
-            <a href="{% url 'accounts:signup_mentor' %}" class="btn-hero-secondary">
-                <i data-feather="award"></i>
-                Become a Mentor
-            </a>
         </div>
     </div>
 </section>
@@ -481,8 +443,10 @@
                         <i data-feather="clock"></i>
                     </div>
                     <div>
-                        <h4 style="font-size: 1rem; font-weight: 600; color: #1e293b; margin-bottom: 0.5rem;">How long does an observation internship last?</h4>
-                        <p style="color: #64748b; margin: 0; font-size: 0.9375rem;">Between 1 and 5 working days, giving you a realistic picture of the profession.</p>
+                        <h4 style="font-size: 1rem; font-weight: 600; color: #1e293b; margin-bottom: 0.5rem;">How long
+                            does an observation internship last?</h4>
+                        <p style="color: #64748b; margin: 0; font-size: 0.9375rem;">Between 1 and 5 working days, giving
+                            you a realistic picture of the profession.</p>
                     </div>
                 </div>
                 <div class="faq-item-premium">
@@ -490,8 +454,10 @@
                         <i data-feather="book-open"></i>
                     </div>
                     <div>
-                        <h4 style="font-size: 1rem; font-weight: 600; color: #1e293b; margin-bottom: 0.5rem;">Do I need prior knowledge?</h4>
-                        <p style="color: #64748b; margin: 0; font-size: 0.9375rem;">No, you're there to observe and learn, always under the guidance of your mentor.</p>
+                        <h4 style="font-size: 1rem; font-weight: 600; color: #1e293b; margin-bottom: 0.5rem;">Do I need
+                            prior knowledge?</h4>
+                        <p style="color: #64748b; margin: 0; font-size: 0.9375rem;">No, you're there to observe and
+                            learn, always under the guidance of your mentor.</p>
                     </div>
                 </div>
                 <div class="faq-item-premium">
@@ -499,8 +465,10 @@
                         <i data-feather="help-circle"></i>
                     </div>
                     <div>
-                        <h4 style="font-size: 1rem; font-weight: 600; color: #1e293b; margin-bottom: 0.5rem;">What if the planned days don't fit?</h4>
-                        <p style="color: #64748b; margin: 0; font-size: 0.9375rem;">We'll work together to find another time or an alternative mentor.</p>
+                        <h4 style="font-size: 1rem; font-weight: 600; color: #1e293b; margin-bottom: 0.5rem;">What if
+                            the planned days don't fit?</h4>
+                        <p style="color: #64748b; margin: 0; font-size: 0.9375rem;">We'll work together to find another
+                            time or an alternative mentor.</p>
                     </div>
                 </div>
                 <a href="{% url 'core:home' %}" class="btn-hero-secondary" style="margin-top: 1rem;">
@@ -509,5 +477,156 @@
             </div>
         </div>
     </div>
+
 </section>
+
+<!-- CTA Section -->
+<section class="section-premium"
+    style="background: #0f172a; padding: 5rem 0;">
+    <div class="container" style="text-align: center;">
+        <h2 style="font-size: 2.5rem; font-weight: 800; color: white; margin-bottom: 1rem;">Ready to Discover Your
+            Future?</h2>
+        <p style="font-size: 1.25rem; color: rgba(255,255,255,0.8); max-width: 600px; margin: 0 auto 2rem;">
+            Join {{ SITE_NAME }} today. One experience can make all the difference in your career journey.
+        </p>
+        <div class="hero-buttons-premium" style="justify-content: center;">
+            <a href="{% url 'accounts:signup_student' %}" class="btn-hero-primary"
+                style="background: white; color: #1e3a5f;">
+                <i data-feather="eye"></i>
+                Start Shadowing
+            </a>
+            <a href="{% url 'accounts:signup_mentor' %}" class="btn-hero-secondary">
+                <i data-feather="award"></i>
+                Become a Mentor
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Role Toggle Styles */
+    .role-toggle {
+        display: inline-flex;
+        background: #f1f5f9;
+        border-radius: 50px;
+        padding: 4px;
+        margin-top: 1.5rem;
+        gap: 4px;
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.08);
+    }
+
+    .role-toggle-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.75rem;
+        border: none;
+        border-radius: 50px;
+        font-size: 0.9375rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        background: transparent;
+        color: #64748b;
+    }
+
+    .role-toggle-btn:hover {
+        color: #1e293b;
+    }
+
+    .role-toggle-btn.active {
+        background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%);
+        color: white;
+        box-shadow: 0 4px 12px rgba(30, 58, 95, 0.3);
+    }
+
+    .role-toggle-btn svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    /* Smooth show/hide transitions */
+    #how-it-works-student,
+    #how-it-works-mentor {
+        animation: fadeSlideIn 0.4s ease-out;
+    }
+
+    @keyframes fadeSlideIn {
+        from {
+            opacity: 0;
+            transform: translateY(16px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @media (max-width: 640px) {
+        .role-toggle {
+            flex-direction: column;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .role-toggle-btn {
+            justify-content: center;
+            border-radius: 12px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function showStudentFlow() {
+        // Toggle button states
+        document.getElementById('toggle-student').classList.add('active');
+        document.getElementById('toggle-mentor').classList.remove('active');
+
+        // Show student, hide mentor
+        var studentSection = document.getElementById('how-it-works-student');
+        var mentorSection = document.getElementById('how-it-works-mentor');
+
+        studentSection.style.display = 'block';
+        // Re-trigger animation
+        studentSection.style.animation = 'none';
+        studentSection.offsetHeight; // force reflow
+        studentSection.style.animation = 'fadeSlideIn 0.4s ease-out';
+
+        mentorSection.style.display = 'none';
+
+        // Re-render feather icons
+        if (typeof feather !== 'undefined') {
+            feather.replace();
+        }
+    }
+
+    function showMentorFlow() {
+        // Toggle button states
+        document.getElementById('toggle-mentor').classList.add('active');
+        document.getElementById('toggle-student').classList.remove('active');
+
+        // Hide student, show mentor
+        var studentSection = document.getElementById('how-it-works-student');
+        var mentorSection = document.getElementById('how-it-works-mentor');
+
+        studentSection.style.display = 'none';
+        mentorSection.style.display = 'block';
+
+        // Re-trigger animation
+        mentorSection.style.animation = 'none';
+        mentorSection.offsetHeight; // force reflow
+        mentorSection.style.animation = 'fadeSlideIn 0.4s ease-out';
+
+        // Re-render feather icons
+        if (typeof feather !== 'undefined') {
+            feather.replace();
+        }
+    }
+</script>
 {% endblock %}

@@ -17,7 +17,7 @@
         <p><strong>Name:</strong> {{ payment_proof.user.get_full_name|default:payment_proof.user.email }}</p>
         <p><strong>Email:</strong> {{ payment_proof.user.email }}</p>
         <p><strong>Payment Type:</strong> {{ payment_proof.get_payment_type_display }}</p>
-        <p><strong>Amount:</strong> ${{ payment_proof.amount }}</p>
+        <p><strong>Amount:</strong> RWF {{ payment_proof.amount }}</p>
         <p><strong>Submitted:</strong> {{ payment_proof.submitted_at|date:"F d, Y H:i" }}</p>
         <p><strong>Status:</strong> <span class="badge badge-{{ payment_proof.status }}">{{ payment_proof.get_status_display }}</span></p>
     </div>
