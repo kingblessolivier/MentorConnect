@@ -6,14 +6,14 @@
 <div class="dashboard-header">
     <div>
         <h1>Welcome, {{ user.first_name }}! 👋</h1>
-        <p class="text-muted">Manage your mentorship activities</p>
+        <p class="text-muted">Manage and oversee your assigned mentors</p>
     </div>
     <div class="dashboard-header-actions">
-        <a href="{% url 'feed:create_post' %}" class="btn btn-primary">
-            <i data-feather="edit"></i> Create Post
+        <a href="{% url 'dashboard:mf_mentors' %}" class="btn btn-primary">
+            <i data-feather="award"></i> Manage Mentors
         </a>
-        <a href="{% url 'sessions_app:add-availability' %}" class="btn btn-outline">
-            <i data-feather="calendar"></i> Add Availability
+        <a href="{% url 'dashboard:mf_create_session' %}" class="btn btn-outline">
+            <i data-feather="calendar"></i> Create Session
         </a>
     </div>
 </div>
@@ -21,112 +21,212 @@
 <!-- Stats -->
 <div class="dashboard-stats">
     <div class="stat-card">
-        <div class="stat-card-icon" style="background: #fef3c7; color: #d97706;">
-            <i data-feather="clock"></i>
+        <div class="stat-card-icon" style="background: #dbeafe; color: #2563eb;">
+            <i data-feather="users"></i>
         </div>
-        <div class="stat-card-value">{{ total_pending|default:0 }}</div>
-        <div class="stat-card-label">Pending Requests</div>
+        <div class="stat-card-value">{{ assigned_mentors_count|default:0 }}</div>
+        <div class="stat-card-label">Assigned Mentors</div>
     </div>
     <div class="stat-card">
         <div class="stat-card-icon" style="background: #d1fae5; color: #059669;">
-            <i data-feather="check-circle"></i>
+            <i data-feather="link"></i>
         </div>
-        <div class="stat-card-value">{{ total_approved|default:0 }}</div>
-        <div class="stat-card-label">Active Mentees</div>
+        <div class="stat-card-value">{{ active_mentorships_count|default:0 }}</div>
+        <div class="stat-card-label">Active Mentorships</div>
     </div>
     <div class="stat-card">
-        <div class="stat-card-icon">
+        <div class="stat-card-icon" style="background: #fef3c7; color: #d97706;">
+            <i data-feather="clock"></i>
+        </div>
+        <div class="stat-card-value">{{ total_pending_requests|default:0 }}</div>
+        <div class="stat-card-label">Pending Requests</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon" style="background: #ede9fe; color: #7c3aed;">
             <i data-feather="award"></i>
         </div>
-        <div class="stat-card-value">{{ total_completed|default:0 }}</div>
+        <div class="stat-card-value">{{ completed_mentorships_count|default:0 }}</div>
         <div class="stat-card-label">Completed</div>
     </div>
     <div class="stat-card">
         <div class="stat-card-icon" style="background: #fee2e2; color: #dc2626;">
-            <i data-feather="heart"></i>
+            <i data-feather="alert-triangle"></i>
         </div>
-        <div class="stat-card-value">{{ followers_count|default:0 }}</div>
-        <div class="stat-card-label">Followers</div>
+        <div class="stat-card-value">{{ disputes_count|default:0 }}</div>
+        <div class="stat-card-label">Open Disputes</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon" style="background: #f3f4f6; color: #6b7280;">
+            <i data-feather="file-text"></i>
+        </div>
+        <div class="stat-card-value">{{ session_reports_count|default:0 }}</div>
+        <div class="stat-card-label">Session Reports</div>
     </div>
 </div>
 
-<!-- Profile Rating -->
-{% if profile %}
+<!-- Quick Actions -->
 <div class="card mb-4">
-    <div class="card-body flex justify-between items-center">
-        <div class="flex items-center gap-4">
-            <div>
-                <div class="text-muted text-sm">Your Rating</div>
-                <div class="flex items-center gap-2">
-                    <span class="text-2xl font-bold">{{ profile.rating|floatformat:1 }}</span>
-                    <div class="rating">
-                        {% for i in "12345" %}
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                             fill="{% if forloop.counter <= profile.rating %}#fbbf24{% else %}#e5e7eb{% endif %}" stroke="none">
-                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                        </svg>
-                        {% endfor %}
+    <div class="card-body">
+        <h3 class="mb-3"><i data-feather="zap" style="width:20px;height:20px;"></i> Quick Actions</h3>
+        <div class="mf-quick-actions">
+            <a href="{% url 'dashboard:mf_mentors' %}" class="mf-action-card">
+                <div class="mf-action-icon" style="background: #dbeafe; color: #2563eb;">
+                    <i data-feather="award"></i>
+                </div>
+                <span>Mentors</span>
+            </a>
+            <a href="{% url 'dashboard:mf_assignments' %}" class="mf-action-card">
+                <div class="mf-action-icon" style="background: #d1fae5; color: #059669;">
+                    <i data-feather="users"></i>
+                </div>
+                <span>Assignments</span>
+            </a>
+            <a href="{% url 'dashboard:mf_sessions' %}" class="mf-action-card">
+                <div class="mf-action-icon" style="background: #fef3c7; color: #d97706;">
+                    <i data-feather="calendar"></i>
+                </div>
+                <span>Sessions</span>
+            </a>
+            <a href="{% url 'dashboard:mf_applications' %}" class="mf-action-card">
+                <div class="mf-action-icon" style="background: #ede9fe; color: #7c3aed;">
+                    <i data-feather="user-plus"></i>
+                </div>
+                <span>Applications</span>
+            </a>
+            <a href="{% url 'dashboard:mf_disputes' %}" class="mf-action-card">
+                <div class="mf-action-icon" style="background: #fee2e2; color: #dc2626;">
+                    <i data-feather="alert-triangle"></i>
+                </div>
+                <span>Disputes</span>
+            </a>
+            <a href="{% url 'dashboard:mf_inactive_mentorships' %}" class="mf-action-card">
+                <div class="mf-action-icon" style="background: #fef9c3; color: #ca8a04;">
+                    <i data-feather="alert-circle"></i>
+                </div>
+                <span>Inactive</span>
+            </a>
+            <a href="{% url 'dashboard:mf_onboarding' %}" class="mf-action-card">
+                <div class="mf-action-icon" style="background: #dbeafe; color: #2563eb;">
+                    <i data-feather="book-open"></i>
+                </div>
+                <span>Onboarding</span>
+            </a>
+            <a href="{% url 'dashboard:mf_backup' %}" class="mf-action-card">
+                <div class="mf-action-icon" style="background: #f3f4f6; color: #6b7280;">
+                    <i data-feather="shield"></i>
+                </div>
+                <span>Backup</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Mentor Profiles Overview -->
+{% if mentor_profiles %}
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="mb-0"><i data-feather="award" style="width:20px;height:20px;color:#2563eb;"></i> Your Mentors
+            </h3>
+            <a href="{% url 'dashboard:mf_mentors' %}" class="text-primary text-sm">View all</a>
+        </div>
+        <div class="mf-mentor-grid">
+            {% for profile in mentor_profiles %}
+            <div class="mf-mentor-overview-card">
+                <div class="mf-mentor-top">
+                    <img src="{{ profile.user.get_avatar_url }}" alt="" class="avatar avatar-lg">
+                    <div class="mf-mentor-info-text">
+                        <div class="font-medium">{{ profile.user.get_full_name }}</div>
+                        <div class="text-xs text-muted">{{ profile.expertise|truncatechars:30 }}</div>
+                        <div class="mf-mentor-badges">
+                            <span
+                                class="badge {% if profile.is_available %}badge-success{% else %}badge-danger{% endif %}"
+                                style="font-size:0.65rem;">
+                                {% if profile.is_available %}Available{% else %}Unavailable{% endif %}
+                            </span>
+                            {% if profile.is_verified %}
+                            <span class="badge badge-primary" style="font-size:0.65rem;">Verified</span>
+                            {% endif %}
+                        </div>
                     </div>
-                    <span class="text-muted">({{ profile.total_reviews }} reviews)</span>
+                </div>
+                <div class="mf-mentor-stats-row">
+                    <div class="mf-mini-stat">
+                        <span class="mf-mini-stat-val">{{ profile.rating|floatformat:1 }}</span>
+                        <span class="mf-mini-stat-label">Rating</span>
+                    </div>
+                    <div class="mf-mini-stat">
+                        <span class="mf-mini-stat-val">{{ profile.total_reviews }}</span>
+                        <span class="mf-mini-stat-label">Reviews</span>
+                    </div>
+                </div>
+                <div class="mf-mentor-actions-row">
+                    <a href="{% url 'dashboard:mf_mentor_edit' profile.user.pk %}"
+                        class="btn btn-sm btn-outline">Edit</a>
+                    <a href="{% url 'profiles:mentor_detail' profile.user.pk %}" class="btn btn-sm btn-primary">View</a>
                 </div>
             </div>
-        </div>
-        <div class="text-right">
-            <div class="text-muted text-sm">Profile Status</div>
-            <span class="badge {% if profile.is_available %}badge-success{% else %}badge-danger{% endif %}">
-                {% if profile.is_available %}Available{% else %}Not Available{% endif %}
-            </span>
+            {% endfor %}
         </div>
     </div>
 </div>
 {% endif %}
 
-<!-- Mentorship Applications Pending Review -->
-{% if mentorship_applications_pending %}
+<!-- Pending Applications for Assigned Mentors -->
+{% if pending_applications %}
 <div class="card mb-4">
     <div class="card-body">
         <div class="flex justify-between items-center mb-4">
-            <h3 class="mb-0">Mentorship Applications (Pending Review)</h3>
-            <a href="{% url 'applications:mentor_applications' %}" class="text-primary text-sm">View all</a>
+            <h3 class="mb-0"><i data-feather="user-plus" style="width:20px;height:20px;color:#7c3aed;"></i> Pending
+                Applications ({{ total_pending_applications }})</h3>
+            <a href="{% url 'dashboard:mf_applications' %}" class="text-primary text-sm">View all</a>
         </div>
-        {% for app in mentorship_applications_pending %}
+        {% for app in pending_applications %}
         <div class="flex items-center gap-3 p-4 rounded-lg mb-3" style="background: var(--background-color);">
+            <div class="mf-action-icon"
+                style="background:#ede9fe; color:#7c3aed; width:40px;height:40px;min-width:40px;">
+                <i data-feather="user-plus" style="width:18px;height:18px;"></i>
+            </div>
             <div class="flex-1">
                 <div class="font-medium">{{ app.name }}</div>
-                <div class="text-sm text-muted">{{ app.email }} • {{ app.school|default:app.program|default:"—" }}</div>
-                <div class="text-xs text-muted">{{ app.tracking_code }}</div>
+                <div class="text-sm text-muted">{{ app.email }} • Mentor: {{
+                    app.selected_mentor.get_full_name|default:"Unassigned" }}</div>
+                <div class="text-xs text-muted">{{ app.tracking_code }} • {{ app.submitted_at|timesince }} ago</div>
             </div>
-            <a href="{% url 'applications:mentor_application_detail' app.pk %}" class="btn btn-sm btn-outline">View</a>
+            <div class="flex gap-2">
+                <a href="{% url 'dashboard:admin_application_detail' app.pk %}" class="btn btn-sm btn-outline">View</a>
+                <a href="{% url 'dashboard:mf_reassign_mentor' app.pk %}" class="btn btn-sm btn-outline">Reassign</a>
+            </div>
         </div>
         {% endfor %}
     </div>
 </div>
 {% endif %}
 
-<!-- Pending Requests -->
-<div class="card">
+<!-- Pending Requests for Assigned Mentors -->
+<div class="card mb-4">
     <div class="card-body">
         <div class="flex justify-between items-center mb-4">
-            <h3 class="mb-0">Pending Requests</h3>
-            <a href="{% url 'mentorship:request_list' %}" class="text-primary text-sm">View all</a>
+            <h3 class="mb-0"><i data-feather="clock" style="width:20px;height:20px;color:#d97706;"></i> Pending
+                Internship Requests ({{ total_pending_requests|default:0 }})</h3>
+            <a href="{% url 'dashboard:mf_mentorships' %}" class="text-primary text-sm">View all</a>
         </div>
-
-        {% for request in pending_requests %}
+        {% for req in pending_requests %}
         <div class="flex items-center gap-3 p-4 rounded-lg mb-3" style="background: var(--background-color);">
-            <img src="{{ request.student.get_avatar_url }}" alt="" class="avatar avatar-lg">
+            <img src="{{ req.student.get_avatar_url }}" alt="" class="avatar avatar-lg">
             <div class="flex-1">
-                <div class="font-medium">{{ request.student.get_full_name }}</div>
-                <div class="text-sm font-medium text-primary">{{ request.subject }}</div>
-                <div class="text-sm text-muted">{{ request.message|truncatewords:15 }}</div>
+                <div class="font-medium">{{ req.student.get_full_name }} → {{ req.mentor.get_full_name }}</div>
+                <div class="text-sm font-medium text-primary">{{ req.subject }}</div>
+                <div class="text-sm text-muted">{{ req.message|truncatewords:15 }}</div>
             </div>
             <div class="flex gap-2">
-                <form method="post" action="{% url 'mentorship:approve_request' request.pk %}" style="display:inline;">
+                <form method="post" action="{% url 'dashboard:mf_approve_request' req.pk %}" style="display:inline;">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-sm btn-primary">
                         <i data-feather="check" style="width:16px;height:16px;"></i> Approve
                     </button>
                 </form>
-                <form method="post" action="{% url 'mentorship:reject_request' request.pk %}" style="display:inline;">
+                <form method="post" action="{% url 'dashboard:mf_reject_request' req.pk %}" style="display:inline;">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-sm btn-outline">
                         <i data-feather="x" style="width:16px;height:16px;"></i> Decline
@@ -135,14 +235,208 @@
             </div>
         </div>
         {% empty %}
-        <p class="text-muted text-center py-4">No pending requests</p>
+        <p class="text-muted text-center py-4">No pending requests for your assigned mentors</p>
         {% endfor %}
     </div>
 </div>
 
-<!-- Mobile Toggle Button -->
-<button class="sidebar-toggle-mobile">
-    <i data-feather="menu"></i>
-</button>
-<div class="sidebar-overlay"></div>
+<!-- Open Disputes -->
+{% if open_disputes %}
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="mb-0"><i data-feather="alert-triangle" style="width:20px;height:20px;color:#d97706;"></i> Open
+                Disputes</h3>
+            <a href="{% url 'dashboard:mf_disputes' %}" class="text-primary text-sm">View all</a>
+        </div>
+        {% for dispute in open_disputes %}
+        <div class="flex items-center gap-3 p-4 rounded-lg mb-3" style="background: var(--background-color);">
+            <div class="mf-action-icon"
+                style="background: #fee2e2; color: #dc2626; width:40px;height:40px;min-width:40px;">
+                <i data-feather="alert-triangle" style="width:18px;height:18px;"></i>
+            </div>
+            <div class="flex-1">
+                <div class="font-medium">{{ dispute.mentorship_request.student.get_full_name }} ↔ {{
+                    dispute.mentorship_request.mentor.get_full_name }}</div>
+                <div class="text-sm text-muted">{{ dispute.reason|truncatewords:15 }}</div>
+                <div class="text-xs text-muted">{{ dispute.created_at|timesince }} ago • <span
+                        class="badge badge-warning" style="font-size:0.65rem;">{{ dispute.get_status_display }}</span>
+                </div>
+            </div>
+            <a href="{% url 'dashboard:mf_dispute_resolve' dispute.pk %}" class="btn btn-sm btn-primary">Resolve</a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Recent Assignments -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="mb-0"><i data-feather="users" style="width:20px;height:20px;color:#2563eb;"></i> Recent
+                Assignments</h3>
+            <a href="{% url 'dashboard:mf_assignments' %}" class="text-primary text-sm">View all</a>
+        </div>
+        {% for assignment in assignments %}
+        <div class="flex items-center gap-3 p-4 rounded-lg mb-3" style="background: var(--background-color);">
+            {% if assignment.mentor %}
+            <img src="{{ assignment.mentor.get_avatar_url }}" alt="" class="avatar avatar-lg">
+            <div class="flex-1">
+                <div class="font-medium">{{ assignment.mentor.get_full_name }}</div>
+                <div class="text-sm text-muted">{{ assignment.mentor.email }}</div>
+                <div class="text-xs text-muted">Assigned {{ assignment.assigned_at|timesince }} ago</div>
+            </div>
+            <a href="{% url 'dashboard:mf_mentor_edit' assignment.mentor.pk %}" class="btn btn-sm btn-outline">Edit
+                Profile</a>
+            <a href="{% url 'profiles:mentor_detail' assignment.mentor.pk %}" class="btn btn-sm btn-primary">View</a>
+            {% elif assignment.mentorship_request %}
+            <div class="mf-action-icon"
+                style="background: #dbeafe; color: #2563eb; width:40px;height:40px;min-width:40px;">
+                <i data-feather="link" style="width:18px;height:18px;"></i>
+            </div>
+            <div class="flex-1">
+                <div class="font-medium">{{ assignment.mentorship_request.student.get_full_name }} → {{
+                    assignment.mentorship_request.mentor.get_full_name }}</div>
+                <div class="text-sm text-muted">{{ assignment.mentorship_request.subject|truncatewords:10 }}</div>
+                <div class="text-xs text-muted">{{ assignment.mentorship_request.get_status_display }}</div>
+            </div>
+            {% endif %}
+        </div>
+        {% empty %}
+        <p class="text-muted text-center py-4">No assignments yet. Ask an admin to assign mentors to you.</p>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+    .mf-quick-actions {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+        gap: 1rem;
+    }
+
+    .mf-action-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 1.25rem 0.75rem;
+        border-radius: 12px;
+        background: var(--background-color, #f9fafb);
+        text-decoration: none;
+        color: var(--text-primary, #111827);
+        font-weight: 500;
+        font-size: 0.875rem;
+        transition: all 0.2s ease;
+        border: 1px solid transparent;
+    }
+
+    .mf-action-card:hover {
+        border-color: var(--primary-color, #4f46e5);
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.1);
+        transform: translateY(-2px);
+    }
+
+    .mf-action-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .mf-action-icon svg,
+    .mf-action-icon i {
+        width: 22px;
+        height: 22px;
+    }
+
+    /* Mentor Grid */
+    .mf-mentor-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 1rem;
+    }
+
+    .mf-mentor-overview-card {
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 1rem;
+        background: var(--background-color, #f9fafb);
+        transition: all 0.2s ease;
+    }
+
+    .mf-mentor-overview-card:hover {
+        border-color: var(--primary-color, #4f46e5);
+        box-shadow: 0 2px 8px rgba(79, 70, 229, 0.08);
+    }
+
+    .mf-mentor-top {
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+        margin-bottom: 0.75rem;
+    }
+
+    .mf-mentor-info-text {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .mf-mentor-badges {
+        display: flex;
+        gap: 0.25rem;
+        margin-top: 0.25rem;
+    }
+
+    .mf-mentor-stats-row {
+        display: flex;
+        gap: 1rem;
+        padding: 0.5rem 0;
+        border-top: 1px solid #e5e7eb;
+        border-bottom: 1px solid #e5e7eb;
+        margin-bottom: 0.75rem;
+    }
+
+    .mf-mini-stat {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex: 1;
+    }
+
+    .mf-mini-stat-val {
+        font-weight: 700;
+        font-size: 1rem;
+        color: var(--text-primary, #111827);
+    }
+
+    .mf-mini-stat-label {
+        font-size: 0.6875rem;
+        color: #9ca3af;
+    }
+
+    .mf-mentor-actions-row {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .mf-mentor-actions-row .btn {
+        flex: 1;
+        justify-content: center;
+        text-align: center;
+    }
+
+    @media (max-width: 640px) {
+        .mf-quick-actions {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .mf-mentor-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
 {% endblock %}

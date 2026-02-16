@@ -5,114 +5,462 @@
 {% block dashboard_content %}
 <div class="dashboard-header">
     <div>
-        <h1><i data-feather="book-open" class="header-icon"></i> Onboarding & Training Resources</h1>
-        <p class="text-muted">Guidance and training materials for mentors under your supervision</p>
+        <h1><i data-feather="book-open" class="header-icon"></i> Onboarding & Training</h1>
+        <p class="text-muted">Resources and checklists to help onboard and train your assigned mentors</p>
     </div>
-    <a href="{% url 'dashboard:mentor_facilitator_dashboard' %}" class="btn btn-outline"><i data-feather="arrow-left"></i> Dashboard</a>
+    <a href="{% url 'dashboard:mentor_facilitator_dashboard' %}" class="btn btn-outline"><i
+            data-feather="arrow-left"></i> Dashboard</a>
 </div>
 
+<!-- Welcome Banner -->
+<div class="card mb-4" style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); color: #fff;">
+    <div class="card-body" style="padding: 2rem;">
+        <h2 style="color: #fff; margin-bottom: 0.5rem;">Welcome, {{ user.first_name }}!</h2>
+        <p style="opacity:0.9; margin-bottom: 1rem;">As a Mentor Facilitator, you guide mentors through onboarding,
+            ensure they're trained, and set them up for success. Use the resources below to manage the onboarding
+            journey.</p>
+        <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+            <a href="{% url 'dashboard:mf_mentors' %}" class="btn"
+                style="background:rgba(255,255,255,0.2); color:#fff; border:1px solid rgba(255,255,255,0.3);"><i
+                    data-feather="users"></i> View Mentors</a>
+            <a href="{% url 'dashboard:mf_mentor_add' %}" class="btn" style="background:#fff; color:#4f46e5;"><i
+                    data-feather="user-plus"></i> Add New Mentor</a>
+        </div>
+    </div>
+</div>
+
+<!-- Onboarding Steps -->
 <div class="card mb-4">
     <div class="card-body">
-        <h3>Welcome to Mentor Facilitator Onboarding</h3>
-        <p>As a mentor facilitator, you are responsible for onboarding, training, and supporting mentors assigned to you. Use the resources below to help mentors get started and succeed.</p>
-        <div class="alert alert-info">
-            <i data-feather="info"></i>
-            <strong>Tip:</strong> Share these resources with new mentors and schedule an onboarding session.
+        <h3 class="mb-3"><i data-feather="check-square" style="width:20px;height:20px;"></i> Mentor Onboarding Checklist
+        </h3>
+        <p class="text-muted mb-4">Share this checklist with new mentors to ensure a smooth onboarding process.</p>
+        <div class="ob-steps">
+            <div class="ob-step">
+                <div class="ob-step-num">1</div>
+                <div class="ob-step-content">
+                    <strong>Account Setup</strong>
+                    <p>Ensure the mentor has registered and verified their email. Set up their profile with a photo,
+                        bio, and expertise area.</p>
+                    <a href="{% url 'dashboard:mf_mentors' %}" class="ob-link">Go to Mentor Management →</a>
+                </div>
+            </div>
+            <div class="ob-step">
+                <div class="ob-step-num">2</div>
+                <div class="ob-step-content">
+                    <strong>Guidelines & Compliance</strong>
+                    <p>Review the official Mentor Guidelines and Code of Conduct. Complete the safety and compliance
+                        training.</p>
+                    <a href="/core/mentor-guidelines/" class="ob-link">View Mentor Guidelines →</a>
+                </div>
+            </div>
+            <div class="ob-step">
+                <div class="ob-step-num">3</div>
+                <div class="ob-step-content">
+                    <strong>Profile Completion</strong>
+                    <p>Help the mentor fill in expertise, skills, availability, session preferences, and location
+                        settings.</p>
+                    <a href="{% url 'dashboard:mf_mentors' %}" class="ob-link">Edit Mentor Profiles →</a>
+                </div>
+            </div>
+            <div class="ob-step">
+                <div class="ob-step-num">4</div>
+                <div class="ob-step-content">
+                    <strong>Availability Setup</strong>
+                    <p>Define availability slots and observation internship days so students can book sessions.</p>
+                    <a href="{% url 'dashboard:mf_sessions' %}" class="ob-link">Manage Sessions →</a>
+                </div>
+            </div>
+            <div class="ob-step">
+                <div class="ob-step-num">5</div>
+                <div class="ob-step-content">
+                    <strong>First Check-In</strong>
+                    <p>Schedule an introductory check-in with the mentor to discuss expectations, answer questions, and
+                        set initial goals.</p>
+                    <a href="{% url 'dashboard:mf_create_session' %}" class="ob-link">Create a Session →</a>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
-<div class="grid grid-2">
+<!-- Training Resources & Videos -->
+<div style="display:grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;" class="mb-4 ob-grid">
     <div class="card">
         <div class="card-body">
-            <h4><i data-feather="user-check"></i> Mentor Onboarding Checklist</h4>
-            <ul class="checklist">
-                <li><input type="checkbox"> Review mentor guidelines and code of conduct</li>
-                <li><input type="checkbox"> Complete platform tutorial (video walkthrough)</li>
-                <li><input type="checkbox"> Set up mentor profile with photo, bio, expertise</li>
-                <li><input type="checkbox"> Define availability and session preferences</li>
-                <li><input type="checkbox"> Attend safety & compliance training</li>
-                <li><input type="checkbox"> Schedule first check‑in with facilitator</li>
-            </ul>
-        </div>
-    </div>
-    <div class="card">
-        <div class="card-body">
-            <h4><i data-feather="video"></i> Training Videos</h4>
-            <div class="resource-list">
-                <div class="resource-item">
-                    <i data-feather="play-circle"></i>
+            <h3 class="mb-3"><i data-feather="video" style="width:20px;height:20px;"></i> Training Videos</h3>
+            <div class="ob-resource-list">
+                <div class="ob-resource">
+                    <div class="ob-resource-icon" style="background:#dbeafe; color:#2563eb;"><i
+                            data-feather="play-circle"></i></div>
                     <div>
-                        <strong>Platform Overview (15 min)</strong>
-                        <p>Introduction to dashboard, session scheduling, and reporting.</p>
+                        <strong>Platform Overview</strong>
+                        <span class="ob-duration">15 min</span>
+                        <p>Introduction to the dashboard, session scheduling, and reporting tools.</p>
                     </div>
                 </div>
-                <div class="resource-item">
-                    <i data-feather="play-circle"></i>
+                <div class="ob-resource">
+                    <div class="ob-resource-icon" style="background:#d1fae5; color:#059669;"><i
+                            data-feather="play-circle"></i></div>
                     <div>
-                        <strong>Effective Mentorship Sessions (20 min)</strong>
-                        <p>Best practices for structuring sessions and providing feedback.</p>
+                        <strong>Effective Mentorship</strong>
+                        <span class="ob-duration">20 min</span>
+                        <p>Best practices for structuring sessions and giving valuable feedback.</p>
                     </div>
                 </div>
-                <div class="resource-item">
-                    <i data-feather="play-circle"></i>
+                <div class="ob-resource">
+                    <div class="ob-resource-icon" style="background:#fef3c7; color:#d97706;"><i
+                            data-feather="play-circle"></i></div>
                     <div>
-                        <strong>Safety & Boundaries (10 min)</strong>
+                        <strong>Safety & Boundaries</strong>
+                        <span class="ob-duration">10 min</span>
                         <p>Maintaining professional boundaries and reporting concerns.</p>
                     </div>
                 </div>
+                <div class="ob-resource">
+                    <div class="ob-resource-icon" style="background:#ede9fe; color:#7c3aed;"><i
+                            data-feather="play-circle"></i></div>
+                    <div>
+                        <strong>Session Reporting</strong>
+                        <span class="ob-duration">12 min</span>
+                        <p>How to complete and submit session reports after each mentoring session.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <h3 class="mb-3"><i data-feather="file-text" style="width:20px;height:20px;"></i> Quick Resources</h3>
+            <div class="ob-resource-list">
+                {% for r in resources %}
+                <a href="{{ r.url }}" class="ob-resource ob-resource-link">
+                    <div class="ob-resource-icon" style="background:#f3f4f6; color:#6b7280;"><i
+                            data-feather="file-text"></i></div>
+                    <div>
+                        <strong>{{ r.title }}</strong>
+                        <p>{{ r.description }}</p>
+                    </div>
+                    <i data-feather="external-link" style="width:16px;height:16px;color:#9ca3af;flex-shrink:0;"></i>
+                </a>
+                {% endfor %}
             </div>
         </div>
     </div>
 </div>
 
-<div class="card mt-4">
+<!-- Communication Templates -->
+<div class="card mb-4">
     <div class="card-body">
-        <h4><i data-feather="file-text"></i> Quick Resources</h4>
-        <div class="resource-grid">
-            {% for r in resources %}
-            <a href="{{ r.url }}" class="resource-card">
-                <div class="resource-icon">
-                    <i data-feather="file-text"></i>
+        <h3 class="mb-3"><i data-feather="message-square" style="width:20px;height:20px;"></i> Communication Templates
+        </h3>
+        <p class="text-muted mb-3">Copy and customise these templates when communicating with mentors.</p>
+
+        <div class="ob-templates">
+            <div class="ob-template">
+                <div class="ob-template-header">
+                    <i data-feather="mail" style="width:16px;height:16px;color:#2563eb;"></i>
+                    <strong>Welcome Email</strong>
                 </div>
-                <div class="resource-content">
-                    <strong>{{ r.title }}</strong>
-                    <p>{{ r.description }}</p>
+                <pre class="ob-template-body">Hi [Mentor Name],
+
+Welcome to {{ SITE_NAME }}! We're excited to have you on board as a mentor.
+
+Please take a few minutes to:
+1. Complete your profile (photo, bio, expertise)
+2. Review the Mentor Guidelines
+3. Set your availability for sessions
+
+If you have any questions, don't hesitate to reach out. Let's schedule an introductory call to get you started.
+
+Best regards,
+{{ user.get_full_name }}</pre>
+            </div>
+
+            <div class="ob-template">
+                <div class="ob-template-header">
+                    <i data-feather="bell" style="width:16px;height:16px;color:#d97706;"></i>
+                    <strong>Session Reminder</strong>
                 </div>
+                <pre class="ob-template-body">Hi [Mentor Name],
+
+This is a friendly reminder that you have a session with [Student Name] scheduled for [Date & Time].
+
+Please ensure you're prepared and have reviewed the session plan. Let me know if you need to reschedule.
+
+Thank you!</pre>
+            </div>
+
+            <div class="ob-template">
+                <div class="ob-template-header">
+                    <i data-feather="star" style="width:16px;height:16px;color:#059669;"></i>
+                    <strong>Feedback Request</strong>
+                </div>
+                <pre class="ob-template-body">Hi [Mentor Name],
+
+How was your recent session with [Student Name]? I'd love to hear about any successes, challenges, or areas where you'd like support.
+
+Let's schedule a quick check-in at your convenience. Looking forward to hearing from you!</pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Navigation -->
+<div class="card mb-4">
+    <div class="card-body">
+        <h3 class="mb-3"><i data-feather="navigation" style="width:20px;height:20px;"></i> Quick Navigation</h3>
+        <div class="mf-quick-actions">
+            <a href="{% url 'dashboard:mf_mentors' %}" class="mf-action-card">
+                <div class="mf-action-icon" style="background:#dbeafe; color:#2563eb;"><i data-feather="award"></i>
+                </div>
+                <span>Mentors</span>
             </a>
-            {% endfor %}
-        </div>
-    </div>
-</div>
-
-<div class="card mt-4">
-    <div class="card-body">
-        <h4><i data-feather="message-square"></i> Communication Templates</h4>
-        <p>Use these templates when communicating with mentors:</p>
-        <div class="template-list">
-            <div class="template">
-                <strong>Welcome Email</strong>
-                <pre>Hi [Mentor Name], welcome to {{ SITE_NAME }}! We're excited to have you on board. Please complete your profile and review the mentor guidelines. Let me know if you have any questions.</pre>
-            </div>
-            <div class="template">
-                <strong>Session Reminder</strong>
-                <pre>Hi [Mentor Name], a reminder that you have a session with [Student Name] on [Date]. Please ensure you're prepared and have reviewed the session plan.</pre>
-            </div>
-            <div class="template">
-                <strong>Feedback Request</strong>
-                <pre>Hi [Mentor Name], how was your recent session with [Student Name]? Any challenges or successes you'd like to share? Let's schedule a quick check‑in.</pre>
-            </div>
+            <a href="{% url 'dashboard:mf_assignments' %}" class="mf-action-card">
+                <div class="mf-action-icon" style="background:#d1fae5; color:#059669;"><i data-feather="users"></i>
+                </div>
+                <span>Assignments</span>
+            </a>
+            <a href="{% url 'dashboard:mf_sessions' %}" class="mf-action-card">
+                <div class="mf-action-icon" style="background:#fef3c7; color:#d97706;"><i data-feather="calendar"></i>
+                </div>
+                <span>Sessions</span>
+            </a>
+            <a href="{% url 'dashboard:mf_applications' %}" class="mf-action-card">
+                <div class="mf-action-icon" style="background:#ede9fe; color:#7c3aed;"><i data-feather="user-plus"></i>
+                </div>
+                <span>Applications</span>
+            </a>
+            <a href="{% url 'dashboard:mf_disputes' %}" class="mf-action-card">
+                <div class="mf-action-icon" style="background:#fee2e2; color:#dc2626;"><i
+                        data-feather="alert-triangle"></i></div>
+                <span>Disputes</span>
+            </a>
+            <a href="{% url 'dashboard:mf_backup' %}" class="mf-action-card">
+                <div class="mf-action-icon" style="background:#f3f4f6; color:#6b7280;"><i data-feather="shield"></i>
+                </div>
+                <span>Backup</span>
+            </a>
         </div>
     </div>
 </div>
 
 <style>
-.checklist li { margin-bottom: 0.5rem; }
-.resource-item { display: flex; align-items: start; gap: 1rem; margin-bottom: 1rem; }
-.resource-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem; }
-.resource-card { border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 1rem; display: flex; gap: 1rem; align-items: start; text-decoration: none; color: inherit; }
-.resource-card:hover { background: #f9fafb; }
-.template { margin-bottom: 1.5rem; }
-.template pre { background: #f3f4f6; padding: 1rem; border-radius: 0.375rem; white-space: pre-wrap; font-size: 0.875rem; }
+    /* Onboarding Steps */
+    .ob-steps {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .ob-step {
+        display: flex;
+        gap: 1rem;
+        padding: 1.25rem;
+        border-radius: 12px;
+        background: var(--background-color, #f9fafb);
+        border: 1px solid #e5e7eb;
+        transition: all 0.2s ease;
+    }
+
+    .ob-step:hover {
+        border-color: var(--primary-color, #4f46e5);
+        box-shadow: 0 2px 8px rgba(79, 70, 229, 0.08);
+    }
+
+    .ob-step-num {
+        width: 36px;
+        height: 36px;
+        min-width: 36px;
+        border-radius: 50%;
+        background: var(--primary-color, #4f46e5);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.875rem;
+    }
+
+    .ob-step-content {
+        flex: 1;
+    }
+
+    .ob-step-content strong {
+        display: block;
+        margin-bottom: 0.25rem;
+    }
+
+    .ob-step-content p {
+        color: #6b7280;
+        font-size: 0.875rem;
+        margin: 0 0 0.5rem;
+    }
+
+    .ob-link {
+        font-size: 0.8125rem;
+        color: var(--primary-color, #4f46e5);
+        font-weight: 500;
+        text-decoration: none;
+    }
+
+    .ob-link:hover {
+        text-decoration: underline;
+    }
+
+    /* Resources */
+    .ob-resource-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .ob-resource {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        padding: 0.75rem;
+        border-radius: 8px;
+        background: var(--background-color, #f9fafb);
+    }
+
+    .ob-resource-link {
+        text-decoration: none;
+        color: inherit;
+        transition: all 0.15s;
+        border: 1px solid transparent;
+    }
+
+    .ob-resource-link:hover {
+        border-color: #e5e7eb;
+        background: #fff;
+    }
+
+    .ob-resource-icon {
+        width: 40px;
+        height: 40px;
+        min-width: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .ob-resource-icon svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    .ob-resource strong {
+        display: block;
+        margin-bottom: 0.125rem;
+        font-size: 0.875rem;
+    }
+
+    .ob-resource p {
+        color: #6b7280;
+        font-size: 0.8125rem;
+        margin: 0;
+    }
+
+    .ob-duration {
+        display: inline-block;
+        background: #e5e7eb;
+        color: #6b7280;
+        font-size: 0.6875rem;
+        padding: 1px 6px;
+        border-radius: 4px;
+        margin-left: 0.5rem;
+        vertical-align: middle;
+        font-weight: 500;
+    }
+
+    /* Templates */
+    .ob-templates {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .ob-template {
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .ob-template-header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1rem;
+        background: #f9fafb;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .ob-template-body {
+        margin: 0;
+        padding: 1rem;
+        font-size: 0.8125rem;
+        color: #374151;
+        white-space: pre-wrap;
+        background: #fff;
+        border: none;
+        font-family: inherit;
+        line-height: 1.6;
+    }
+
+    /* Quick Actions (shared with dashboard) */
+    .mf-quick-actions {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 1rem;
+    }
+
+    .mf-action-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 1.25rem 0.75rem;
+        border-radius: 12px;
+        background: var(--background-color, #f9fafb);
+        text-decoration: none;
+        color: var(--text-primary, #111827);
+        font-weight: 500;
+        font-size: 0.875rem;
+        transition: all 0.2s ease;
+        border: 1px solid transparent;
+    }
+
+    .mf-action-card:hover {
+        border-color: var(--primary-color, #4f46e5);
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.1);
+        transform: translateY(-2px);
+    }
+
+    .mf-action-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .mf-action-icon svg {
+        width: 22px;
+        height: 22px;
+    }
+
+    @media (max-width: 768px) {
+        .ob-grid {
+            grid-template-columns: 1fr !important;
+        }
+
+        .mf-quick-actions {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
 </style>
 {% endblock %}

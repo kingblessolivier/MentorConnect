@@ -1,44 +1,312 @@
 {% extends 'dashboard/base_dashboard.html' %}
 
-{% block title %}Edit Mentor - Mentor Facilitator{% endblock %}
+{% block title %}Edit Mentor Profile - {{ mentor_user.get_full_name }}{% endblock %}
 
 {% block dashboard_content %}
 <div class="dashboard-header">
     <div>
-        <h1><i data-feather="edit" class="header-icon"></i> Edit Mentor</h1>
-        <p class="text-muted">{{ mentor_user.get_full_name }}</p>
+        <h1><i data-feather="edit" class="header-icon"></i> Edit Mentor Profile</h1>
+        <p class="text-muted">{{ mentor_user.get_full_name }} &bull; {{ mentor_user.email }}</p>
     </div>
-    <a href="{% url 'dashboard:mf_mentors' %}" class="btn btn-outline"><i data-feather="arrow-left"></i> Back</a>
+    <a href="{% url 'dashboard:mf_mentors' %}" class="btn btn-outline"><i data-feather="arrow-left"></i> Back to
+        Mentors</a>
 </div>
 
-<div class="card" style="max-width: 36rem;">
+{% if messages %}
+<div class="mb-4">
+    {% for message in messages %}
+    <div
+        class="alert {% if message.tags == 'success' %}alert-success{% elif message.tags == 'error' %}alert-danger{% else %}alert-info{% endif %} mb-2">
+        {{ message }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Basic Information -->
+<div class="card mb-4">
     <div class="card-body">
+        <h3 class="mb-3"><i data-feather="user" style="width:18px;height:18px;"></i> Basic Information</h3>
         <form method="post" class="form-modern">
             {% csrf_token %}
-            <div class="form-group">
-                <label class="form-label">Email (read-only)</label>
-                <input type="text" class="form-control" value="{{ mentor_user.email }}" readonly>
+            <input type="hidden" name="section" value="basic">
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">First Name</label>
+                    <input type="text" name="first_name" class="form-control" value="{{ mentor_user.first_name }}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Last Name</label>
+                    <input type="text" name="last_name" class="form-control" value="{{ mentor_user.last_name }}">
+                </div>
             </div>
-            {% for field in form %}
-            <div class="form-group">
-                <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-                {{ field }}
-                {% if field.errors %}<div class="text-danger text-sm">{{ field.errors.0 }}</div>{% endif %}
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Phone</label>
+                    <input type="text" name="phone" class="form-control" value="{{ mentor_user.phone }}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email (read-only)</label>
+                    <input type="text" class="form-control" value="{{ mentor_user.email }}" readonly
+                        style="opacity:0.6;">
+                </div>
             </div>
-            {% endfor %}
             {% if profile %}
-            <div class="form-section mt-4">
-                <h4 class="mb-3">Mentor Profile (edit via Django Admin or profiles)</h4>
-                <p class="text-muted text-sm">Skills: {{ profile.skills|truncatewords:10 }}</p>
-                <p class="text-muted text-sm">Expertise: {{ profile.expertise }}</p>
-                <a href="{% url 'profiles:mentor_detail' mentor_user.id %}" class="btn btn-outline btn-sm">View full profile</a>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Headline</label>
+                    <input type="text" name="headline" class="form-control" value="{{ profile.headline|default:'' }}"
+                        placeholder="e.g. Senior Software Engineer">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Job Title</label>
+                    <input type="text" name="job_title" class="form-control" value="{{ profile.job_title|default:'' }}">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Company</label>
+                    <input type="text" name="company" class="form-control" value="{{ profile.company|default:'' }}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Years of Experience</label>
+                    <input type="number" name="experience_years" class="form-control"
+                        value="{{ profile.experience_years|default:'' }}" min="0">
+                </div>
             </div>
             {% endif %}
-            <div class="form-actions mt-4">
-                <button type="submit" class="btn btn-primary">Save</button>
-                <a href="{% url 'dashboard:mf_mentors' %}" class="btn btn-outline">Cancel</a>
-            </div>
+            <div class="form-actions"><button type="submit" class="btn btn-primary">Save Basic Info</button></div>
         </form>
     </div>
 </div>
+
+{% if profile %}
+<!-- About / Bio -->
+<div class="card mb-4">
+    <div class="card-body">
+        <h3 class="mb-3"><i data-feather="align-left" style="width:18px;height:18px;"></i> About</h3>
+        <form method="post" class="form-modern">
+            {% csrf_token %}
+            <input type="hidden" name="section" value="about">
+            <div class="form-group">
+                <label class="form-label">Bio</label>
+                <textarea name="bio" class="form-control" rows="5"
+                    placeholder="Mentor's bio...">{{ profile.bio|default:'' }}</textarea>
+            </div>
+            <div class="form-actions"><button type="submit" class="btn btn-primary">Save Bio</button></div>
+        </form>
+    </div>
+</div>
+
+<!-- Expertise & Skills -->
+<div class="card mb-4">
+    <div class="card-body">
+        <h3 class="mb-3"><i data-feather="star" style="width:18px;height:18px;"></i> Expertise & Skills</h3>
+        <form method="post" class="form-modern">
+            {% csrf_token %}
+            <input type="hidden" name="section" value="skills">
+            <div class="form-group">
+                <label class="form-label">Expertise Area</label>
+                <input type="text" name="expertise" class="form-control" value="{{ profile.expertise|default:'' }}"
+                    placeholder="e.g. Software Engineering, Data Science">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Skills</label>
+                <textarea name="skills" class="form-control" rows="3"
+                    placeholder="Comma-separated skills">{{ profile.skills|default:'' }}</textarea>
+            </div>
+            <div class="form-actions"><button type="submit" class="btn btn-primary">Save Skills</button></div>
+        </form>
+    </div>
+</div>
+
+<!-- Availability Settings -->
+<div class="card mb-4">
+    <div class="card-body">
+        <h3 class="mb-3"><i data-feather="clock" style="width:18px;height:18px;"></i> Availability Settings</h3>
+        <form method="post" class="form-modern">
+            {% csrf_token %}
+            <input type="hidden" name="section" value="availability">
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Available for Mentoring</label>
+                    <select name="is_available" class="form-control">
+                        <option value="on" {% if profile.is_available %}selected{% endif %}>Yes – Available</option>
+                        <option value="" {% if not profile.is_available %}selected{% endif %}>No – Unavailable</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Max Mentees</label>
+                    <input type="number" name="max_mentees" class="form-control"
+                        value="{{ profile.max_mentees|default:5 }}" min="1">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Session Duration (minutes)</label>
+                    <input type="number" name="session_duration" class="form-control"
+                        value="{{ profile.session_duration|default:60 }}" min="15" step="15">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Hourly Rate</label>
+                    <input type="number" name="hourly_rate" class="form-control"
+                        value="{{ profile.hourly_rate|default:'' }}" min="0" step="0.01" placeholder="Optional">
+                </div>
+            </div>
+            <div class="form-actions"><button type="submit" class="btn btn-primary">Save Availability</button></div>
+        </form>
+    </div>
+</div>
+
+<!-- Location & Observation Internship -->
+<div class="card mb-4">
+    <div class="card-body">
+        <h3 class="mb-3"><i data-feather="map-pin" style="width:18px;height:18px;"></i> Location & Internship Settings
+        </h3>
+        <form method="post" class="form-modern">
+            {% csrf_token %}
+            <input type="hidden" name="section" value="location">
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">City</label>
+                    <input type="text" name="city" class="form-control" value="{{ profile.city|default:'' }}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Country</label>
+                    <input type="text" name="country" class="form-control"
+                        value="{{ profile.country|default:'Rwanda' }}">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Workplace Address</label>
+                <input type="text" name="workplace_address" class="form-control"
+                    value="{{ profile.workplace_address|default:'' }}">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Diploma</label>
+                    <input type="text" name="diploma" class="form-control" value="{{ profile.diploma|default:'' }}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Educational Institution</label>
+                    <input type="text" name="educational_institution" class="form-control"
+                        value="{{ profile.educational_institution|default:'' }}">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Min Internship Days</label>
+                    <input type="number" name="min_internship_days" class="form-control"
+                        value="{{ profile.min_internship_days|default:1 }}" min="1">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Max Internship Days</label>
+                    <input type="number" name="max_internship_days" class="form-control"
+                        value="{{ profile.max_internship_days|default:5 }}" min="1">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Accepts In-Person</label>
+                    <select name="accepts_in_person" class="form-control">
+                        <option value="true" {% if profile.accepts_in_person %}selected{% endif %}>Yes</option>
+                        <option value="false" {% if not profile.accepts_in_person %}selected{% endif %}>No</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Accepts Virtual</label>
+                    <select name="accepts_virtual" class="form-control">
+                        <option value="true" {% if profile.accepts_virtual %}selected{% endif %}>Yes</option>
+                        <option value="false" {% if not profile.accepts_virtual %}selected{% endif %}>No</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-actions"><button type="submit" class="btn btn-primary">Save Location</button></div>
+        </form>
+    </div>
+</div>
+
+<!-- Social Links -->
+<div class="card mb-4">
+    <div class="card-body">
+        <h3 class="mb-3"><i data-feather="globe" style="width:18px;height:18px;"></i> Social Links</h3>
+        <form method="post" class="form-modern">
+            {% csrf_token %}
+            <input type="hidden" name="section" value="social">
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">LinkedIn</label>
+                    <input type="url" name="linkedin_url" class="form-control"
+                        value="{{ profile.linkedin_url|default:'' }}" placeholder="https://linkedin.com/in/...">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Twitter</label>
+                    <input type="url" name="twitter_url" class="form-control"
+                        value="{{ profile.twitter_url|default:'' }}" placeholder="https://twitter.com/...">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">GitHub</label>
+                    <input type="url" name="github_url" class="form-control" value="{{ profile.github_url|default:'' }}"
+                        placeholder="https://github.com/...">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Website</label>
+                    <input type="url" name="website_url" class="form-control"
+                        value="{{ profile.website_url|default:'' }}" placeholder="https://...">
+                </div>
+            </div>
+            <div class="form-actions"><button type="submit" class="btn btn-primary">Save Social Links</button></div>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+<!-- Mentor Stats Summary -->
+{% if profile %}
+<div class="card mb-4">
+    <div class="card-body">
+        <h3 class="mb-3"><i data-feather="bar-chart-2" style="width:18px;height:18px;"></i> Mentor Stats</h3>
+        <div class="dashboard-stats">
+            <div class="stat-card">
+                <div class="stat-card-value">{{ profile.rating|floatformat:1 }}</div>
+                <div class="stat-card-label">Rating ({{ profile.total_reviews }} reviews)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-value">{% if profile.is_available %}<span
+                        class="badge badge-success">Available</span>{% else %}<span
+                        class="badge badge-danger">Unavailable</span>{% endif %}</div>
+                <div class="stat-card-label">Status</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-value">{% if profile.is_verified %}<span
+                        class="badge badge-success">Verified</span>{% else %}<span
+                        class="badge badge-warning">Unverified</span>{% endif %}</div>
+                <div class="stat-card-label">Verification</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<style>
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+
+    @media (max-width: 640px) {
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .form-actions {
+        margin-top: 1rem;
+        display: flex;
+        justify-content: flex-end;
+    }
+</style>
 {% endblock %}

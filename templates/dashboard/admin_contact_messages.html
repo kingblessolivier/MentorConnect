@@ -1,0 +1,498 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Contact Messages - Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Contact Messages Page */
+    .contact-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    @media (max-width: 1200px) {
+        .contact-stats-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    @media (max-width: 640px) {
+        .contact-stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    .contact-stat-card {
+        background: var(--surface-color, #ffffff);
+        border-radius: 16px;
+        padding: 1.25rem;
+        text-align: center;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+        border: 1px solid rgba(0, 0, 0, 0.04);
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .contact-stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    .contact-stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+    }
+
+    .contact-stat-card.total::before {
+        background: linear-gradient(90deg, #1e3a5f, #3b7fb8);
+    }
+
+    .contact-stat-card.new::before {
+        background: linear-gradient(90deg, #3b82f6, #60a5fa);
+    }
+
+    .contact-stat-card.read::before {
+        background: linear-gradient(90deg, #6b7280, #9ca3af);
+    }
+
+    .contact-stat-card.replied::before {
+        background: linear-gradient(90deg, #10b981, #34d399);
+    }
+
+    .contact-stat-card.closed::before {
+        background: linear-gradient(90deg, #ef4444, #f87171);
+    }
+
+    .contact-stat-value {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: var(--text-primary, #111827);
+    }
+
+    .contact-stat-label {
+        font-size: 0.8125rem;
+        color: var(--text-secondary, #6b7280);
+        font-weight: 500;
+        margin-top: 0.25rem;
+    }
+
+    /* Filter Bar */
+    .filter-bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        align-items: center;
+        background: var(--surface-color, #ffffff);
+        border-radius: 16px;
+        padding: 1.25rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+        border: 1px solid rgba(0, 0, 0, 0.04);
+    }
+
+    .filter-bar .search-input {
+        flex: 1;
+        min-width: 200px;
+        padding: 0.625rem 1rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        font-size: 0.875rem;
+        background: var(--background-color, #f9fafb);
+        color: var(--text-primary, #111827);
+        transition: border-color 0.2s;
+    }
+
+    .filter-bar .search-input:focus {
+        outline: none;
+        border-color: var(--primary-color, #4f46e5);
+    }
+
+    .filter-bar select {
+        padding: 0.625rem 1rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        font-size: 0.875rem;
+        background: var(--background-color, #f9fafb);
+        color: var(--text-primary, #111827);
+        cursor: pointer;
+    }
+
+    .filter-bar .filter-btn {
+        padding: 0.625rem 1.25rem;
+        border: none;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        color: white;
+        font-weight: 600;
+        font-size: 0.875rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s;
+    }
+
+    .filter-bar .filter-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+    }
+
+    .filter-bar .filter-btn svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    /* Messages Table */
+    .messages-table-card {
+        background: var(--surface-color, #ffffff);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+        border: 1px solid rgba(0, 0, 0, 0.04);
+    }
+
+    .messages-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .messages-table th {
+        padding: 0.875rem 1.25rem;
+        text-align: left;
+        font-weight: 600;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--text-secondary, #64748b);
+        background: #fafafa;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    }
+
+    .messages-table td {
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+        font-size: 0.9rem;
+        color: var(--text-primary, #1e293b);
+        vertical-align: middle;
+    }
+
+    .messages-table tbody tr {
+        transition: background 0.15s;
+    }
+
+    .messages-table tbody tr:hover {
+        background: #f8fafc;
+    }
+
+    .messages-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .messages-table tbody tr.unread {
+        font-weight: 600;
+        background: #eff6ff;
+    }
+
+    .messages-table tbody tr.unread:hover {
+        background: #dbeafe;
+    }
+
+    .msg-subject {
+        color: var(--primary-color, #4f46e5);
+        text-decoration: none;
+        font-weight: 600;
+        transition: color 0.2s;
+    }
+
+    .msg-subject:hover {
+        color: var(--primary-hover, #4338ca);
+        text-decoration: underline;
+    }
+
+    .msg-preview {
+        display: block;
+        font-size: 0.8125rem;
+        color: var(--text-muted, #9ca3af);
+        font-weight: 400;
+        margin-top: 0.25rem;
+        max-width: 300px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        padding: 0.25rem 0.75rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        border-radius: 99px;
+        text-transform: capitalize;
+    }
+
+    .status-badge.new {
+        background: #dbeafe;
+        color: #1d4ed8;
+    }
+
+    .status-badge.read {
+        background: #f3f4f6;
+        color: #4b5563;
+    }
+
+    .status-badge.replied {
+        background: #dcfce7;
+        color: #15803d;
+    }
+
+    .status-badge.closed {
+        background: #fee2e2;
+        color: #b91c1c;
+    }
+
+    .status-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+    }
+
+    .status-badge.new .status-dot {
+        background: #3b82f6;
+    }
+
+    .status-badge.read .status-dot {
+        background: #6b7280;
+    }
+
+    .status-badge.replied .status-dot {
+        background: #22c55e;
+    }
+
+    .status-badge.closed .status-dot {
+        background: #ef4444;
+    }
+
+    .msg-time {
+        font-size: 0.8125rem;
+        color: var(--text-muted, #9ca3af);
+        white-space: nowrap;
+    }
+
+    .msg-action-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        padding: 0.375rem 0.75rem;
+        border-radius: 8px;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        text-decoration: none;
+        background: var(--background-color, #f3f4f6);
+        color: var(--text-primary, #374151);
+        transition: all 0.2s;
+    }
+
+    .msg-action-btn:hover {
+        background: var(--primary-color, #4f46e5);
+        color: white;
+    }
+
+    .msg-action-btn svg {
+        width: 14px;
+        height: 14px;
+    }
+
+    /* Pagination */
+    .pagination-wrap {
+        display: flex;
+        justify-content: center;
+        padding: 1.5rem;
+        gap: 0.5rem;
+    }
+
+    .pagination-wrap a,
+    .pagination-wrap span {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+
+    .pagination-wrap a {
+        background: var(--background-color, #f3f4f6);
+        color: var(--text-primary, #374151);
+    }
+
+    .pagination-wrap a:hover {
+        background: var(--primary-color, #4f46e5);
+        color: white;
+    }
+
+    .pagination-wrap .current {
+        background: var(--primary-color, #4f46e5);
+        color: white;
+    }
+
+    /* Empty State */
+    .empty-message {
+        text-align: center;
+        padding: 3rem 1.5rem;
+        color: var(--text-muted, #9ca3af);
+    }
+
+    .empty-message svg {
+        width: 48px;
+        height: 48px;
+        margin-bottom: 1rem;
+        opacity: 0.4;
+        display: inline-block;
+    }
+
+    .empty-message p {
+        font-size: 1rem;
+        margin: 0;
+    }
+</style>
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="dashboard-header">
+    <div>
+        <h1><i data-feather="mail" class="header-icon"></i> Contact Messages</h1>
+        <p class="text-muted">View and manage all contact form submissions</p>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="contact-stats-grid">
+    <div class="contact-stat-card total">
+        <div class="contact-stat-value">{{ total_messages }}</div>
+        <div class="contact-stat-label">Total Messages</div>
+    </div>
+    <div class="contact-stat-card new">
+        <div class="contact-stat-value">{{ new_messages }}</div>
+        <div class="contact-stat-label">New</div>
+    </div>
+    <div class="contact-stat-card read">
+        <div class="contact-stat-value">{{ read_messages }}</div>
+        <div class="contact-stat-label">Read</div>
+    </div>
+    <div class="contact-stat-card replied">
+        <div class="contact-stat-value">{{ replied_messages }}</div>
+        <div class="contact-stat-label">Replied</div>
+    </div>
+    <div class="contact-stat-card closed">
+        <div class="contact-stat-value">{{ closed_messages }}</div>
+        <div class="contact-stat-label">Closed</div>
+    </div>
+</div>
+
+<!-- Filter Bar -->
+<form method="get" class="filter-bar">
+    <input type="text" name="search" class="search-input" placeholder="Search by name, email, subject..."
+        value="{{ request.GET.search }}">
+    <select name="status">
+        <option value="">All Statuses</option>
+        <option value="new" {% if request.GET.status == "new" %}selected{% endif %}>New</option>
+        <option value="read" {% if request.GET.status == "read" %}selected{% endif %}>Read</option>
+        <option value="replied" {% if request.GET.status == "replied" %}selected{% endif %}>Replied</option>
+        <option value="closed" {% if request.GET.status == "closed" %}selected{% endif %}>Closed</option>
+    </select>
+    <button type="submit" class="filter-btn"><i data-feather="search"></i> Filter</button>
+</form>
+
+<!-- Messages Table -->
+<div class="messages-table-card">
+    {% if messages_list %}
+    <table class="messages-table">
+        <thead>
+            <tr>
+                <th>Sender</th>
+                <th>Subject</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for msg in messages_list %}
+            <tr class="{% if not msg.is_read %}unread{% endif %}">
+                <td>
+                    <div style="font-weight:600;">{{ msg.name }}</div>
+                    <div style="font-size:0.8125rem; color:var(--text-muted,#9ca3af);">{{ msg.email }}</div>
+                </td>
+                <td>
+                    <a href="{% url 'dashboard:admin_contact_message_detail' msg.pk %}" class="msg-subject">
+                        {{ msg.subject }}
+                    </a>
+                    <span class="msg-preview">{{ msg.message|truncatewords:12 }}</span>
+                </td>
+                <td>
+                    <span class="status-badge {{ msg.status }}">
+                        <span class="status-dot"></span>
+                        {{ msg.get_status_display }}
+                    </span>
+                </td>
+                <td><span class="msg-time">{{ msg.created_at|date:"M d, Y H:i" }}</span></td>
+                <td>
+                    <a href="{% url 'dashboard:admin_contact_message_detail' msg.pk %}" class="msg-action-btn">
+                        <i data-feather="eye"></i> View
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <div class="pagination-wrap">
+        {% if page_obj.has_previous %}
+        <a
+            href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">‹</a>
+        {% endif %}
+        {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+        <span class="current">{{ num }}</span>
+        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %} <a
+            href="?page={{ num }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">
+            {{ num }}</a>
+            {% endif %}
+            {% endfor %}
+            {% if page_obj.has_next %}
+            <a
+                href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">›</a>
+            {% endif %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="empty-message">
+        <i data-feather="inbox"></i>
+        <p>No contact messages found.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    if (typeof feather !== 'undefined') feather.replace();
+</script>
+{% endblock %}

@@ -6,8 +6,11 @@ Payment submission (student), verification (finance), and payouts
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
+
+from .models import PaymentSettings
+from .forms import PaymentAmountForm
 
 # Placeholder for payment-related views (e.g. submit payment, verify, list)
 # Main flow is in applications/views (submit with payment) and dashboard (finance verify)
@@ -28,3 +31,14 @@ def set_payment_amount(request):
 	else:
 		form = PaymentAmountForm(instance=latest_settings)
 	return render(request, 'payments/set_payment_amount.html', {'form': form, 'current_amount': latest_settings.student_payment_amount if latest_settings else 0})
+
+
+class PaymentProofListView(LoginRequiredMixin, ListView):
+    """List payment proofs for the current user"""
+    template_name = 'payments/paymentproof_list.html'
+    context_object_name = 'payment_proofs'
+    paginate_by = 20
+
+    def get_queryset(self):
+        from .models import PaymentProof
+        return PaymentProof.objects.filter(user=self.request.user).order_by('-submitted_at')

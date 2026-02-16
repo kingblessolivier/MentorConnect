@@ -161,6 +161,7 @@ class ContactView(TemplateView):
         if 'form' not in context:
             from dashboard.forms import ContactForm
             context['form'] = ContactForm()
+        context['faqs'] = FAQ.objects.filter(is_active=True)[:6]
         return context
 
     def post(self, request, *args, **kwargs):

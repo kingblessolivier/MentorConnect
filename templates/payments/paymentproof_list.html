@@ -32,23 +32,34 @@
                         <td>{{ proof.submitted_at|date:"M d, Y H:i"|default:"—" }}</td>
                         <td>
                             {% if proof.status == 'pending' %}
-                            <a href="{% url 'dashboard:finance_subscription_payment_review' proof.id %}" class="btn btn-sm btn-primary">Review</a>
+                            {% if request.user.is_finance_officer or request.user.is_superuser %}
+                            <a href="{% url 'dashboard:finance_subscription_payment_review' proof.id %}"
+                                class="btn btn-sm btn-primary">Review</a>
+                            {% else %}
+                            <span class="text-muted">Pending Review</span>
+                            {% endif %}
                             {% else %}
                             <span class="text-muted">{{ proof.get_status_display }}</span>
                             {% endif %}
                         </td>
                     </tr>
                     {% empty %}
-                    <tr><td colspan="5" class="text-center text-muted py-4">No payment proofs found</td></tr>
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-4">No payment proofs found</td>
+                    </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
         {% if is_paginated %}
         <div class="pagination-bar mt-4">
-            {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" class="pagination-btn"><i data-feather="chevron-left"></i></a>{% endif %}
+            {% if page_obj.has_previous %}<a
+                href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}"
+                class="pagination-btn"><i data-feather="chevron-left"></i></a>{% endif %}
             <span class="pagination-info">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
-            {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" class="pagination-btn"><i data-feather="chevron-right"></i></a>{% endif %}
+            {% if page_obj.has_next %}<a
+                href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}"
+                class="pagination-btn"><i data-feather="chevron-right"></i></a>{% endif %}
         </div>
         {% endif %}
     </div>

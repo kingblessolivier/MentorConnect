@@ -209,6 +209,14 @@ def dashboard_context(request):
             except Exception:
                 context['mf_open_disputes_count'] = 0
 
+        # Admin: unread contact messages count
+        if user.is_admin_user:
+            try:
+                from dashboard.models import ContactMessage
+                context['new_contact_messages_count'] = ContactMessage.objects.filter(status='new').count()
+            except Exception:
+                context['new_contact_messages_count'] = 0
+
     except Exception:
         pass
 

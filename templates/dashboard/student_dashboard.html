@@ -26,25 +26,31 @@
                 <h3 class="mb-1">Premium Subscription</h3>
                 <p class="text-muted mb-0">
                     {% if has_active_subscription %}
-                        <i data-feather="check-circle" style="color: #10b981; width: 16px; height: 16px;"></i>
-                        Your subscription is active. Enjoy premium features!
-                        {% if active_subscription.plan %}({{ active_subscription.get_plan_display }}){% endif %}
-                        {% if active_subscription.end_date %}Expires {{ active_subscription.end_date }}{% endif %}
+                    <i data-feather="check-circle" style="color: #10b981; width: 16px; height: 16px;"></i>
+                    Your subscription is active. Enjoy premium features!
+                    {% if active_subscription.plan %}({{ active_subscription.get_plan_display }}){% endif %}
+                    {% if active_subscription.end_date %}Expires {{ active_subscription.end_date }}{% endif %}
                     {% else %}
-                        <i data-feather="lock" style="color: #f59e0b; width: 16px; height: 16px;"></i>
-                        Upgrade to premium for unlimited sessions, direct messaging, priority support, and more.
+                    <i data-feather="lock" style="color: #f59e0b; width: 16px; height: 16px;"></i>
+                    Upgrade to premium for unlimited sessions, direct messaging, priority support, and more.
                     {% endif %}
                 </p>
             </div>
             <div class="flex gap-2">
                 {% if has_active_subscription %}
-                    <a href="#" class="btn btn-outline" style="border-color: #8b5cf6; color: #8b5cf6;">
-                        <i data-feather="settings"></i> Manage
-                    </a>
+                <a href="{% url 'dashboard:subscription_receipt' %}" class="btn btn-primary"
+                    style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
+                    <i data-feather="file-text"></i> Receipt
+                </a>
+                <a href="{% url 'dashboard:subscription_wizard' %}" class="btn btn-outline"
+                    style="border-color: #8b5cf6; color: #8b5cf6;">
+                    <i data-feather="settings"></i> Manage
+                </a>
                 {% else %}
-                    <a href="{% url 'dashboard:subscription_wizard' %}" class="btn btn-primary" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
-                        <i data-feather="star"></i> Subscribe Now
-                    </a>
+                <a href="{% url 'dashboard:subscription_wizard' %}" class="btn btn-primary"
+                    style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
+                    <i data-feather="star"></i> Subscribe Now
+                </a>
                 {% endif %}
             </div>
         </div>
@@ -96,15 +102,16 @@
 {% for app in linked_applications_with_feedback %}
 <div class="card mb-4" style="border-left: 4px solid #10b981;">
     <div class="card-body">
-        <h4 class="mb-2"><i data-feather="message-circle" style="width:20px;height:20px;"></i> Feedback from {{ app.mentor.get_full_name }}</h4>
+        <h4 class="mb-2"><i data-feather="message-circle" style="width:20px;height:20px;"></i> Feedback from {{
+            app.mentor.get_full_name }}</h4>
         <p class="text-muted mb-0">{{ app.mentor_feedback }}</p>
     </div>
 </div>
 {% endfor %}
 
 <!-- Profile Completion Alert -->
-{% if profile_completion < 80 %}
-<div class="card mb-4" style="background: var(--primary-light); border-left: 4px solid var(--primary-color);">
+{% if profile_completion < 80 %} <div class="card mb-4"
+    style="background: var(--primary-light); border-left: 4px solid var(--primary-color);">
     <div class="card-body flex justify-between items-center">
         <div>
             <h4 class="mb-1">Complete Your Profile</h4>
@@ -114,88 +121,90 @@
             Complete Profile
         </a>
     </div>
-</div>
-{% endif %}
+    </div>
+    {% endif %}
 
-<div class="grid grid-2">
-    <!-- Pending Requests -->
-    <div class="card">
+    <div class="grid grid-2">
+        <!-- Pending Requests -->
+        <div class="card">
+            <div class="card-body">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="mb-0">Pending Requests</h3>
+                    <a href="{% url 'mentorship:request_list' %}" class="text-primary text-sm">View all</a>
+                </div>
+                {% for request in pending_requests %}
+                <div class="flex items-center gap-3 p-3 rounded-lg mb-2" style="background: var(--background-color);">
+                    <img src="{{ request.mentor.get_avatar_url }}" alt="" class="avatar">
+                    <div class="flex-1">
+                        <div class="font-medium">{{ request.mentor.get_full_name }}</div>
+                        <div class="text-sm text-muted">{{ request.subject|truncatewords:5 }}</div>
+                    </div>
+                    <span class="badge badge-warning">Pending</span>
+                </div>
+                {% empty %}
+                <p class="text-muted text-center py-4">No pending requests</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Recommended Mentors -->
+        <div class="card">
+            <div class="card-body">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="mb-0">Recommended Mentors</h3>
+                    <a href="{% url 'mentorship:search' %}" class="text-primary text-sm">View all</a>
+                </div>
+                {% for mentor in recommended_mentors|slice:":4" %}
+                <div class="flex items-center gap-3 p-3 rounded-lg mb-2" style="background: var(--background-color);">
+                    <img src="{{ mentor.user.get_avatar_url }}" alt="" class="avatar">
+                    <div class="flex-1">
+                        <div class="font-medium">{{ mentor.user.get_full_name }}</div>
+                        <div class="text-sm text-muted">{{ mentor.expertise }}</div>
+                    </div>
+                    <div class="rating">
+                        <i data-feather="star" style="fill: #fbbf24; stroke: #fbbf24; width: 14px;"></i>
+                        <span class="text-sm">{{ mentor.rating|floatformat:1 }}</span>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-muted text-center py-4">No mentors available</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Upcoming Sessions -->
+    <div class="card mb-4">
         <div class="card-body">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="mb-0">Pending Requests</h3>
-                <a href="{% url 'mentorship:request_list' %}" class="text-primary text-sm">View all</a>
-            </div>
-            {% for request in pending_requests %}
-            <div class="flex items-center gap-3 p-3 rounded-lg mb-2" style="background: var(--background-color);">
-                <img src="{{ request.mentor.get_avatar_url }}" alt="" class="avatar">
-                <div class="flex-1">
-                    <div class="font-medium">{{ request.mentor.get_full_name }}</div>
-                    <div class="text-sm text-muted">{{ request.subject|truncatewords:5 }}</div>
+                <div>
+                    <h3 class="mb-0">Upcoming Sessions</h3>
+                    <p class="text-sm text-muted mb-0">Book a session with your approved mentors. Mentors must first add
+                        availability slots for you to choose from.</p>
                 </div>
-                <span class="badge badge-warning">Pending</span>
+                <a href="{% url 'sessions_app:student-schedule' %}" class="text-primary text-sm">View all</a>
+            </div>
+            {% for session in approved_sessions %}
+            <div class="flex items-center gap-3 p-3 rounded-lg mb-2" style="background: var(--background-color);">
+                <img src="{{ session.mentor.get_avatar_url }}" alt="" class="avatar">
+                <div class="flex-1">
+                    <div class="font-medium">{{ session.mentor.get_full_name }}</div>
+                    <div class="text-sm text-muted">{{ session.subject|truncatewords:5 }}</div>
+                </div>
+                <a href="{% url 'mentorship:schedule_session' session.pk %}" class="btn btn-primary btn-sm">
+                    <i data-feather="calendar"></i> Book a Session
+                </a>
             </div>
             {% empty %}
-            <p class="text-muted text-center py-4">No pending requests</p>
+            <p class="text-muted text-center py-4">No upcoming sessions. Once your mentorship requests are approved, you
+                can book sessions here.</p>
             {% endfor %}
         </div>
     </div>
 
-    <!-- Recommended Mentors -->
-    <div class="card">
-        <div class="card-body">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="mb-0">Recommended Mentors</h3>
-                <a href="{% url 'mentorship:search' %}" class="text-primary text-sm">View all</a>
-            </div>
-            {% for mentor in recommended_mentors|slice:":4" %}
-            <div class="flex items-center gap-3 p-3 rounded-lg mb-2" style="background: var(--background-color);">
-                <img src="{{ mentor.user.get_avatar_url }}" alt="" class="avatar">
-                <div class="flex-1">
-                    <div class="font-medium">{{ mentor.user.get_full_name }}</div>
-                    <div class="text-sm text-muted">{{ mentor.expertise }}</div>
-                </div>
-                <div class="rating">
-                    <i data-feather="star" style="fill: #fbbf24; stroke: #fbbf24; width: 14px;"></i>
-                    <span class="text-sm">{{ mentor.rating|floatformat:1 }}</span>
-                </div>
-            </div>
-            {% empty %}
-            <p class="text-muted text-center py-4">No mentors available</p>
-            {% endfor %}
-        </div>
-    </div>
-</div>
-
-<!-- Upcoming Sessions -->
-<div class="card mb-4">
-    <div class="card-body">
-        <div class="flex justify-between items-center mb-4">
-            <div>
-                <h3 class="mb-0">Upcoming Sessions</h3>
-                <p class="text-sm text-muted mb-0">Book a session with your approved mentors. Mentors must first add availability slots for you to choose from.</p>
-            </div>
-            <a href="{% url 'sessions_app:student-schedule' %}" class="text-primary text-sm">View all</a>
-        </div>
-        {% for session in approved_sessions %}
-        <div class="flex items-center gap-3 p-3 rounded-lg mb-2" style="background: var(--background-color);">
-            <img src="{{ session.mentor.get_avatar_url }}" alt="" class="avatar">
-            <div class="flex-1">
-                <div class="font-medium">{{ session.mentor.get_full_name }}</div>
-                <div class="text-sm text-muted">{{ session.subject|truncatewords:5 }}</div>
-            </div>
-            <a href="{% url 'mentorship:schedule_session' session.pk %}" class="btn btn-primary btn-sm">
-                <i data-feather="calendar"></i> Book a Session
-            </a>
-        </div>
-        {% empty %}
-        <p class="text-muted text-center py-4">No upcoming sessions. Once your mentorship requests are approved, you can book sessions here.</p>
-        {% endfor %}
-    </div>
-</div>
-
-<!-- Mobile Toggle Button -->
-<button class="sidebar-toggle-mobile">
-    <i data-feather="menu"></i>
-</button>
-<div class="sidebar-overlay"></div>
-{% endblock %}
+    <!-- Mobile Toggle Button -->
+    <button class="sidebar-toggle-mobile">
+        <i data-feather="menu"></i>
+    </button>
+    <div class="sidebar-overlay"></div>
+    {% endblock %}

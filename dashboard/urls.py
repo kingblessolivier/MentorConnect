@@ -31,6 +31,7 @@ urlpatterns = [
     path('finance/subscription-payments/', views.FinanceSubscriptionPaymentsView.as_view(), name='finance_subscription_payments'),
     path('finance/subscription-payments/<int:pk>/review/', views.finance_subscription_payment_review, name='finance_subscription_payment_review'),
     path('finance/payment-settings/', views.FinancePaymentSettingsView.as_view(), name='finance_payment_settings'),
+    path('subscription/receipt/', views.download_subscription_receipt, name='subscription_receipt'),
 
     # Mentor Facilitator: mentors, assignments, mentorships, disputes, session reports
     path('mentor-facilitator/mentors/', views.MFMentorListView.as_view(), name='mf_mentors'),
@@ -40,6 +41,7 @@ urlpatterns = [
     path('mentor-facilitator/mentorships/', views.MFMentorshipsView.as_view(), name='mf_mentorships'),
     path('mentor-facilitator/inactive-mentorships/', views.MFInactiveMentorshipsView.as_view(), name='mf_inactive_mentorships'),
     path('mentor-facilitator/applications/', views.MFApplicationsView.as_view(), name='mf_applications'),
+    path('mentor-facilitator/applications/<int:pk>/', views.MFApplicationDetailView.as_view(), name='mf_application_detail'),
     path('mentor-facilitator/applications/<int:pk>/reassign/', views.mf_reassign_mentor, name='mf_reassign_mentor'),
     path('mentor-facilitator/disputes/', views.MFDisputesView.as_view(), name='mf_disputes'),
     path('mentor-facilitator/disputes/<int:pk>/resolve/', views.mf_dispute_resolve, name='mf_dispute_resolve'),
@@ -49,6 +51,8 @@ urlpatterns = [
     path('mentor-facilitator/sessions/create/', views.MFCreateSessionView.as_view(), name='mf_create_session'),
     path('mentor-facilitator/onboarding/', views.MFOnboardingView.as_view(), name='mf_onboarding'),
     path('mentor-facilitator/backup/', views.MFBackupView.as_view(), name='mf_backup'),
+    path('mentor-facilitator/requests/<int:pk>/approve/', views.mf_approve_request, name='mf_approve_request'),
+    path('mentor-facilitator/requests/<int:pk>/reject/', views.mf_reject_request, name='mf_reject_request'),
 
     
     path('admin/users/', views.AdminUserListView.as_view(), name='admin_users'),
@@ -102,4 +106,8 @@ urlpatterns = [
     path('admin/settings/', views.AdminSettingsView.as_view(), name='admin_settings'),
     path('admin/activity-logs/', views.AdminActivityLogsView.as_view(), name='admin_activity_logs'),
     path('admin/broadcast/', views.AdminBroadcastView.as_view(), name='admin_broadcast'),
+
+    # Admin Contact Messages
+    path('admin/contact-messages/', views.AdminContactMessagesView.as_view(), name='admin_contact_messages'),
+    path('admin/contact-messages/<int:pk>/', views.admin_contact_message_detail, name='admin_contact_message_detail'),
 ]

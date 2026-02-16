@@ -12,7 +12,19 @@ class PaymentSettings(models.Model):
     student_payment_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     application_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name='Application Fee')
     subscription_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name='Monthly Subscription Fee')
+    payment_number = models.CharField(max_length=100, blank=True, default='', verbose_name='Payment Number',
+                                      help_text='MoMo number or bank account number students pay to')
+    payment_code = models.CharField(max_length=200, blank=True, default='', verbose_name='Payment Code',
+                                    help_text='USSD code or merchant code e.g. *182*8*1*123456#')
+    payment_instructions = models.TextField(blank=True, default='', verbose_name='Payment Instructions',
+                                            help_text='Instructions shown to students during subscription')
     updated_at = models.DateTimeField(auto_now=True)
+    
+    # Bank Details
+    bank_name = models.CharField(max_length=100, default='Bank of Kigali (BK)', verbose_name='Bank Name')
+    account_number = models.CharField(max_length=100, default='00040-0065432-12', verbose_name='Account Number')
+    account_name = models.CharField(max_length=100, default='MentorConnect Ltd', verbose_name='Account Name')
+    mobile_money_number = models.CharField(max_length=100, default='*182*8*1*556644#', verbose_name='Mobile Money Code')
 
     def __str__(self):
         return f"Payment Settings (App: {self.application_fee}, Sub: {self.subscription_fee})"

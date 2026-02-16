@@ -1,673 +1,898 @@
-{% extends 'base.html' %}
+{% extends 'dashboard/base_dashboard.html' %}
 {% load static %}
 
-{% block title %}Subscribe to Premium - {{ SITE_NAME }}{% endblock %}
+{% block title %}Premium Subscription - Step {{ step }} - {{ SITE_NAME }}{% endblock %}
 
 {% block extra_css %}
 <style>
-    /* Advanced CSS for Subscription Wizard */
-    :root {
-        --primary-gradient: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
-        --secondary-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
-        --success-gradient: linear-gradient(135deg, #34d399 0%, #10b981 100%);
-        --warning-gradient: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-        --card-shadow: 0 10px 25px -5px rgba(139, 92, 246, 0.1), 0 10px 10px -5px rgba(139, 92, 246, 0.04);
-        --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* ── Reset & Base ──────────────────────────── */
+    .wizard-wrapper {
+        min-height: 80vh;
+        padding: 2rem 1rem;
     }
 
-    .subscription-wizard {
-        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-        min-height: 100vh;
-        padding: 2rem 0;
-    }
-
-    /* Progress Bar Enhanced */
-    .progress-container {
-        position: relative;
-        margin-bottom: 3rem;
-    }
-    .progress-label {
+    /* ── Progress Stepper ─────────────────────── */
+    .wizard-stepper {
         display: flex;
-        justify-content: space-between;
         align-items: center;
-        margin-bottom: 0.75rem;
-    }
-    .progress-label h4 {
-        font-weight: 700;
-        color: #1e293b;
-        margin: 0;
-    }
-    .progress-percent {
-        font-weight: 600;
-        color: #8b5cf6;
-        background: white;
-        padding: 0.25rem 0.75rem;
-        border-radius: 20px;
-        box-shadow: 0 2px 4px rgba(139, 92, 246, 0.2);
-    }
-    .progress-bar-outer {
-        height: 12px;
-        background: #e2e8f0;
-        border-radius: 10px;
-        overflow: hidden;
-        position: relative;
-    }
-    .progress-bar-inner {
-        height: 100%;
-        border-radius: 10px;
-        background: var(--primary-gradient);
-        position: relative;
-        transition: width 0.6s ease;
-        box-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
-    }
-    .progress-bar-inner::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-        animation: shimmer 2s infinite;
-    }
-    @keyframes shimmer {
-        0% { transform: translateX(-100%); }
-        100% { transform: translateX(100%); }
+        justify-content: center;
+        gap: 0;
+        max-width: 600px;
+        margin: 0 auto 2.5rem;
     }
 
-    /* Step Card */
-    .step-card {
-        background: white;
-        border-radius: 20px;
-        box-shadow: var(--card-shadow);
-        border: none;
+    .stepper-step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: relative;
+        flex: 1;
+    }
+
+    .stepper-circle {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1rem;
+        z-index: 2;
+        transition: all 0.4s cubic-bezier(.4, 0, .2, 1);
+        border: 3px solid #e2e8f0;
+        background: #fff;
+        color: #94a3b8;
+    }
+
+    .stepper-step.completed .stepper-circle {
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        border-color: #8b5cf6;
+        color: #fff;
+        box-shadow: 0 4px 15px rgba(139, 92, 246, 0.35);
+    }
+
+    .stepper-step.active .stepper-circle {
+        background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+        border-color: #8b5cf6;
+        color: #fff;
+        box-shadow: 0 4px 20px rgba(139, 92, 246, 0.45);
+        transform: scale(1.15);
+    }
+
+    .stepper-label {
+        margin-top: 0.5rem;
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .stepper-step.completed .stepper-label,
+    .stepper-step.active .stepper-label {
+        color: #7c3aed;
+    }
+
+    .stepper-line {
+        flex: 1;
+        height: 3px;
+        background: #e2e8f0;
+        margin: 0 -8px;
+        margin-bottom: 1.8rem;
+        border-radius: 4px;
+        transition: background 0.4s;
+    }
+
+    .stepper-line.filled {
+        background: linear-gradient(90deg, #8b5cf6, #a78bfa);
+    }
+
+    /* ── Main Card ────────────────────────────── */
+    .wizard-card {
+        max-width: 780px;
+        margin: 0 auto;
+        background: #fff;
+        border-radius: 24px;
+        box-shadow: 0 8px 40px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
         overflow: hidden;
-        transition: var(--transition-smooth);
+        animation: cardIn 0.5s cubic-bezier(.4, 0, .2, 1);
     }
-    .step-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 20px 40px -15px rgba(139, 92, 246, 0.3);
-    }
-    .step-card-body {
-        padding: 3rem;
-    }
-    @media (max-width: 768px) {
-        .step-card-body {
-            padding: 2rem;
+
+    @keyframes cardIn {
+        from {
+            opacity: 0;
+            transform: translateY(24px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
         }
     }
 
-    /* Step Header */
-    .step-header {
+    .wizard-card-header {
+        padding: 2.5rem 2.5rem 1.5rem;
         text-align: center;
-        margin-bottom: 2.5rem;
-    }
-    .step-icon {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 80px;
-        height: 80px;
-        border-radius: 50%;
-        margin-bottom: 1.5rem;
-        background: var(--primary-gradient);
-        color: white;
-        font-size: 2.5rem;
-        box-shadow: 0 10px 20px rgba(139, 92, 246, 0.3);
-    }
-    .step-title {
-        font-size: 2rem;
-        font-weight: 800;
-        color: #1e293b;
-        margin-bottom: 0.5rem;
-    }
-    .step-subtitle {
-        color: #64748b;
-        font-size: 1.1rem;
-        max-width: 500px;
-        margin: 0 auto;
     }
 
-    /* Plan Cards */
+    .wizard-card-header .icon-wrap {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 1rem;
+        background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .wizard-card-header .icon-wrap svg {
+        width: 28px;
+        height: 28px;
+        color: #7c3aed;
+    }
+
+    .wizard-card-header h2 {
+        font-size: 1.6rem;
+        font-weight: 800;
+        color: #1e293b;
+        margin: 0 0 0.35rem;
+    }
+
+    .wizard-card-header p {
+        color: #64748b;
+        font-size: 0.95rem;
+        margin: 0;
+    }
+
+    .wizard-card-body {
+        padding: 0 2.5rem 2.5rem;
+    }
+
+    /* ── Plan Cards (Step 1) ──────────────────── */
+    .plans-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    @media (max-width: 680px) {
+        .plans-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
     .plan-card {
         border: 2px solid #e2e8f0;
         border-radius: 16px;
-        transition: var(--transition-smooth);
+        padding: 1.5rem 1.25rem;
+        text-align: center;
         cursor: pointer;
-        background: white;
-        height: 100%;
+        transition: all 0.3s cubic-bezier(.4, 0, .2, 1);
         position: relative;
-        overflow: hidden;
+        background: #fff;
     }
-    .plan-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: var(--primary-gradient);
-        opacity: 0;
-        transition: opacity 0.3s;
+
+    .plan-card:hover {
+        border-color: #c4b5fd;
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(139, 92, 246, 0.12);
     }
-    .plan-card:hover::before,
-    .plan-card.selected::before {
-        opacity: 1;
-    }
-    .plan-card:hover,
+
     .plan-card.selected {
         border-color: #8b5cf6;
-        box-shadow: 0 15px 30px -10px rgba(139, 92, 246, 0.2);
-        transform: translateY(-8px);
+        background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);
+        box-shadow: 0 8px 30px rgba(139, 92, 246, 0.18);
     }
-    .plan-card.selected {
-        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-    }
-    .plan-card-body {
-        padding: 2rem;
-        text-align: center;
-    }
-    .plan-name {
-        font-size: 1.5rem;
+
+    .plan-card.selected::after {
+        content: '✓';
+        position: absolute;
+        top: 10px;
+        right: 12px;
+        width: 24px;
+        height: 24px;
+        background: #8b5cf6;
+        color: #fff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
         font-weight: 700;
-        color: #1e293b;
-        margin-bottom: 1rem;
     }
-    .plan-price {
-        font-size: 2.5rem;
-        font-weight: 800;
-        color: #8b5cf6;
-        margin: 1.5rem 0;
-        line-height: 1;
+
+    .plan-card.popular {
+        border-color: #a78bfa;
     }
-    .plan-price span {
+
+    .plan-popular-tag {
+        position: absolute;
+        top: -12px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        color: #fff;
+        font-size: 0.7rem;
+        font-weight: 700;
+        padding: 3px 14px;
+        border-radius: 20px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .plan-name {
         font-size: 1rem;
-        color: #64748b;
-        font-weight: 500;
+        font-weight: 700;
+        color: #334155;
+        margin-bottom: 0.25rem;
     }
+
+    .plan-price {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: #1e293b;
+        margin-bottom: 0.15rem;
+    }
+
+    .plan-price span {
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: #64748b;
+    }
+
     .plan-features {
         list-style: none;
         padding: 0;
-        margin: 1.5rem 0;
+        margin: 1rem 0 0;
         text-align: left;
-    }
-    .plan-features li {
-        padding: 0.5rem 0;
+        font-size: 0.85rem;
         color: #475569;
+    }
+
+    .plan-features li {
+        padding: 0.3rem 0;
         display: flex;
         align-items: center;
+        gap: 0.5rem;
     }
-    .plan-features li i {
-        margin-right: 0.75rem;
-        color: #10b981;
+
+    .plan-features li svg {
+        width: 16px;
+        height: 16px;
+        color: #8b5cf6;
         flex-shrink: 0;
     }
-    .plan-select {
-        margin-top: 1.5rem;
-    }
 
-    /* Form Styles */
-    .form-label {
-        font-weight: 600;
-        color: #374151;
-        margin-bottom: 0.5rem;
-    }
-    .form-control, .form-select {
-        border: 2px solid #e5e7eb;
-        border-radius: 10px;
-        padding: 0.75rem 1rem;
-        transition: var(--transition-smooth);
-    }
-    .form-control:focus, .form-select:focus {
-        border-color: #8b5cf6;
-        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
-    }
-    .file-upload-area {
-        border: 2px dashed #cbd5e1;
-        border-radius: 10px;
-        padding: 2rem;
-        text-align: center;
-        background: #f8fafc;
-        transition: var(--transition-smooth);
-        cursor: pointer;
-    }
-    .file-upload-area:hover {
-        border-color: #8b5cf6;
-        background: #f1f5f9;
-    }
-    .file-upload-area.dragover {
-        border-color: #8b5cf6;
-        background: rgba(139, 92, 246, 0.05);
-    }
-
-    /* Buttons */
-    .btn-primary-gradient {
-        background: var(--primary-gradient);
-        border: none;
-        color: white;
-        font-weight: 600;
-        padding: 0.875rem 2rem;
-        border-radius: 10px;
-        transition: var(--transition-smooth);
-        box-shadow: 0 4px 6px rgba(139, 92, 246, 0.2);
-    }
-    .btn-primary-gradient:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 15px rgba(139, 92, 246, 0.3);
-        color: white;
-    }
-    .btn-success-gradient {
-        background: var(--success-gradient);
-        border: none;
-        color: white;
-        font-weight: 600;
-        padding: 1rem 2.5rem;
-        border-radius: 10px;
-        transition: var(--transition-smooth);
-        box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2);
-    }
-    .btn-success-gradient:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 15px rgba(16, 185, 129, 0.3);
-        color: white;
-    }
-    .btn-outline-secondary {
-        border: 2px solid #cbd5e1;
-        color: #64748b;
-        font-weight: 600;
-        padding: 0.875rem 2rem;
-        border-radius: 10px;
-        transition: var(--transition-smooth);
-    }
-    .btn-outline-secondary:hover {
-        border-color: #8b5cf6;
-        color: #8b5cf6;
-        background: rgba(139, 92, 246, 0.05);
-    }
-
-    /* Summary Card */
-    .summary-card {
-        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-        border: 2px solid #e2e8f0;
+    /* ── Payment Info Box (Step 2) ─────────────── */
+    .payment-info-box {
+        background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);
+        border: 2px solid #c4b5fd;
         border-radius: 16px;
-        padding: 2rem;
-    }
-    .summary-title {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #1e293b;
+        padding: 1.5rem;
         margin-bottom: 1.5rem;
     }
-    .summary-table {
-        width: 100%;
+
+    .payment-info-box h5 {
+        color: #5b21b6;
+        font-weight: 700;
+        margin: 0 0 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 1rem;
     }
-    .summary-table th {
-        font-weight: 600;
-        color: #475569;
-        padding: 0.75rem 0;
-        border-bottom: 1px solid #e2e8f0;
+
+    .payment-info-box h5 svg {
+        width: 18px;
+        height: 18px;
     }
-    .summary-table td {
-        padding: 0.75rem 0;
-        border-bottom: 1px solid #e2e8f0;
-        color: #1e293b;
+
+    .pay-detail {
+        background: #fff;
+        border-radius: 10px;
+        padding: 0.85rem 1rem;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.85rem;
+    }
+
+    .pay-detail:last-child {
+        margin-bottom: 0;
+    }
+
+    .pay-detail svg {
+        width: 20px;
+        height: 20px;
+        color: #7c3aed;
+        flex-shrink: 0;
+    }
+
+    .pay-detail-label {
+        font-size: 0.8rem;
+        color: #64748b;
         font-weight: 500;
     }
-    .summary-table tr:last-child th,
-    .summary-table tr:last-child td {
+
+    .pay-detail-value {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: #1e293b;
+    }
+
+    .pay-detail-mono {
+        font-family: 'Courier New', monospace;
+        letter-spacing: 0.5px;
+    }
+
+    .pay-instructions {
+        line-height: 1.6;
+        color: #334155;
+        font-size: 0.92rem;
+    }
+
+    /* ── Form Styles ──────────────────────────── */
+    .wiz-form-group {
+        margin-bottom: 1.25rem;
+    }
+
+    .wiz-form-group label {
+        display: block;
+        font-weight: 600;
+        color: #334155;
+        margin-bottom: 0.4rem;
+        font-size: 0.9rem;
+    }
+
+    .wiz-form-group .hint {
+        font-size: 0.8rem;
+        color: #94a3b8;
+        margin-top: 0.25rem;
+    }
+
+    .wiz-input,
+    .wiz-select {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        font-size: 0.95rem;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        background: #fff;
+    }
+
+    .wiz-input:focus,
+    .wiz-select:focus {
+        border-color: #8b5cf6;
+        outline: none;
+        box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
+    }
+
+    /* ── File Upload ──────────────────────────── */
+    .file-upload-zone {
+        border: 2px dashed #cbd5e1;
+        border-radius: 14px;
+        padding: 2rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s;
+        background: #fafbfc;
+    }
+
+    .file-upload-zone:hover,
+    .file-upload-zone.dragover {
+        border-color: #8b5cf6;
+        background: #faf5ff;
+    }
+
+    .file-upload-zone svg {
+        width: 36px;
+        height: 36px;
+        color: #a78bfa;
+        margin-bottom: 0.5rem;
+    }
+
+    .file-upload-zone p {
+        margin: 0;
+        color: #64748b;
+        font-size: 0.9rem;
+    }
+
+    .file-upload-zone .browse-link {
+        color: #7c3aed;
+        font-weight: 600;
+        text-decoration: underline;
+    }
+
+    .file-name-display {
+        margin-top: 0.5rem;
+        padding: 0.5rem 0.75rem;
+        background: #ede9fe;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        color: #5b21b6;
+        font-weight: 600;
+        display: none;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .file-name-display.visible {
+        display: flex;
+    }
+
+    /* ── Review Summary (Step 3) ──────────────── */
+    .review-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        border: 2px solid #e2e8f0;
+        border-radius: 14px;
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+    }
+
+    .review-table tr {
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .review-table tr:last-child {
         border-bottom: none;
     }
 
-    /* Success Step */
-    .success-icon {
-        display: inline-flex;
+    .review-table td {
+        padding: 1rem 1.25rem;
+        font-size: 0.95rem;
+    }
+
+    .review-table td:first-child {
+        color: #64748b;
+        font-weight: 500;
+        width: 40%;
+        background: #fafbfc;
+    }
+
+    .review-table td:last-child {
+        font-weight: 700;
+        color: #1e293b;
+    }
+
+    /* ── Success (Step 4) ─────────────────────── */
+    .success-anim {
+        text-align: center;
+        padding: 2rem 0;
+    }
+
+    .success-check {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 1.5rem;
+        background: linear-gradient(135deg, #10b981, #059669);
+        border-radius: 50%;
+        display: flex;
         align-items: center;
         justify-content: center;
-        width: 100px;
-        height: 100px;
-        border-radius: 50%;
-        background: var(--success-gradient);
-        color: white;
-        font-size: 3rem;
-        margin-bottom: 2rem;
-        box-shadow: 0 15px 30px rgba(16, 185, 129, 0.3);
-        animation: pulse 2s infinite;
+        animation: popIn 0.5s cubic-bezier(.4, 0, .2, 1);
+        box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
     }
-    @keyframes pulse {
-        0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-        70% { box-shadow: 0 0 0 20px rgba(16, 185, 129, 0); }
-        100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+
+    .success-check svg {
+        width: 36px;
+        height: 36px;
+        color: #fff;
     }
+
+    @keyframes popIn {
+        0% {
+            transform: scale(0);
+        }
+
+        60% {
+            transform: scale(1.2);
+        }
+
+        100% {
+            transform: scale(1);
+        }
+    }
+
     .success-title {
-        font-size: 2.5rem;
+        font-size: 1.5rem;
         font-weight: 800;
-        color: #065f46;
-        margin-bottom: 1rem;
-    }
-    .success-message {
-        font-size: 1.2rem;
-        color: #475569;
-        max-width: 600px;
-        margin: 0 auto 2rem;
-    }
-    .next-steps {
-        background: #f0fdf4;
-        border: 2px solid #bbf7d0;
-        border-radius: 16px;
-        padding: 2rem;
-        text-align: left;
-    }
-    .next-steps h5 {
-        color: #065f46;
-        font-weight: 700;
-        margin-bottom: 1rem;
-    }
-    .next-steps ul {
-        color: #475569;
-        padding-left: 1.5rem;
-    }
-    .next-steps li {
+        color: #1e293b;
         margin-bottom: 0.5rem;
     }
 
-    /* Navigation */
-    .step-navigation {
+    .success-subtitle {
+        color: #64748b;
+        font-size: 0.95rem;
+        max-width: 400px;
+        margin: 0 auto 1.5rem;
+        line-height: 1.6;
+    }
+
+    /* ── Buttons ──────────────────────────────── */
+    .wiz-actions {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-top: 3rem;
-        padding-top: 2rem;
-        border-top: 1px solid #e2e8f0;
+        gap: 1rem;
+        margin-top: 1.5rem;
+    }
+
+    .btn-wiz-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.85rem 2rem;
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        color: #fff;
+        border: none;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-decoration: none;
+        box-shadow: 0 4px 15px rgba(139, 92, 246, 0.25);
+    }
+
+    .btn-wiz-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(139, 92, 246, 0.35);
+        color: #fff;
+    }
+
+    .btn-wiz-secondary {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.85rem 1.75rem;
+        background: #fff;
+        color: #64748b;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+    }
+
+    .btn-wiz-secondary:hover {
+        border-color: #8b5cf6;
+        color: #7c3aed;
+    }
+
+    .btn-wiz-success {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.85rem 2rem;
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: #fff;
+        border: none;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-decoration: none;
+        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.25);
+    }
+
+    .btn-wiz-success:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);
+        color: #fff;
     }
 </style>
 {% endblock %}
 
-{% block content %}
-<div class="subscription-wizard">
-    <div class="container py-5">
-        <div class="row justify-content-center">
-            <div class="col-lg-9 col-xl-8">
-                <!-- Progress Bar -->
-                <div class="progress-container">
-                    <div class="progress-label">
-                        <h4>Step {{ step }} of 4</h4>
-                        <span class="progress-percent">{{ progress_percent }}% Complete</span>
-                    </div>
-                    <div class="progress-bar-outer">
-                        <div class="progress-bar-inner" style="width: {{ progress_percent }}%;"></div>
-                    </div>
-                </div>
+{% block dashboard_content %}
+<div class="wizard-wrapper">
 
-                <!-- Step Content -->
-                <div class="step-card">
-                    <div class="step-card-body">
-                        {% if step == 1 %}
-                        <!-- Step 1: Choose Plan -->
-                        <div class="step-header">
-                            <div class="step-icon">
-                                <i data-feather="star"></i>
-                            </div>
-                            <h2 class="step-title">Choose Your Plan</h2>
-                            <p class="step-subtitle">Select a subscription plan that fits your needs and unlock premium features.</p>
-                        </div>
-                        
-                        <form method="post">
-                            {% csrf_token %}
-                            <div class="row">
-                                {% for plan in plans %}
-                                <div class="col-md-4 mb-4">
-                                    <div class="plan-card {% if selected_plan == plan.value %}selected{% endif %}" onclick="document.getElementById('plan_{{ plan.value }}').click();">
-                                        <div class="plan-card-body">
-                                            <h5 class="plan-name">{{ plan.name }}</h5>
-                                            <div class="plan-price">{{ plan.price|floatformat:0 }} <span>RWF</span></div>
-                                            <ul class="plan-features">
-                                                {% if plan.value == 'monthly' %}
-                                                <li><i data-feather="check"></i> Unlimited sessions</li>
-                                                <li><i data-feather="check"></i> Direct messaging</li>
-                                                <li><i data-feather="check"></i> Priority support</li>
-                                                {% elif plan.value == 'yearly' %}
-                                                <li><i data-feather="check"></i> All monthly features</li>
-                                                <li><i data-feather="check"></i> Save 20%</li>
-                                                <li><i data-feather="check"></i> Free workshop access</li>
-                                                {% else %}
-                                                <li><i data-feather="check"></i> Lifetime access</li>
-                                                <li><i data-feather="check"></i> All premium features</li>
-                                                <li><i data-feather="check"></i> Exclusive events</li>
-                                                {% endif %}
-                                            </ul>
-                                            <div class="plan-select">
-                                                <input class="form-check-input" type="radio" name="plan" id="plan_{{ plan.value }}" value="{{ plan.value }}" {% if selected_plan == plan.value %}checked{% endif %} style="display: none;">
-                                                <label class="btn btn-outline-secondary w-100" for="plan_{{ plan.value }}">
-                                                    Select {{ plan.name }}
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                {% endfor %}
-                            </div>
-                            
-                            <div class="step-navigation">
-                                <div></div> <!-- empty spacer -->
-                                <button type="submit" class="btn btn-primary-gradient">
-                                    Continue <i data-feather="arrow-right" class="ms-2"></i>
-                                </button>
-                            </div>
-                        </form>
-                        {% endif %}
-
-                        {% if step == 2 %}
-                        <!-- Step 2: Payment Details -->
-                        <div class="step-header">
-                            <div class="step-icon">
-                                <i data-feather="credit-card"></i>
-                            </div>
-                            <h2 class="step-title">Payment Details</h2>
-                            <p class="step-subtitle">Provide payment information and upload proof of payment.</p>
-                        </div>
-                        
-                        <form method="post" enctype="multipart/form-data">
-                            {% csrf_token %}
-                            {% if form.non_field_errors %}
-                            <div class="alert alert-danger">
-                                {% for error in form.non_field_errors %}
-                                <p class="mb-0">{{ error }}</p>
-                                {% endfor %}
-                            </div>
-                            {% endif %}
-                            <div class="row">
-                                <div class="col-md-6 mb-4">
-                                    <label for="id_payment_type" class="form-label">Payment Method</label>
-                                    <select name="payment_type" id="id_payment_type" class="form-select {% if form.payment_type.errors %}is-invalid{% endif %}" required>
-                                        <option value="momo" {% if form.payment_type.value == 'momo' %}selected{% endif %}>MTN MoMo</option>
-                                        <option value="card" {% if form.payment_type.value == 'card' %}selected{% endif %}>Credit/Debit Card</option>
-                                        <option value="bank" {% if form.payment_type.value == 'bank' %}selected{% endif %}>Bank Transfer</option>
-                                    </select>
-                                    {% if form.payment_type.errors %}
-                                    <div class="invalid-feedback">
-                                        {% for error in form.payment_type.errors %}
-                                        {{ error }}
-                                        {% endfor %}
-                                    </div>
-                                    {% endif %}
-                                </div>
-                                <div class="col-md-6 mb-4">
-                                    <label for="id_amount" class="form-label">Amount (RWF)</label>
-                                    <input type="number" name="amount" id="id_amount" class="form-control {% if form.amount.errors %}is-invalid{% endif %}" value="{{ form.amount.value|default:subscription_fee }}" required>
-                                    {% if form.amount.errors %}
-                                    <div class="invalid-feedback">
-                                        {% for error in form.amount.errors %}
-                                        {{ error }}
-                                        {% endfor %}
-                                    </div>
-                                    {% endif %}
-                                </div>
-                                <div class="col-12 mb-4">
-                                    <label for="id_proof_image" class="form-label">Proof of Payment (Screenshot/Receipt)</label>
-                                    <div class="file-upload-area {% if form.proof_image.errors %}is-invalid{% endif %}" onclick="document.getElementById('id_proof_image').click();">
-                                        <i data-feather="upload" style="width: 48px; height: 48px; color: #8b5cf6;"></i>
-                                        <p class="mt-3 mb-1">Click to upload or drag and drop</p>
-                                        <p class="text-muted small">PNG, JPG, PDF up to 5MB</p>
-                                        <input type="file" name="proof_image" id="id_proof_image" class="d-none" accept="image/*,.pdf">
-                                    </div>
-                                    {% if form.proof_image.errors %}
-                                    <div class="invalid-feedback d-block">
-                                        {% for error in form.proof_image.errors %}
-                                        {{ error }}
-                                        {% endfor %}
-                                    </div>
-                                    {% endif %}
-                                    <div class="form-text mt-2">Upload a clear image of your payment confirmation.</div>
-                                </div>
-                            </div>
-                            
-                            <div class="step-navigation">
-                                <a href="{% url 'dashboard:subscription_wizard_step' 1 %}" class="btn btn-outline-secondary">
-                                    <i data-feather="arrow-left" class="me-2"></i> Back
-                                </a>
-                                <button type="submit" class="btn btn-primary-gradient">
-                                    Review & Continue <i data-feather="arrow-right" class="ms-2"></i>
-                                </button>
-                            </div>
-                        </form>
-                        {% endif %}
-
-                        {% if step == 3 %}
-                        <!-- Step 3: Review & Confirm -->
-                        <div class="step-header">
-                            <div class="step-icon">
-                                <i data-feather="check-circle"></i>
-                            </div>
-                            <h2 class="step-title">Review & Confirm</h2>
-                            <p class="step-subtitle">Please review your subscription details before confirming.</p>
-                        </div>
-                        
-                        <div class="summary-card mb-5">
-                            <h5 class="summary-title">Subscription Summary</h5>
-                            <table class="summary-table">
-                                <tr>
-                                    <th width="40%">Plan</th>
-                                    <td>{{ plan_display }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Payment Method</th>
-                                    <td>{{ wizard_data.payment_type|title }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Amount</th>
-                                    <td>{{ wizard_data.amount|floatformat:0 }} RWF</td>
-                                </tr>
-                                <tr>
-                                    <th>Status</th>
-                                    <td><span class="badge bg-warning">Pending Approval</span></td>
-                                </tr>
-                            </table>
-                            <p class="text-muted small mt-4">Your subscription will be activated after finance officer verifies your payment proof.</p>
-                        </div>
-                        
-                        <form method="post">
-                            {% csrf_token %}
-                            <div class="step-navigation">
-                                <a href="{% url 'dashboard:subscription_wizard_step' 2 %}" class="btn btn-outline-secondary">
-                                    <i data-feather="arrow-left" class="me-2"></i> Edit Details
-                                </a>
-                                <button type="submit" class="btn btn-success-gradient">
-                                    <i data-feather="check" class="me-2"></i> Confirm & Submit
-                                </button>
-                            </div>
-                        </form>
-                        {% endif %}
-
-                        {% if step == 4 %}
-                        <!-- Step 4: Processing -->
-                        <div class="text-center py-4">
-                            <div class="success-icon">
-                                <i data-feather="check-circle"></i>
-                            </div>
-                            <h2 class="success-title">Subscription Submitted!</h2>
-                            <p class="success-message">
-                                Your payment proof has been submitted and is pending approval by our finance team.
-                                You will receive a notification once your subscription is activated.
-                            </p>
-                            <div class="next-steps">
-                                <h5><i data-feather="info" class="me-2"></i> What's Next?</h5>
-                                <ul>
-                                    <li>Finance officer will review your payment proof within 24-48 hours.</li>
-                                    <li>You will receive an email notification upon approval.</li>
-                                    <li>Once approved, all premium features will be unlocked.</li>
-                                </ul>
-                            </div>
-                            <div class="mt-5">
-                                <a href="{% url 'dashboard:student_dashboard' %}" class="btn btn-primary-gradient me-3">
-                                    <i data-feather="home" class="me-2"></i> Go to Dashboard
-                                </a>
-                                <a href="{% url 'applications:my_applications' %}" class="btn btn-outline-secondary">
-                                    <i data-feather="file-text" class="me-2"></i> View Applications
-                                </a>
-                            </div>
-                        </div>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
+    <!-- ── Stepper ──────────────────────────── -->
+    <div class="wizard-stepper">
+        <div class="stepper-step {% if step > 1 %}completed{% elif step == 1 %}active{% endif %}">
+            <div class="stepper-circle">{% if step > 1 %}<i data-feather="check" style="width:18px;height:18px;"></i>{%
+                else %}{% endif %}</div>
+            <div class="stepper-label">Plan</div>
+        </div>
+        <div class="stepper-line {% if step > 1 %}filled{% endif %}"></div>
+        <div class="stepper-step {% if step > 2 %}completed{% elif step == 2 %}active{% endif %}">
+            <div class="stepper-circle">{% if step > 2 %}<i data-feather="check" style="width:18px;height:18px;"></i>{%
+                else %}2{% endif %}</div>
+            <div class="stepper-label">Payment</div>
+        </div>
+        <div class="stepper-line {% if step > 2 %}filled{% endif %}"></div>
+        <div class="stepper-step {% if step > 3 %}completed{% elif step == 3 %}active{% endif %}">
+            <div class="stepper-circle">{% if step > 3 %}<i data-feather="check" style="width:18px;height:18px;"></i>{%
+                else %}3{% endif %}</div>
+            <div class="stepper-label">Confirm</div>
+        </div>
+        <div class="stepper-line {% if step > 3 %}filled{% endif %}"></div>
+        <div class="stepper-step {% if step == 4 %}active{% endif %}">
+            <div class="stepper-circle">{% if step == 4 %}<i data-feather="check" style="width:18px;height:18px;"></i>{%
+                else %}4{% endif %}</div>
+            <div class="stepper-label">Done</div>
         </div>
     </div>
-</div>
 
-<script>
-    // Plan card selection
-    document.addEventListener('DOMContentLoaded', function() {
-        const planCards = document.querySelectorAll('.plan-card');
-        planCards.forEach(card => {
-            card.addEventListener('click', function() {
-                const radio = this.querySelector('input[type="radio"]');
-                if (radio) {
-                    radio.checked = true;
-                    planCards.forEach(c => c.classList.remove('selected'));
-                    this.classList.add('selected');
-                }
-            });
-        });
+    <!-- ── Card ─────────────────────────────── -->
+    <div class="wizard-card">
 
-        // File upload area drag & drop
-        const fileArea = document.querySelector('.file-upload-area');
-        const fileInput = document.getElementById('id_proof_image');
-        if (fileArea && fileInput) {
-            fileArea.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                fileArea.classList.add('dragover');
-            });
-            fileArea.addEventListener('dragleave', () => {
-                fileArea.classList.remove('dragover');
-            });
-            fileArea.addEventListener('drop', (e) => {
-                e.preventDefault();
-                fileArea.classList.remove('dragover');
-                if (e.dataTransfer.files.length) {
-                    fileInput.files = e.dataTransfer.files;
-                    // Update UI to show file name
-                    const fileName = e.dataTransfer.files[0].name;
-                    fileArea.innerHTML = `<i data-feather="file" style="width: 48px; height: 48px; color: #8b5cf6;"></i>
-                                          <p class="mt-3 mb-1">${fileName}</p>
-                                          <p class="text-muted small">Click to change</p>`;
-                    feather.replace();
-                }
-            });
-            fileInput.addEventListener('change', function() {
-                if (this.files.length) {
-                    const fileName = this.files[0].name;
-                    fileArea.innerHTML = `<i data-feather="file" style="width: 48px; height: 48px; color: #8b5cf6;"></i>
-                                          <p class="mt-3 mb-1">${fileName}</p>
-                                          <p class="text-muted small">Click to change</p>`;
-                    feather.replace();
-                }
-            });
-        }
+        {% if step == 1 %}
+        <!-- ═══════════ STEP 1: Choose Plan ═══════════ -->
+        <div class="wizard-card-header">
+            <div class="icon-wrap"><i data-feather="star"></i></div>
+            <h2>Choose Your Plan</h2>
+            <p>Unlock premium mentorship features with the plan that suits you best.</p>
+        </div>
+        <div class="wizard-card-body">
+            <form method="post" id="planForm">
+                {% csrf_token %}
+                <input type="hidden" name="plan" id="selectedPlan" value="{{ selected_plan }}">
 
-        // Feather icons
-        if (typeof feather !== 'undefined') {
-            feather.replace();
-        }
-    });
-</script>
-{% endblock %}
+                <div class="plans-grid">
+                    {% for plan in plans %}
+                        <div class="plan-card {% if selected_plan == plan.value %}selected{% endif %} {% if plan.value == 'yearly' %}popular{% endif %}"
+                            data-plan="{{ plan.value }}" onclick="selectPlan('{{ plan.value }}')">
+                            {% if plan.value == 'yearly' %}
+                                <div class="plan-popular-tag">Most Popular</div>
+                            {% endif %}
+                            <div class="plan-name">{{ plan.name }}</div>
+                            <div class="plan-price">
+                                {{ plan.price|floatformat:0 }}
+                                <span>RWF{% if plan.value == 'monthly' %}/mo{% elif plan.value == 'yearly' %}/yr{% endif %}</span>
+                            </div>
+                            <ul class="plan-features">
+                                {% if plan.value == 'monthly' %}
+                                    <li><i data-feather="check"></i> All premium features</li>
+                                    <li><i data-feather="check"></i> Direct messaging</li>
+                                    <li><i data-feather="check"></i> Progress tracking</li>
+                                    <li><i data-feather="check"></i> Cancel anytime</li>
+                                {% elif plan.value == 'yearly' %}
+                                    <li><i data-feather="check"></i> Everything in Monthly</li>
+                                    <li><i data-feather="check"></i> Save 20% annually</li>
+                                    <li><i data-feather="check"></i> Priority support</li>
+                                    <li><i data-feather="check"></i> Free workshop access</li>
+                                {% elif plan.value == 'lifetime' %}
+                                    <li><i data-feather="check"></i> Everything in Yearly</li>
+                                    <li><i data-feather="check"></i> Lifetime access</li>
+                                    <li><i data-feather="check"></i> Exclusive events</li>
+                                    <li><i data-feather="check"></i> VIP badge</li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div class="wiz-actions" style="justify-content:flex-end;">
+                    <button type="submit" class="btn-wiz-primary">
+                        Continue <i data-feather="arrow-right" style="width:18px;height:18px;"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+
+        {% elif step == 2 %}
+        <!-- ═══════════ STEP 2: Payment ═══════════ -->
+        <div class="wizard-card-header">
+            <div class="icon-wrap"><i data-feather="credit-card"></i></div>
+            <h2>Payment Details</h2>
+            <p>Send your payment using the details below, then upload proof.</p>
+        </div>
+
+        <div class="wizard-card-body">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <!-- Payment Instructions / Details Box -->
+                <div class="payment-info-box">
+                    <h5><i data-feather="info"></i> Bank Details</h5>
+                    <div class="pay-detail">
+                        <i data-feather="briefcase"></i>
+                        <div>
+                            <div class="pay-detail-label">Bank Name</div>
+                            <div class="pay-detail-value">{{ payment_settings.bank_name }}</div>
+                        </div>
+                    </div>
+                    <div class="pay-detail">
+                        <i data-feather="hash"></i>
+                        <div>
+                            <div class="pay-detail-label">Account Number</div>
+                            <div class="pay-detail-value pay-detail-mono">{{ payment_settings.account_number }}</div>
+                        </div>
+                    </div>
+                    <div class="pay-detail">
+                        <i data-feather="user"></i>
+                        <div>
+                            <div class="pay-detail-label">Account Name</div>
+                            <div class="pay-detail-value">{{ payment_settings.account_name }}</div>
+                        </div>
+                    </div>
+                    <div style="margin-top:1rem;font-size:0.9rem;color:#475569;">
+                        For Mobile Money, use code: <strong>{{ payment_settings.mobile_money_number }}</strong>
+                        (MentorConnect)
+                    </div>
+                </div>
+
+                <div class="wiz-form-group">
+                    <label for="{{ form.payment_type.id_for_label }}">Payment Method</label>
+                    <select name="payment_type" id="{{ form.payment_type.id_for_label }}" class="wiz-select">
+                        {% for value, label in form.fields.payment_type.choices %}
+                        <option value="{{ value }}" {% if form.payment_type.value|stringformat:"s" == value|stringformat:"s" %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                    {% if form.payment_type.errors %}
+                    <div style="color:#ef4444;font-size:0.85rem;margin-top:0.25rem;">{{ form.payment_type.errors.0 }}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="wiz-form-group">
+                    <label for="{{ form.amount.id_for_label }}">Amount Paid (RWF)</label>
+                    <input type="number" name="amount" id="{{ form.amount.id_for_label }}" class="wiz-input"
+                        value="{{ form.amount.value|default_if_none:'' }}" min="0" step="0.01"
+                        placeholder="Enter amount paid">
+                    {% if form.amount.errors %}
+                    <div style="color:#ef4444;font-size:0.85rem;margin-top:0.25rem;">{{ form.amount.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="wiz-form-group">
+                    <label>Proof of Payment</label>
+                    <div class="file-upload-zone" id="dropZone"
+                        onclick="document.getElementById('proofFileInput').click();">
+                        <i data-feather="upload-cloud"></i>
+                        <p>Drag & drop your file here, or <span class="browse-link">browse</span></p>
+                        <p style="font-size:0.8rem;color:#94a3b8;margin-top:0.35rem;">PDF, JPG, PNG (max 5MB)</p>
+                    </div>
+                    <input type="file" name="proof_image" id="proofFileInput" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                        style="display:none;" onchange="showFileName(this)">
+                    <div class="file-name-display" id="fileNameDisplay">
+                        <i data-feather="file" style="width:16px;height:16px;"></i>
+                        <span id="fileNameText"></span>
+                    </div>
+                    {% if form.proof_image.errors %}
+                    <div style="color:#ef4444;font-size:0.85rem;margin-top:0.25rem;">{{ form.proof_image.errors.0 }}
+                    </div>
+                    {% endif %}
+                    <div class="hint">Upload a screenshot or PDF of your payment confirmation.</div>
+                </div>
+
+                <div class="wiz-actions">
+                    <a href="{% url 'dashboard:subscription_wizard_step' step=1 %}" class="btn-wiz-secondary">
+                        <i data-feather="arrow-left" style="width:16px;height:16px;"></i> Back
+                    </a>
+                    <button type="submit" class="btn-wiz-primary">
+                        Continue <i data-feather="arrow-right" style="width:18px;height:18px;"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+
+        {% elif step == 3 %}
+        <!-- ═══════════ STEP 3: Review & Confirm ═══════════ -->
+        <div class="wizard-card-header">
+            <div class="icon-wrap"><i data-feather="clipboard"></i></div>
+            <h2>Review & Confirm</h2>
+            <p>Double-check your details before confirming your subscription.</p>
+        </div>
+        <div class="wizard-card-body">
+            <table class="review-table">
+                <tr>
+                    <td>Plan</td>
+                    <td>{{ plan_display }}</td>
+                </tr>
+                <tr>
+                    <td>Amount</td>
+                    <td>{{ wizard_data.amount|floatformat:0 }} RWF</td>
+                </tr>
+                <tr>
+                    <td>Payment Method</td>
+                    <td>{{ wizard_data.payment_type|title }}</td>
+                </tr>
+                <tr>
+                    <td>Status</td>
+                    <td><span
+                            style="display:inline-block;padding:4px 12px;background:#fef3c7;color:#92400e;border-radius:20px;font-size:0.85rem;font-weight:600;">Pending
+                            Verification</span></td>
+                </tr>
+            </table>
+
+            <div
+                style="background:#f0fdf4;border:2px solid #bbf7d0;border-radius:12px;padding:1rem 1.25rem;margin-bottom:1.5rem;display:flex;align-items:flex-start;gap:0.75rem;">
+                <i data-feather="info" style="width:20px;height:20px;color:#16a34a;flex-shrink:0;margin-top:2px;"></i>
+                <div style="font-size:0.9rem;color:#166534;line-height:1.6;">
+                    Your subscription will be <strong>activated</strong> once a finance officer verifies your payment
+                    proof. You'll receive a notification when approved.
+                </div>
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+                <div class="wiz-actions">
+                    <a href="{% url 'dashboard:subscription_wizard_step' step=2 %}" class="btn-wiz-secondary">
+                        <i data-feather="arrow-left" style="width:16px;height:16px;"></i> Back
+                    </a>
+                    <button type="submit" class="btn-wiz-success">
+                        <i data-feather="check-circle" style="width:18px;height:18px;"></i> Confirm Subscription
+                    </button>
+                </div>
+            </form>
+        </div>
+
+
+        {% elif step == 4 %}
+        <!-- ═══════════ STEP 4: Success ═══════════ -->
+        <div class="wizard-card-header" style="padding-bottom:0;">
+            <div class="success-anim">
+                <div class="success-check"><i data-feather="check"></i></div>
+                <h2 class="success-title">Subscription Submitted! 🎉</h2>
+                <p class="success-subtitle">
+                    Your subscription request has been submitted successfully. A finance officer will review your
+                    payment and activate your premium access shortly.
+                </p>
+            </div>
+        </div>
+        <div class="wizard-card-body" style="text-align:center;">
+            <div class="wiz-actions" style="justify-content:center;">
+                <a href="{% url 'dashboard:student_dashboard' %}" class="btn-wiz-primary">
+                    <i data-feather="grid" style="width:18px;height:18px;"></i> Go to Dashboard
+                </a>
+            </div>
+        </div>
+
+        {% endif %}
+
+        {% endblock %}
+
+        {% block extra_js %}
+        <script>
+            // ── Plan Selection (Step 1) ──────────────
+            function selectPlan(value) {
+                document.getElementById('selectedPlan').value = value;
+                document.querySelectorAll('.plan-card').forEach(card => {
+                    card.classList.toggle('selected', card.dataset.plan === value);
+                });
+            }
+
+            // ── File Upload (Step 2) ─────────────────
+            function showFileName(input) {
+                const display = document.getElementById('fileNameDisplay');
+                const text = document.getElementById('fileNameText');
+                if (input.files && input.files[0]) {
+                    text.textContent = input.files[0].name;
+                    display.classList.add('visible');
+                }
+            }
+
+            // Drag & drop support
+            const dropZone = document.getElementById('dropZone');
+            if (dropZone) {
+                ['dragover', 'dragenter'].forEach(evt => {
+                    dropZone.addEventListener(evt, e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+                });
+                ['dragleave', 'drop'].forEach(evt => {
+                    dropZone.addEventListener(evt, e => { e.preventDefault(); dropZone.classList.remove('dragover'); });
+                });
+                dropZone.addEventListener('drop', e => {
+                    const fileInput = document.getElementById('proofFileInput');
+                    if (e.dataTransfer.files.length) {
+                        fileInput.files = e.dataTransfer.files;
+                        showFileName(fileInput);
+                    }
+                });
+            }
+
+            // Re-initialize feather icons
+            if (typeof feather !== 'undefined') { feather.replace(); }
+        </script>
+        {% endblock %}

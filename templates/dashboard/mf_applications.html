@@ -3,61 +3,67 @@
 {% block dashboard_content %}
 <div class="dashboard-header">
     <div>
-        <h1><i data-feather="user-plus" class="header-icon"></i> Applications for Assigned Mentors</h1>
-        <p class="text-muted">Monitor applications where selected mentor is assigned to you</p>
+        <h1><i data-feather="user-plus" class="header-icon"></i> Mentorship Applications</h1>
+        <p class="text-muted">Monitor and manage applications for your assigned mentors</p>
     </div>
-    <a href="{% url 'dashboard:mentor_facilitator_dashboard' %}" class="btn btn-outline"><i data-feather="arrow-left"></i> Dashboard</a>
+    <div class="dashboard-header-actions">
+        <a href="{% url 'dashboard:mentor_facilitator_dashboard' %}" class="btn btn-outline"><i
+                data-feather="arrow-left"></i> Dashboard</a>
+    </div>
 </div>
 
+<!-- Stats -->
 <div class="dashboard-stats">
     <div class="stat-card">
-        <div class="stat-card-icon stat-card-icon-primary"><i data-feather="inbox"></i></div>
+        <div class="stat-card-icon" style="background:#dbeafe; color:#2563eb;"><i data-feather="inbox"></i></div>
         <div class="stat-card-value">{{ total_applications|default:0 }}</div>
-        <div class="stat-card-label">Total</div>
+        <div class="stat-card-label">Total Applications</div>
     </div>
     <div class="stat-card">
-        <div class="stat-card-icon stat-card-icon-warning"><i data-feather="clock"></i></div>
+        <div class="stat-card-icon" style="background:#fef3c7; color:#d97706;"><i data-feather="clock"></i></div>
         <div class="stat-card-value">{{ pending_count|default:0 }}</div>
-        <div class="stat-card-label">Pending</div>
+        <div class="stat-card-label">Pending Review</div>
     </div>
     <div class="stat-card">
-        <div class="stat-card-icon stat-card-icon-success"><i data-feather="check"></i></div>
+        <div class="stat-card-icon" style="background:#d1fae5; color:#059669;"><i data-feather="check-circle"></i></div>
         <div class="stat-card-value">{{ approved_count|default:0 }}</div>
-        <div class="stat-card-label">Approved</div>
+        <div class="stat-card-label">Approved / Enrolled</div>
     </div>
     <div class="stat-card">
-        <div class="stat-card-icon stat-card-icon-danger"><i data-feather="user"></i></div>
+        <div class="stat-card-icon" style="background:#fee2e2; color:#dc2626;"><i data-feather="user"></i></div>
         <div class="stat-card-value">{{ minor_count|default:0 }}</div>
-        <div class="stat-card-label">Minors</div>
+        <div class="stat-card-label">Minor Applicants</div>
     </div>
 </div>
 
+<!-- Filters -->
 <div class="card mb-4">
     <div class="card-body">
         <form method="get" class="filters-form">
             <div class="filters-row">
                 <div class="filter-group">
                     <label>Search</label>
-                    <input type="text" name="search" class="form-control" placeholder="Name, email, school, tracking..." value="{{ request.GET.search }}">
+                    <input type="text" name="search" class="form-control"
+                        placeholder="Name, email, school, tracking code..." value="{{ request.GET.search }}">
                 </div>
                 <div class="filter-group">
                     <label>Status</label>
                     <select name="status" class="form-control">
-                        <option value="">All</option>
-                        <option value="pending_finance" {% if request.GET.status == 'pending_finance' %}selected{% endif %}>Pending Finance</option>
-                        <option value="pending_review" {% if request.GET.status == 'pending_review' %}selected{% endif %}>Pending Review</option>
-                        <option value="approved" {% if request.GET.status == 'approved' %}selected{% endif %}>Approved</option>
-                        <option value="enrolled" {% if request.GET.status == 'enrolled' %}selected{% endif %}>Enrolled</option>
-                        <option value="finance_rejected" {% if request.GET.status == 'finance_rejected' %}selected{% endif %}>Finance Rejected</option>
-                        <option value="review_rejected" {% if request.GET.status == 'review_rejected' %}selected{% endif %}>Review Rejected</option>
+                        <option value="">All Statuses</option>
+                        <option value="pending_finance" {% if request.GET.status|default:'' == 'pending_finance' %}selected{% endif %}>Pending Finance</option>
+                        <option value="pending_review" {% if request.GET.status|default:'' == 'pending_review' %}selected{% endif %}>Pending Review</option>
+                        <option value="approved" {% if request.GET.status|default:'' == 'approved' %}selected{% endif %}>Approved</option>
+                        <option value="enrolled" {% if request.GET.status|default:'' == 'enrolled' %}selected{% endif %}>Enrolled</option>
+                        <option value="finance_rejected" {% if request.GET.status|default:'' == 'finance_rejected' %}selected{% endif %}>Finance Rejected</option>
+                        <option value="review_rejected" {% if request.GET.status|default:'' == 'review_rejected' %}selected{% endif %}>Review Rejected</option>
                     </select>
                 </div>
                 <div class="filter-group">
                     <label>Minor</label>
                     <select name="minor" class="form-control">
                         <option value="">All</option>
-                        <option value="yes" {% if request.GET.minor == 'yes' %}selected{% endif %}>Minor only</option>
-                        <option value="no" {% if request.GET.minor == 'no' %}selected{% endif %}>Non-minor only</option>
+                        <option value="yes" {% if request.GET.minor|default:'' == 'yes' %}selected{% endif %}>Minors Only</option>
+                        <option value="no" {% if request.GET.minor|default:'' == 'no' %}selected{% endif %}>Adults Only</option>
                     </select>
                 </div>
                 <div class="filter-group filter-actions">
@@ -69,15 +75,18 @@
     </div>
 </div>
 
+<!-- Applications List -->
 <div class="card">
     <div class="card-body">
+        {% if applications %}
+        <!-- Desktop Table -->
         <div class="table-container">
             <table class="table">
                 <thead>
                     <tr>
                         <th>Applicant</th>
-                        <th>Mentor</th>
-                        <th>Tracking</th>
+                        <th>Assigned Mentor</th>
+                        <th>Tracking Code</th>
                         <th>School</th>
                         <th>Minor</th>
                         <th>Status</th>
@@ -92,13 +101,22 @@
                             <div class="user-cell">
                                 <div class="user-info">
                                     <div class="user-name">{{ app.name }}</div>
-                                    <div class="user-email text-xs">{{ app.email }}</div>
+                                    <div class="user-email text-xs text-muted">{{ app.email }}</div>
                                 </div>
                             </div>
                         </td>
-                        <td>{% if app.selected_mentor %}{{ app.selected_mentor.get_full_name }}{% else %}—{% endif %}</td>
-                        <td><strong>{{ app.tracking_code }}</strong></td>
-                        <td>{{ app.school|truncatechars:30|default:"—" }}</td>
+                        <td>
+                            {% if app.selected_mentor %}
+                            <div class="user-cell">
+                                <img src="{{ app.selected_mentor.get_avatar_url }}" alt="" class="avatar avatar-sm">
+                                <span>{{ app.selected_mentor.get_full_name }}</span>
+                            </div>
+                            {% else %}
+                            <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                        <td><code style="font-size:0.8125rem;">{{ app.tracking_code }}</code></td>
+                        <td>{{ app.school|truncatechars:25|default:"—" }}</td>
                         <td>
                             {% if app.is_minor %}
                             <span class="badge badge-warning">Minor</span>
@@ -106,28 +124,147 @@
                             <span class="badge badge-secondary">Adult</span>
                             {% endif %}
                         </td>
-                        <td><span class="badge badge-{{ app.status }}">{{ app.get_status_display }}</span></td>
-                        <td>{{ app.submitted_at|date:"M d, Y"|default:"—" }}</td>
                         <td>
-                            <a href="{% url 'dashboard:admin_application_detail' app.pk %}" class="btn btn-sm btn-outline">View</a>
-                            <a href="{% url 'dashboard:mf_reassign_mentor' app.pk %}" class="btn btn-sm btn-outline-warning">Reassign</a>
+                            <span
+                                class="badge {% if app.status == 'pending_review' or app.status == 'pending_finance' %}badge-warning{% elif app.status == 'approved' or app.status == 'enrolled' %}badge-success{% elif app.status == 'finance_rejected' or app.status == 'review_rejected' %}badge-danger{% else %}badge-secondary{% endif %}">
+                                {{ app.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="text-sm text-muted">{{ app.submitted_at|date:"M d, Y"|default:"—" }}</td>
+                        <td>
+                            <div style="display:flex; gap:0.375rem;">
+                                <a href="{% url 'dashboard:mf_application_detail' app.pk %}"
+                                    class="btn btn-sm btn-primary" title="View Details">
+                                    <i data-feather="eye" style="width:14px;height:14px;"></i> View
+                                </a>
+                                <a href="{% url 'dashboard:mf_reassign_mentor' app.pk %}" class="btn btn-sm btn-outline"
+                                    title="Reassign to another mentor">
+                                    <i data-feather="shuffle" style="width:14px;height:14px;"></i> Reassign
+                                </a>
+                            </div>
                         </td>
                     </tr>
-                    {% empty %}
-                    <tr><td colspan="8" class="text-center py-4 text-muted">No applications found</td></tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
+
+        <!-- Mobile Cards (hidden on desktop) -->
+        <div class="mf-app-cards">
+            {% for app in applications %}
+            <div class="mf-app-card">
+                <div class="mf-app-card-header">
+                    <div>
+                        <strong>{{ app.name }}</strong>
+                        <div class="text-xs text-muted">{{ app.email }}</div>
+                    </div>
+                    <span
+                        class="badge {% if app.status == 'pending_review' or app.status == 'pending_finance' %}badge-warning{% elif app.status == 'approved' or app.status == 'enrolled' %}badge-success{% elif app.status == 'finance_rejected' or app.status == 'review_rejected' %}badge-danger{% else %}badge-secondary{% endif %}">
+                        {{ app.get_status_display }}
+                    </span>
+                </div>
+                <div class="mf-app-card-body">
+                    <div class="mf-app-detail"><span class="text-muted">Mentor:</span> {{
+                        app.selected_mentor.get_full_name|default:"—" }}</div>
+                    <div class="mf-app-detail"><span class="text-muted">Code:</span>
+                        <code>{{ app.tracking_code }}</code>
+                    </div>
+                    <div class="mf-app-detail"><span class="text-muted">School:</span> {{
+                        app.school|truncatechars:30|default:"—" }}</div>
+                    <div class="mf-app-detail"><span class="text-muted">Submitted:</span> {{ app.submitted_at|date:"M d,
+                        Y"|default:"—" }}</div>
+                    {% if app.is_minor %}<span class="badge badge-warning">Minor</span>{% endif %}
+                </div>
+                <div class="mf-app-card-actions">
+                    <a href="{% url 'dashboard:mf_application_detail' app.pk %}" class="btn btn-sm btn-primary"><i
+                            data-feather="eye" style="width:14px;height:14px;"></i> View</a>
+                    <a href="{% url 'dashboard:mf_reassign_mentor' app.pk %}" class="btn btn-sm btn-outline"><i
+                            data-feather="shuffle" style="width:14px;height:14px;"></i> Reassign</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% else %}
+        <div style="text-align:center; padding:3rem 1rem; color:#9ca3af;">
+            <i data-feather="inbox" style="width:48px;height:48px;color:#d1d5db;"></i>
+            <p style="margin-top:1rem; font-size:1rem;">No applications found matching your filters.</p>
+            <a href="{% url 'dashboard:mf_applications' %}" class="btn btn-outline btn-sm"
+                style="margin-top:0.5rem;">Clear Filters</a>
+        </div>
+        {% endif %}
+
         {% if is_paginated %}
-        <div class="pagination-container">
-            <nav class="pagination">
-                {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}{% for k,v in request.GET.items %}{% if k != 'page' %}&{{ k }}={{ v }}{% endif %}{% endfor %}" class="pagination-btn"><i data-feather="chevron-left"></i></a>{% endif %}
-                <span class="pagination-info">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
-                {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}{% for k,v in request.GET.items %}{% if k != 'page' %}&{{ k }}={{ v }}{% endif %}{% endfor %}" class="pagination-btn"><i data-feather="chevron-right"></i></a>{% endif %}
+        <div class="pagination-container" style="margin-top:1.5rem;">
+            <nav class="pagination" style="display:flex; align-items:center; justify-content:center; gap:0.75rem;">
+                {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}{% for k,v in request.GET.items %}{% if k != 'page' %}&{{ k }}={{ v }}{% endif %}{% endfor %}"
+                    class="btn btn-sm btn-outline"><i data-feather="chevron-left"
+                        style="width:16px;height:16px;"></i></a>
+                {% endif %}
+                <span class="text-sm">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% for k,v in request.GET.items %}{% if k != 'page' %}&{{ k }}={{ v }}{% endif %}{% endfor %}"
+                    class="btn btn-sm btn-outline"><i data-feather="chevron-right"
+                        style="width:16px;height:16px;"></i></a>
+                {% endif %}
             </nav>
-    </div>
-    {% endif %}
+        </div>
+        {% endif %}
     </div>
 </div>
+
+<style>
+    /* Mobile app cards - hidden on desktop */
+    .mf-app-cards {
+        display: none;
+    }
+
+    .mf-app-card {
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        overflow: hidden;
+        margin-bottom: 0.75rem;
+    }
+
+    .mf-app-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding: 0.75rem 1rem;
+        background: var(--background-color, #f9fafb);
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .mf-app-card-body {
+        padding: 0.75rem 1rem;
+    }
+
+    .mf-app-detail {
+        font-size: 0.8125rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .mf-app-card-actions {
+        display: flex;
+        gap: 0.5rem;
+        padding: 0.75rem 1rem;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .mf-app-card-actions .btn {
+        flex: 1;
+        justify-content: center;
+    }
+
+    @media (max-width: 768px) {
+        .table-container {
+            display: none !important;
+        }
+
+        .mf-app-cards {
+            display: block;
+        }
+    }
+</style>
 {% endblock %}

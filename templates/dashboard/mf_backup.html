@@ -1,182 +1,200 @@
 {% extends 'dashboard/base_dashboard.html' %}
-{% load static %}
 
-{% block title %}Backup Actions - Mentor Facilitator{% endblock %}
+{% block title %}Backup & Cover - Mentor Facilitator{% endblock %}
 
 {% block dashboard_content %}
 <div class="dashboard-header">
-    <div class="flex items-center justify-between">
+    <div>
+        <h1><i data-feather="shield" class="header-icon"></i> Backup & Cover</h1>
+        <p class="text-muted">Act on behalf of assigned mentors when they are unavailable</p>
+    </div>
+    <a href="{% url 'dashboard:mentor_facilitator_dashboard' %}" class="btn btn-outline"><i
+            data-feather="arrow-left"></i> Dashboard</a>
+</div>
+
+<!-- Info Alert -->
+<div class="card mb-4" style="border-left: 4px solid #d97706;">
+    <div class="card-body" style="display:flex; gap:1rem; align-items:flex-start;">
+        <div class="bk-icon" style="background:#fef3c7; color:#d97706;"><i data-feather="alert-triangle"></i></div>
         <div>
-            <h1 class="flex items-center gap-3 text-2xl font-bold text-gray-800">
-                <i data-feather="shield" class="w-8 h-8 text-primary"></i>
-                Act as Backup for Mentors
-            </h1>
-            <p class="text-gray-600 mt-2">Perform actions on behalf of assigned mentors when they are unavailable</p>
+            <strong style="display:block; margin-bottom:0.25rem;">When to use backup actions</strong>
+            <p class="text-muted" style="margin:0; font-size:0.875rem;">Only perform these actions when you have
+                explicit consent from the mentor or in emergency situations where the mentor is unavailable and students
+                need support.</p>
         </div>
-        <a href="{% url 'dashboard:mentor_facilitator_dashboard' %}" class="btn btn-outline flex items-center gap-2">
-            <i data-feather="arrow-left" class="w-4 h-4"></i>
-            Back to Dashboard
-        </a>
     </div>
 </div>
 
-<!-- Explanation Card -->
-<div class="card mb-6 border-l-4 border-l-warning">
+<!-- Assigned Mentors Overview -->
+<div class="card mb-4">
     <div class="card-body">
-        <h3 class="text-lg font-semibold text-gray-800 mb-3">Backup Actions Explained</h3>
-        <p class="text-gray-700 mb-4">As a mentor facilitator, you can temporarily act on behalf of a mentor who is unavailable. Use the actions below to help maintain continuity.</p>
-        <div class="alert alert-warning flex items-start gap-3">
-            <i data-feather="alert-triangle" class="w-5 h-5 mt-0.5 flex-shrink-0"></i>
-            <div>
-                <strong class="block">Note:</strong>
-                Only perform these actions when you have explicit consent from the mentor or in emergency situations.
+        <h3 class="mb-3"><i data-feather="users" style="width:20px;height:20px;"></i> Your Assigned Mentors</h3>
+        {% if mentors %}
+        <div class="bk-mentor-list">
+            {% for mentor in mentors %}
+            <div class="bk-mentor-card">
+                <div class="bk-mentor-info">
+                    <img src="{{ mentor.get_avatar_url }}" alt="" class="avatar avatar-md">
+                    <div>
+                        <strong>{{ mentor.get_full_name }}</strong>
+                        <div class="text-sm text-muted">{{ mentor.email }}</div>
+                    </div>
+                </div>
+                <div class="bk-mentor-actions">
+                    <a href="{% url 'dashboard:mf_mentor_edit' mentor.pk %}" class="btn btn-sm btn-outline"
+                        title="Edit Profile">
+                        <i data-feather="edit-2" style="width:14px;height:14px;"></i> Edit
+                    </a>
+                    <a href="{% url 'profiles:mentor_detail' mentor.pk %}" class="btn btn-sm btn-outline"
+                        title="View Profile">
+                        <i data-feather="eye" style="width:14px;height:14px;"></i> View
+                    </a>
+                </div>
             </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="bk-empty">
+            <i data-feather="users" style="width:40px;height:40px;color:#d1d5db;"></i>
+            <p>No mentors assigned to you yet.</p>
+            <a href="{% url 'dashboard:mf_assignments' %}" class="btn btn-outline btn-sm">View Assignments</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Backup Action Cards -->
+<h3 class="mb-3" style="padding-left:0.25rem;"><i data-feather="zap" style="width:20px;height:20px;"></i> Backup Actions
+</h3>
+<div class="bk-actions-grid mb-4">
+    <!-- Add Availability -->
+    <div class="card">
+        <div class="card-body">
+            <div class="bk-action-header">
+                <div class="bk-icon" style="background:#dbeafe; color:#2563eb;"><i data-feather="calendar"></i></div>
+                <div>
+                    <strong>Add Availability</strong>
+                    <p class="text-sm text-muted">Add availability slots for a mentor who cannot update their calendar.
+                    </p>
+                </div>
+            </div>
+            {% if mentors %}
+            <div class="bk-action-list">
+                {% for mentor in mentors %}
+                <div class="bk-action-row">
+                    <span class="bk-action-name">{{ mentor.get_full_name }}</span>
+                    <a href="{% url 'sessions_app:add_availability' %}?mentor_id={{ mentor.id }}"
+                        class="btn btn-sm btn-primary"><i data-feather="plus" style="width:14px;height:14px;"></i> Add
+                        Slot</a>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-muted text-center py-3">No assigned mentors</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Sessions & Schedule -->
+    <div class="card">
+        <div class="card-body">
+            <div class="bk-action-header">
+                <div class="bk-icon" style="background:#d1fae5; color:#059669;"><i data-feather="check-circle"></i>
+                </div>
+                <div>
+                    <strong>View & Approve Sessions</strong>
+                    <p class="text-sm text-muted">View and manage pending sessions for each mentor.</p>
+                </div>
+            </div>
+            {% if mentors %}
+            <div class="bk-action-list">
+                {% for mentor in mentors %}
+                <div class="bk-action-row">
+                    <span class="bk-action-name">{{ mentor.get_full_name }}</span>
+                    <a href="{% url 'sessions_app:mentor-schedule' mentor.id %}" class="btn btn-sm btn-outline"><i
+                            data-feather="eye" style="width:14px;height:14px;"></i> Schedule</a>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-muted text-center py-3">No assigned mentors</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Session Reports -->
+    <div class="card">
+        <div class="card-body">
+            <div class="bk-action-header">
+                <div class="bk-icon" style="background:#ede9fe; color:#7c3aed;"><i data-feather="file-text"></i></div>
+                <div>
+                    <strong>Session Reports</strong>
+                    <p class="text-sm text-muted">Review and approve session reports on behalf of mentors.</p>
+                </div>
+            </div>
+            {% if mentors %}
+            <div class="bk-action-list">
+                {% for mentor in mentors %}
+                <div class="bk-action-row">
+                    <span class="bk-action-name">{{ mentor.get_full_name }}</span>
+                    <a href="{% url 'dashboard:mf_session_reports' %}?mentor={{ mentor.id }}"
+                        class="btn btn-sm btn-outline"><i data-feather="file-text" style="width:14px;height:14px;"></i>
+                        Reports</a>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-muted text-center py-3">No assigned mentors</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Post Updates -->
+    <div class="card">
+        <div class="card-body">
+            <div class="bk-action-header">
+                <div class="bk-icon" style="background:#fef3c7; color:#d97706;"><i data-feather="message-square"></i>
+                </div>
+                <div>
+                    <strong>Post Updates</strong>
+                    <p class="text-sm text-muted">Post feed updates or announcements for a mentor.</p>
+                </div>
+            </div>
+            {% if mentors %}
+            <div class="bk-action-list">
+                {% for mentor in mentors %}
+                <div class="bk-action-row">
+                    <span class="bk-action-name">{{ mentor.get_full_name }}</span>
+                    <a href="{% url 'feed:create_post' %}?as_mentor={{ mentor.id }}" class="btn btn-sm btn-outline"><i
+                            data-feather="edit" style="width:14px;height:14px;"></i> Post</a>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-muted text-center py-3">No assigned mentors</p>
+            {% endif %}
         </div>
     </div>
 </div>
 
-<!-- Quick Actions Grid -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-    <div class="card hover:shadow-lg transition-shadow duration-300">
-        <div class="card-body">
-            <div class="flex items-center gap-3 mb-4">
-                <div class="p-3 bg-blue-50 rounded-lg">
-                    <i data-feather="calendar" class="w-6 h-6 text-blue-600"></i>
-                </div>
-                <h4 class="text-lg font-semibold text-gray-800">Add Availability</h4>
-            </div>
-            <p class="text-gray-600 mb-4">Add new availability slots for a mentor who cannot update their calendar.</p>
-            {% if mentors %}
-                <div class="space-y-3">
-                    {% for mentor in mentors %}
-                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <span class="font-medium text-gray-800">{{ mentor.get_full_name }}</span>
-                        <a href="{% url 'sessions_app:add_availability' %}?mentor_id={{ mentor.id }}" class="btn btn-sm btn-outline flex items-center gap-2">
-                            <i data-feather="plus" class="w-3 h-3"></i>
-                            Add Slot
-                        </a>
-                    </div>
-                    {% endfor %}
-                </div>
-            {% else %}
-                <div class="text-center py-4 text-gray-500">
-                    <i data-feather="users" class="w-8 h-8 mx-auto mb-2"></i>
-                    <p>No assigned mentors</p>
-                </div>
-            {% endif %}
-        </div>
-    </div>
-
-    <div class="card hover:shadow-lg transition-shadow duration-300">
-        <div class="card-body">
-            <div class="flex items-center gap-3 mb-4">
-                <div class="p-3 bg-green-50 rounded-lg">
-                    <i data-feather="check-circle" class="w-6 h-6 text-green-600"></i>
-                </div>
-                <h4 class="text-lg font-semibold text-gray-800">Approve Sessions</h4>
-            </div>
-            <p class="text-gray-600 mb-4">Approve pending sessions that require mentor approval.</p>
-            {% if mentors %}
-                <div class="space-y-3">
-                    {% for mentor in mentors %}
-                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <span class="font-medium text-gray-800">{{ mentor.get_full_name }}</span>
-                        <a href="{% url 'sessions_app:mentor-schedule' mentor.id %}" class="btn btn-sm btn-outline flex items-center gap-2">
-                            <i data-feather="eye" class="w-3 h-3"></i>
-                            View Sessions
-                        </a>
-                    </div>
-                    {% endfor %}
-                </div>
-            {% else %}
-                <div class="text-center py-4 text-gray-500">
-                    <i data-feather="users" class="w-8 h-8 mx-auto mb-2"></i>
-                    <p>No assigned mentors</p>
-                </div>
-            {% endif %}
-        </div>
-    </div>
-
-    <div class="card hover:shadow-lg transition-shadow duration-300">
-        <div class="card-body">
-            <div class="flex items-center gap-3 mb-4">
-                <div class="p-3 bg-purple-50 rounded-lg">
-                    <i data-feather="file-text" class="w-6 h-6 text-purple-600"></i>
-                </div>
-                <h4 class="text-lg font-semibold text-gray-800">Update Session Reports</h4>
-            </div>
-            <p class="text-gray-600 mb-4">Edit or submit session reports on behalf of a mentor.</p>
-            {% if mentors %}
-                <div class="space-y-3">
-                    {% for mentor in mentors %}
-                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <span class="font-medium text-gray-800">{{ mentor.get_full_name }}</span>
-                        <a href="{% url 'dashboard:mf_session_reports' %}?mentor={{ mentor.id }}" class="btn btn-sm btn-outline flex items-center gap-2">
-                            <i data-feather="file-text" class="w-3 h-3"></i>
-                            View Reports
-                        </a>
-                    </div>
-                    {% endfor %}
-                </div>
-            {% else %}
-                <div class="text-center py-4 text-gray-500">
-                    <i data-feather="users" class="w-8 h-8 mx-auto mb-2"></i>
-                    <p>No assigned mentors</p>
-                </div>
-            {% endif %}
-        </div>
-    </div>
-
-    <div class="card hover:shadow-lg transition-shadow duration-300">
-        <div class="card-body">
-            <div class="flex items-center gap-3 mb-4">
-                <div class="p-3 bg-amber-50 rounded-lg">
-                    <i data-feather="message-square" class="w-6 h-6 text-amber-600"></i>
-                </div>
-                <h4 class="text-lg font-semibold text-gray-800">Post Updates</h4>
-            </div>
-            <p class="text-gray-600 mb-4">Post feed updates or announcements as the mentor.</p>
-            {% if mentors %}
-                <div class="space-y-3">
-                    {% for mentor in mentors %}
-                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <span class="font-medium text-gray-800">{{ mentor.get_full_name }}</span>
-                        <a href="{% url 'feed:create_post' %}?as_mentor={{ mentor.id }}" class="btn btn-sm btn-outline flex items-center gap-2">
-                            <i data-feather="edit" class="w-3 h-3"></i>
-                            Create Post
-                        </a>
-                    </div>
-                    {% endfor %}
-                </div>
-            {% else %}
-                <div class="text-center py-4 text-gray-500">
-                    <i data-feather="users" class="w-8 h-8 mx-auto mb-2"></i>
-                    <p>No assigned mentors</p>
-                </div>
-            {% endif %}
-        </div>
-    </div>
-</div>
-
-<!-- Send Alerts Card -->
-<div class="card mt-6">
+<!-- Alerts & Follow-ups -->
+<div class="card mb-4">
     <div class="card-body">
-        <div class="flex items-center gap-3 mb-6">
-            <div class="p-3 bg-red-50 rounded-lg">
-                <i data-feather="bell" class="w-6 h-6 text-red-600"></i>
-            </div>
+        <div class="bk-action-header mb-3">
+            <div class="bk-icon" style="background:#fee2e2; color:#dc2626;"><i data-feather="bell"></i></div>
             <div>
-                <h4 class="text-lg font-semibold text-gray-800">Send Alerts & Follow-ups</h4>
-                <p class="text-gray-600">Send notifications to mentors or students about upcoming sessions, deadlines, or reminders.</p>
+                <strong>Send Alerts & Follow-ups</strong>
+                <p class="text-sm text-muted">Send notifications to mentors or students about sessions, deadlines, or
+                    reminders.</p>
             </div>
         </div>
-        
+
         <form method="post" action="#">
             {% csrf_token %}
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;" class="bk-form-grid">
                 <div class="form-group">
                     <label class="form-label">Recipient</label>
-                    <select class="form-input">
+                    <select class="form-control" name="recipient">
                         <option value="">Select a mentor</option>
                         {% for mentor in mentors %}
                         <option value="{{ mentor.id }}">{{ mentor.get_full_name }}</option>
@@ -185,25 +203,140 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label">Message Type</label>
-                    <select class="form-input">
+                    <select class="form-control" name="message_type">
                         <option value="alert">Alert</option>
                         <option value="reminder">Reminder</option>
                         <option value="followup">Follow-up</option>
                     </select>
                 </div>
             </div>
-            <div class="form-group mt-4">
+            <div class="form-group mt-3">
                 <label class="form-label">Message</label>
-                <textarea class="form-textarea" rows="4" placeholder="Enter alert message..."></textarea>
+                <textarea class="form-control" rows="4" name="message"
+                    placeholder="Enter your alert message..."></textarea>
             </div>
-            <div class="flex justify-end gap-3 mt-6">
+            <div style="display:flex; justify-content:flex-end; gap:0.75rem; margin-top:1rem;">
                 <button type="reset" class="btn btn-outline">Clear</button>
-                <button type="submit" class="btn btn-primary flex items-center gap-2">
-                    <i data-feather="send" class="w-4 h-4"></i>
-                    Send Alert
-                </button>
+                <button type="submit" class="btn btn-primary"><i data-feather="send"
+                        style="width:16px;height:16px;"></i> Send Alert</button>
             </div>
         </form>
     </div>
 </div>
+
+<style>
+    .bk-icon {
+        width: 44px;
+        height: 44px;
+        min-width: 44px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .bk-icon svg {
+        width: 22px;
+        height: 22px;
+    }
+
+    .bk-mentor-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .bk-mentor-card {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem;
+        border-radius: 10px;
+        background: var(--background-color, #f9fafb);
+        border: 1px solid #e5e7eb;
+    }
+
+    .bk-mentor-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .bk-mentor-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .bk-empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 2rem;
+        color: #9ca3af;
+    }
+
+    .bk-actions-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+    }
+
+    .bk-action-header {
+        display: flex;
+        gap: 0.75rem;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+    }
+
+    .bk-action-header strong {
+        display: block;
+        margin-bottom: 0.125rem;
+    }
+
+    .bk-action-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .bk-action-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.75rem;
+        background: var(--background-color, #f9fafb);
+        border-radius: 8px;
+    }
+
+    .bk-action-name {
+        font-weight: 500;
+        font-size: 0.875rem;
+    }
+
+    @media (max-width: 768px) {
+        .bk-actions-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .bk-form-grid {
+            grid-template-columns: 1fr !important;
+        }
+
+        .bk-mentor-card {
+            flex-direction: column;
+            gap: 0.75rem;
+            text-align: center;
+        }
+
+        .bk-mentor-info {
+            flex-direction: column;
+        }
+
+        .bk-mentor-actions {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
 {% endblock %}

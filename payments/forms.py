@@ -5,7 +5,8 @@ from .models import PaymentSettings, PaymentProof, Subscription
 class PaymentAmountForm(forms.ModelForm):
     class Meta:
         model = PaymentSettings
-        fields = ['student_payment_amount', 'application_fee', 'subscription_fee']
+        fields = ['student_payment_amount', 'application_fee', 'subscription_fee',
+                  'payment_number', 'payment_code', 'payment_instructions']
         widgets = {
             'student_payment_amount': forms.NumberInput(attrs={
                 'class': 'form-input w-full px-4 py-3 rounded-lg border border-gray-300',
@@ -25,20 +26,28 @@ class PaymentAmountForm(forms.ModelForm):
                 'step': 0.01,
                 'placeholder': 'Enter monthly subscription fee',
             }),
+            'payment_number': forms.TextInput(attrs={
+                'class': 'form-input w-full px-4 py-3 rounded-lg border border-gray-300',
+                'placeholder': 'e.g. 0781234567 (MoMo) or bank account',
+            }),
+            'payment_code': forms.TextInput(attrs={
+                'class': 'form-input w-full px-4 py-3 rounded-lg border border-gray-300',
+                'placeholder': 'e.g. *182*8*1*123456#',
+            }),
+            'payment_instructions': forms.Textarea(attrs={
+                'class': 'form-input w-full px-4 py-3 rounded-lg border border-gray-300',
+                'rows': 3,
+                'placeholder': 'Instructions for students on how to pay',
+            }),
         }
 
+
+from .models import PaymentProof
 
 class PaymentProofForm(forms.ModelForm):
     """Form for students to upload payment proof."""
     payment_type = forms.ChoiceField(
-        choices=[
-            ('subscription', 'Subscription'),
-            ('application', 'Application Fee'),
-            ('other', 'Other'),
-            ('momo', 'MTN MoMo'),
-            ('card', 'Credit/Debit Card'),
-            ('bank', 'Bank Transfer'),
-        ],
+        choices=PaymentProof.PAYMENT_TYPE_CHOICES,
         widget=forms.Select(attrs={
             'class': 'form-input w-full px-4 py-3 rounded-lg border border-gray-300',
         })

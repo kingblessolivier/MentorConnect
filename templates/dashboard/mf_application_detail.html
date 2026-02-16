@@ -1,0 +1,159 @@
+{% extends 'dashboard/base_dashboard.html' %}
+
+{% block title %}Application: {{ application.name }} - Mentor Facilitator{% endblock %}
+
+{% block dashboard_content %}
+<div class="dashboard-header">
+    <div>
+        <a href="{% url 'dashboard:mf_applications' %}" class="text-primary text-sm mb-2 inline-block">&larr; Back to Applications</a>
+        <div class="flex flex-wrap items-center justify-between gap-4">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">{{ application.name }}</h1>
+                <p class="text-muted mt-1">{{ application.email }} • {{ application.tracking_code }}</p>
+                <div class="flex flex-wrap items-center gap-3 mt-2">
+                    <span class="badge badge-{{ application.status }} text-sm py-1 px-3">{{ application.get_status_display }}</span>
+                    {% if application.is_minor %}
+                    <span class="badge badge-warning text-sm py-1 px-3">Minor (under 18)</span>
+                    {% endif %}
+                    {% if application.locked %}
+                    <span class="badge badge-muted text-sm py-1 px-3">Locked</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="text-right">
+                <p class="text-sm text-gray-600">Submitted: {{ application.submitted_at|date:"M d, Y H:i"|default:"Not submitted" }}</p>
+                <p class="text-sm text-gray-600">Created: {{ application.created_at|date:"M d, Y H:i" }}</p>
+                <p class="text-sm text-gray-600">Last updated: {{ application.updated_at|date:"M d, Y H:i" }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+    <!-- Column 1: Personal & Parent Information -->
+    <div class="space-y-6">
+        <div class="card">
+            <div class="card-body">
+                <h3 class="mb-4">Personal Information</h3>
+                <dl class="detail-list">
+                    <dt>Full Name</dt><dd>{{ application.name }}</dd>
+                    <dt>Email</dt><dd><a href="mailto:{{ application.email }}" class="text-primary hover:underline">{{ application.email }}</a></dd>
+                    <dt>Phone</dt><dd>{{ application.phone|default:"—" }}</dd>
+                    <dt>Date of Birth</dt><dd>{{ application.date_of_birth|date:"M d, Y"|default:"—" }}</dd>
+                    <dt>Age</dt><dd>{{ application.age|default:"—" }}</dd>
+                    <dt>Department</dt><dd>{{ application.department|default:"—" }}</dd>
+                    <dt>CV</dt><dd>{% if application.cv %}<a href="{{ application.cv.url }}" target="_blank" class="text-primary hover:underline">Download CV</a>{% else %}—{% endif %}</dd>
+                </dl>
+            </div>
+        </div>
+
+        {% if application.is_minor or application.parent_name or application.parent_email %}
+        <div class="card">
+            <div class="card-body">
+                <h3 class="mb-4">Parent / Guardian Information</h3>
+                <dl class="detail-list">
+                    <dt>Name</dt><dd>{{ application.parent_name|default:"—" }}</dd>
+                    <dt>Email</dt><dd>{% if application.parent_email %}<a href="mailto:{{ application.parent_email }}" class="text-primary hover:underline">{{ application.parent_email }}</a>{% else %}—{% endif %}</dd>
+                    <dt>Phone</dt><dd>{{ application.parent_phone|default:"—" }}</dd>
+                    <dt>Relationship</dt><dd>{{ application.parent_relationship|default:"—" }}</dd>
+                    <dt>Parent Consent Required</dt><dd>{{ application.parent_consent_required|yesno:"Yes,No" }}</dd>
+                    <dt>Parent Consent Given</dt><dd>{{ application.parent_consent_given|yesno:"Yes,No" }}</dd>
+                    <dt>Parent Notified</dt><dd>{{ application.parent_notified|yesno:"Yes,No" }}</dd>
+                </dl>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Column 2: Academic & Mentor -->
+    <div class="space-y-6">
+        <div class="card">
+            <div class="card-body">
+                <h3 class="mb-4">Academic & Goals</h3>
+                <dl class="detail-list">
+                    <dt>School / University</dt><dd>{{ application.school|default:"—" }}</dd>
+                    <dt>Program of Study</dt><dd>{{ application.program|default:"—" }}</dd>
+                    <dt>Career Goals</dt><dd>{{ application.career_goals|default:"—"|linebreaksbr }}</dd>
+                    <dt>Motivation for Mentorship</dt><dd>{{ application.motivation|default:"—"|linebreaksbr }}</dd>
+                    <dt>Expectations from Mentor</dt><dd>{{ application.expectations|default:"—"|linebreaksbr }}</dd>
+                </dl>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <h3 class="mb-4">Mentor & Session</h3>
+                <dl class="detail-list">
+                    <dt>Selected Mentor</dt>
+                    <dd>
+                        {% if application.selected_mentor %}
+                            <a href="#" class="text-primary hover:underline">{{ application.selected_mentor.get_full_name }}</a>
+                        {% else %}
+                            —
+                        {% endif %}
+                    </dd>
+                    {% if application.selected_availability_slot %}
+                    <dt>Session Date & Time</dt>
+                    <dd>{{ application.selected_availability_slot.date }} {{ application.selected_availability_slot.start_time }}</dd>
+                    <dt>Session Type</dt>
+                    <dd>{{ application.selected_availability_slot.session_type|default:"—" }}</dd>
+                    {% endif %}
+                    <dt>Mentorship Request</dt>
+                    <dd>
+                        {% if application.mentorship_request %}
+                            <a href="#" class="text-primary hover:underline">View Request</a>
+                        {% else %}
+                            —
+                        {% endif %}
+                    </dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+
+    <!-- Column 3: Metadata & Payments -->
+    <div class="space-y-6">
+        <div class="card">
+            <div class="card-body">
+                <h3 class="mb-4">Application Metadata</h3>
+                <dl class="detail-list">
+                    <dt>Tracking Code</dt><dd><strong class="font-mono">{{ application.tracking_code }}</strong></dd>
+                    <dt>Current Step</dt><dd>{{ application.current_step }} / 5 ({{ application.progress_percent }}%)</dd>
+                    <dt>Submitted At</dt><dd>{{ application.submitted_at|date:"M d, Y H:i"|default:"—" }}</dd>
+                    <dt>Created At</dt><dd>{{ application.created_at|date:"M d, Y H:i" }}</dd>
+                    <dt>Updated At</dt><dd>{{ application.updated_at|date:"M d, Y H:i" }}</dd>
+                    <dt>Locked</dt><dd>{{ application.locked|yesno:"Yes,No" }}</dd>
+                    <dt>Message</dt><dd>{{ application.message|default:"—"|linebreaksbr }}</dd>
+                </dl>
+            </div>
+        </div>
+
+        {% with application.payments.all as payments %}
+        {% if payments %}
+        <div class="card">
+            <div class="card-body">
+                <h3 class="mb-4">Payment Information</h3>
+                {% for payment in payments %}
+                <div class="mb-4 last:mb-0 p-3 border border-gray-200 rounded-lg">
+                    <dl class="detail-list">
+                        <dt>Transaction Code</dt><dd><strong>{{ payment.transaction_code }}</strong></dd>
+                        <dt>Amount</dt><dd>${{ payment.amount }}</dd>
+                        <dt>Status</dt><dd><span class="badge badge-{% if payment.verified %}success{% else %}warning{% endif %}">{{ payment.verified|yesno:"Verified,Pending" }}</span></dd>
+                        <dt>Submitted</dt><dd>{{ payment.submitted_at|date:"M d, Y H:i" }}</dd>
+                        {% if payment.verified %}
+                        <dt>Verified At</dt><dd>{{ payment.verified_at|date:"M d, Y H:i" }}</dd>
+                        <dt>Verified By</dt><dd>{{ payment.verified_by.get_full_name|default:payment.verified_by.email }}</dd>
+                        {% endif %}
+                        {% if payment.receipt %}
+                        <dt>Receipt</dt><dd><a href="{{ payment.receipt.url }}" target="_blank" class="text-primary hover:underline">Download</a></dd>
+                        {% endif %}
+                    </dl>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        {% endwith %}
+    </div>
+</div>
+{% endblock %}

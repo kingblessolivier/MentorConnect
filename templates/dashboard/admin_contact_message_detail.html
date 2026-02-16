@@ -1,0 +1,359 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Message: {{ msg.subject }} - Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+    .detail-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--text-secondary, #6b7280);
+        text-decoration: none;
+        font-size: 0.875rem;
+        font-weight: 500;
+        margin-bottom: 1.5rem;
+        transition: color 0.2s;
+    }
+
+    .detail-back:hover {
+        color: var(--primary-color, #4f46e5);
+    }
+
+    .detail-back svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    .detail-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 1.5rem;
+    }
+
+    @media (max-width: 1024px) {
+        .detail-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .detail-card {
+        background: var(--surface-color, #ffffff);
+        border-radius: 16px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+        border: 1px solid rgba(0, 0, 0, 0.04);
+        overflow: hidden;
+    }
+
+    .detail-card-header {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .detail-card-header h2 {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: var(--text-primary, #111827);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .detail-card-header h2 svg {
+        width: 20px;
+        height: 20px;
+        color: var(--primary-color, #4f46e5);
+    }
+
+    .detail-card-body {
+        padding: 1.5rem;
+    }
+
+    .detail-meta {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.25rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .meta-item label {
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--text-muted, #9ca3af);
+        margin-bottom: 0.375rem;
+    }
+
+    .meta-item .meta-value {
+        font-size: 0.9375rem;
+        font-weight: 500;
+        color: var(--text-primary, #111827);
+    }
+
+    .meta-item .meta-value a {
+        color: var(--primary-color, #4f46e5);
+        text-decoration: none;
+    }
+
+    .meta-item .meta-value a:hover {
+        text-decoration: underline;
+    }
+
+    .message-content {
+        background: var(--background-color, #f9fafb);
+        border-radius: 12px;
+        padding: 1.5rem;
+        font-size: 0.9375rem;
+        color: var(--text-primary, #1e293b);
+        line-height: 1.7;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        border: 1px solid rgba(0, 0, 0, 0.04);
+    }
+
+    /* Status Badge */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        padding: 0.3rem 0.875rem;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        border-radius: 99px;
+        text-transform: capitalize;
+    }
+
+    .status-badge.new {
+        background: #dbeafe;
+        color: #1d4ed8;
+    }
+
+    .status-badge.read {
+        background: #f3f4f6;
+        color: #4b5563;
+    }
+
+    .status-badge.replied {
+        background: #dcfce7;
+        color: #15803d;
+    }
+
+    .status-badge.closed {
+        background: #fee2e2;
+        color: #b91c1c;
+    }
+
+    /* Sidebar Management */
+    .mgmt-section {
+        margin-bottom: 1.5rem;
+    }
+
+    .mgmt-section h3 {
+        font-size: 0.875rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--text-muted, #9ca3af);
+        margin-bottom: 0.75rem;
+    }
+
+    .mgmt-select {
+        width: 100%;
+        padding: 0.625rem 1rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        font-size: 0.875rem;
+        background: var(--background-color, #f9fafb);
+        color: var(--text-primary, #111827);
+        margin-bottom: 0.75rem;
+    }
+
+    .mgmt-btn {
+        width: 100%;
+        padding: 0.625rem 1rem;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .mgmt-btn svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    .mgmt-btn.primary {
+        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        color: white;
+    }
+
+    .mgmt-btn.primary:hover {
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        transform: translateY(-1px);
+    }
+
+    .mgmt-btn.secondary {
+        background: var(--background-color, #f3f4f6);
+        color: var(--text-primary, #374151);
+    }
+
+    .mgmt-btn.secondary:hover {
+        background: #e5e7eb;
+    }
+
+    .mgmt-textarea {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        font-size: 0.875rem;
+        min-height: 100px;
+        resize: vertical;
+        background: var(--background-color, #f9fafb);
+        color: var(--text-primary, #111827);
+        margin-bottom: 0.75rem;
+        font-family: inherit;
+    }
+
+    .mgmt-textarea:focus {
+        outline: none;
+        border-color: var(--primary-color, #4f46e5);
+    }
+
+    .detail-divider {
+        border: none;
+        border-top: 1px solid rgba(0, 0, 0, 0.06);
+        margin: 1.25rem 0;
+    }
+
+    .detail-timestamp {
+        font-size: 0.8125rem;
+        color: var(--text-muted, #9ca3af);
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+    }
+
+    .detail-timestamp svg {
+        width: 14px;
+        height: 14px;
+    }
+</style>
+{% endblock %}
+
+{% block dashboard_content %}
+<a href="{% url 'dashboard:admin_contact_messages' %}" class="detail-back">
+    <i data-feather="arrow-left"></i> Back to Contact Messages
+</a>
+
+<div class="detail-grid">
+    <!-- Message Content -->
+    <div class="detail-card">
+        <div class="detail-card-header">
+            <h2><i data-feather="mail"></i> {{ msg.subject }}</h2>
+            <span class="status-badge {{ msg.status }}">{{ msg.get_status_display }}</span>
+        </div>
+        <div class="detail-card-body">
+            <div class="detail-meta">
+                <div class="meta-item">
+                    <label>From</label>
+                    <div class="meta-value">{{ msg.name }}</div>
+                </div>
+                <div class="meta-item">
+                    <label>Email</label>
+                    <div class="meta-value"><a href="mailto:{{ msg.email }}">{{ msg.email }}</a></div>
+                </div>
+                <div class="meta-item">
+                    <label>Received</label>
+                    <div class="meta-value">{{ msg.created_at|date:"M d, Y \a\t H:i" }}</div>
+                </div>
+                <div class="meta-item">
+                    <label>Status</label>
+                    <div class="meta-value">{{ msg.get_status_display }}{% if msg.replied_at %} &middot; Replied {{
+                        msg.replied_at|date:"M d, Y" }}{% endif %}</div>
+                </div>
+            </div>
+
+            <div class="message-content">{{ msg.message }}</div>
+        </div>
+    </div>
+
+    <!-- Management Sidebar -->
+    <div>
+        <div class="detail-card">
+            <div class="detail-card-header">
+                <h2><i data-feather="settings"></i> Manage</h2>
+            </div>
+            <div class="detail-card-body">
+                <!-- Update Status -->
+                <div class="mgmt-section">
+                    <h3>Update Status</h3>
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="update_status">
+                        <select name="status" class="mgmt-select">
+                            <option value="new" {% if msg.status == 'new' %}selected{% endif %}>New</option>
+                            <option value="read" {% if msg.status == 'read' %}selected{% endif %}>Read</option>
+                            <option value="replied" {% if msg.status == 'replied' %}selected{% endif %}>Replied</option>
+                            <option value="closed" {% if msg.status == 'closed' %}selected{% endif %}>Closed</option>
+                        </select>
+                        <button type="submit" class="mgmt-btn primary"><i data-feather="check"></i> Update
+                            Status</button>
+                    </form>
+                </div>
+
+                <hr class="detail-divider">
+
+                <!-- Admin Notes -->
+                <div class="mgmt-section">
+                    <h3>Admin Notes</h3>
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="update_notes">
+                        <textarea name="admin_notes" class="mgmt-textarea"
+                            placeholder="Add internal notes about this message...">{{ msg.admin_notes }}</textarea>
+                        <button type="submit" class="mgmt-btn secondary"><i data-feather="save"></i> Save Notes</button>
+                    </form>
+                </div>
+
+                <hr class="detail-divider">
+
+                <!-- Quick Actions -->
+                <div class="mgmt-section">
+                    <h3>Quick Actions</h3>
+                    <a href="mailto:{{ msg.email }}?subject=Re: {{ msg.subject }}" class="mgmt-btn primary"
+                        style="text-decoration:none; margin-bottom:0.5rem;">
+                        <i data-feather="send"></i> Reply via Email
+                    </a>
+                </div>
+
+                <hr class="detail-divider">
+
+                <div class="detail-timestamp">
+                    <i data-feather="clock"></i>
+                    Created {{ msg.created_at|timesince }} ago
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    if (typeof feather !== 'undefined') feather.replace();
+</script>
+{% endblock %}

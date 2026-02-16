@@ -1,7 +1,33 @@
+
 """
 Dashboard App Views
 Role-based dashboards for Students, Mentors, and Admins
 """
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.views.generic import TemplateView, ListView, UpdateView, View, CreateView, DetailView, DeleteView
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+# ...existing code...
+
+# ...existing code...
+
+class MFApplicationDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
+    """Mentor Facilitator: view mentorship application details"""
+    template_name = 'dashboard/mf_application_detail.html'
+    context_object_name = 'application'
+
+    def test_func(self):
+        return self.request.user.is_authenticated and self.request.user.is_mentor_facilitator
+
+    def get_object(self):
+        from applications.models import Application
+        return get_object_or_404(Application, pk=self.kwargs['pk'])
+
+    def get_queryset(self):
+        from applications.models import Application
+        return Application.objects.select_related(
+            'applicant', 'selected_mentor', 'selected_availability_slot'
+        )
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import TemplateView, ListView, UpdateView, View, CreateView, DetailView, DeleteView
@@ -55,7 +81,22 @@ class MentorFacilitatorRequiredMixin(UserPassesTestMixin):
 
 
 def subscription_required(view_func):
-    # Subscription checks removed
+    """Decorator: requires active subscription for student users."""
+    from functools import wraps
+    @wraps(view_func)
+    def _wrapped_view(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('accounts:login')
+        # Only enforce for students
+        if hasattr(request.user, 'is_student') and request.user.is_student:
+            from payments.models import Subscription
+            has_active = Subscription.objects.filter(
+                user=request.user, status='active'
+            ).exists()
+            if not has_active:
+                messages.warning(request, 'This feature requires a premium subscription. Subscribe to unlock it!')
+                return redirect('dashboard:subscription_wizard')
+        return view_func(request, *args, **kwargs)
     return _wrapped_view
 
 
@@ -590,6 +631,73 @@ class AdminBroadcastView(LoginRequiredMixin, AdminRequiredMixin, TemplateView):
         return redirect('dashboard:admin_broadcast')
 
 
+# ==================== CONTACT MESSAGES MANAGEMENT ====================
+
+class AdminContactMessagesView(LoginRequiredMixin, AdminRequiredMixin, ListView):
+    """Admin view to list and manage all contact messages"""
+    template_name = 'dashboard/admin_contact_messages.html'
+    context_object_name = 'messages_list'
+    paginate_by = 20
+
+    def get_queryset(self):
+        from .models import ContactMessage
+        queryset = ContactMessage.objects.all().order_by('-created_at')
+
+        search = self.request.GET.get('search', '')
+        if search:
+            queryset = queryset.filter(
+                Q(name__icontains=search) | Q(email__icontains=search) |
+                Q(subject__icontains=search) | Q(message__icontains=search)
+            )
+
+        status = self.request.GET.get('status', '')
+        if status:
+            queryset = queryset.filter(status=status)
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        from .models import ContactMessage
+        context['total_messages'] = ContactMessage.objects.count()
+        context['new_messages'] = ContactMessage.objects.filter(status='new').count()
+        context['read_messages'] = ContactMessage.objects.filter(status='read').count()
+        context['replied_messages'] = ContactMessage.objects.filter(status='replied').count()
+        context['closed_messages'] = ContactMessage.objects.filter(status='closed').count()
+        return context
+
+
+@login_required
+@user_passes_test(lambda u: u.is_admin_user)
+def admin_contact_message_detail(request, pk):
+    """View and manage a single contact message"""
+    from .models import ContactMessage
+    msg = get_object_or_404(ContactMessage, pk=pk)
+
+    # Mark as read on view
+    if not msg.is_read:
+        msg.mark_as_read()
+
+    if request.method == 'POST':
+        action = request.POST.get('action', '')
+        if action == 'update_status':
+            new_status = request.POST.get('status', '')
+            if new_status in dict(ContactMessage.STATUS_CHOICES):
+                msg.status = new_status
+                if new_status == 'replied':
+                    msg.replied_at = timezone.now()
+                msg.save()
+                messages.success(request, f'Status updated to {msg.get_status_display()}.')
+        elif action == 'update_notes':
+            msg.admin_notes = request.POST.get('admin_notes', '')
+            msg.save()
+            messages.success(request, 'Admin notes updated.')
+
+        return redirect('dashboard:admin_contact_message_detail', pk=pk)
+
+    return render(request, 'dashboard/admin_contact_message_detail.html', {'msg': msg})
+
+
 # ==================== MENTOR MANAGEMENT ====================
 
 class AdminMentorListView(LoginRequiredMixin, AdminRequiredMixin, ListView):
@@ -1083,7 +1191,9 @@ class MentorFacilitatorDashboardView(LoginRequiredMixin, MentorFacilitatorRequir
 
         # Stats for dashboard
         if facilitator:
-            from mentorship.models import MentorshipRequest
+            from mentorship.models import MentorshipRequest, SessionReport
+            from applications.models import Application
+            from profiles.models import MentorProfile
             assigned_mentor_ids = list(MentorFacilitatorAssignment.objects.filter(
                 facilitator=facilitator
             ).exclude(mentor__isnull=True).values_list('mentor_id', flat=True))
@@ -1096,15 +1206,50 @@ class MentorFacilitatorDashboardView(LoginRequiredMixin, MentorFacilitatorRequir
                 facilitator=facilitator,
                 status__in=['open', 'under_review']
             ).count()
-            from mentorship.models import SessionReport
             context['session_reports_count'] = SessionReport.objects.filter(
                 mentorship_request__mentor_id__in=assigned_mentor_ids
             ).count() if assigned_mentor_ids else 0
+
+            # Pending requests for assigned mentors (same as mentor dashboard)
+            context['pending_requests'] = MentorshipRequest.objects.filter(
+                mentor_id__in=assigned_mentor_ids, status='pending'
+            ).select_related('student', 'mentor')[:10] if assigned_mentor_ids else []
+            context['total_pending_requests'] = MentorshipRequest.objects.filter(
+                mentor_id__in=assigned_mentor_ids, status='pending'
+            ).count() if assigned_mentor_ids else 0
+
+            # Pending applications for assigned mentors
+            context['pending_applications'] = Application.objects.filter(
+                selected_mentor_id__in=assigned_mentor_ids,
+                status='pending_review'
+            ).exclude(status='draft').select_related(
+                'applicant', 'selected_mentor'
+            ).order_by('-submitted_at')[:5] if assigned_mentor_ids else []
+            context['total_pending_applications'] = Application.objects.filter(
+                selected_mentor_id__in=assigned_mentor_ids,
+                status='pending_review'
+            ).exclude(status='draft').count() if assigned_mentor_ids else 0
+
+            # Completed mentorships count
+            context['completed_mentorships_count'] = MentorshipRequest.objects.filter(
+                mentor_id__in=assigned_mentor_ids, status='completed'
+            ).count() if assigned_mentor_ids else 0
+
+            # Mentor profiles for quick overview
+            context['mentor_profiles'] = MentorProfile.objects.filter(
+                user_id__in=assigned_mentor_ids
+            ).select_related('user')[:10] if assigned_mentor_ids else []
         else:
             context['assigned_mentors_count'] = 0
             context['active_mentorships_count'] = 0
             context['disputes_count'] = 0
             context['session_reports_count'] = 0
+            context['pending_requests'] = []
+            context['total_pending_requests'] = 0
+            context['pending_applications'] = []
+            context['total_pending_applications'] = 0
+            context['completed_mentorships_count'] = 0
+            context['mentor_profiles'] = []
 
         return context
 
@@ -1183,11 +1328,89 @@ class MFMentorUpdateView(LoginRequiredMixin, MentorFacilitatorRequiredMixin, Upd
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        from profiles.models import MentorProfile
         try:
-            context['profile'] = self.object.mentor_profile
-        except Exception:
+            context['profile'] = MentorProfile.objects.get(user=self.object)
+        except MentorProfile.DoesNotExist:
             context['profile'] = None
         return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        section = request.POST.get('section', 'all')
+        from profiles.models import MentorProfile
+        profile, _ = MentorProfile.objects.get_or_create(
+            user=self.object,
+            defaults={'expertise': 'General', 'skills': ''}
+        )
+
+        if section == 'basic':
+            self.object.first_name = request.POST.get('first_name', self.object.first_name)
+            self.object.last_name = request.POST.get('last_name', self.object.last_name)
+            self.object.phone = request.POST.get('phone', '')
+            self.object.save()
+            profile.headline = request.POST.get('headline', '')
+            profile.job_title = request.POST.get('job_title', '')
+            profile.company = request.POST.get('company', '')
+            exp = request.POST.get('experience_years')
+            profile.experience_years = int(exp) if exp else None
+            profile.save()
+            messages.success(request, 'Basic information updated!')
+
+        elif section == 'about':
+            profile.bio = request.POST.get('bio', '')
+            profile.save()
+            messages.success(request, 'Bio updated!')
+
+        elif section == 'skills':
+            profile.expertise = request.POST.get('expertise', '')
+            profile.skills = request.POST.get('skills', '')
+            profile.save()
+            messages.success(request, 'Expertise & skills updated!')
+
+        elif section == 'availability':
+            profile.is_available = request.POST.get('is_available') == 'on'
+            duration = request.POST.get('session_duration')
+            profile.session_duration = int(duration) if duration else 60
+            max_mentees = request.POST.get('max_mentees')
+            profile.max_mentees = int(max_mentees) if max_mentees else 5
+            rate = request.POST.get('hourly_rate')
+            profile.hourly_rate = float(rate) if rate else None
+            profile.save()
+            messages.success(request, 'Availability settings updated!')
+
+        elif section == 'location':
+            profile.city = request.POST.get('city', '')
+            profile.country = request.POST.get('country', 'Rwanda')
+            profile.workplace_address = request.POST.get('workplace_address', '')
+            profile.diploma = request.POST.get('diploma', '')
+            profile.educational_institution = request.POST.get('educational_institution', '')
+            min_days = request.POST.get('min_internship_days')
+            profile.min_internship_days = int(min_days) if min_days else 1
+            max_days = request.POST.get('max_internship_days')
+            profile.max_internship_days = int(max_days) if max_days else 5
+            profile.accepts_in_person = request.POST.get('accepts_in_person') == 'true'
+            profile.accepts_virtual = request.POST.get('accepts_virtual') == 'true'
+            profile.save()
+            messages.success(request, 'Location & internship settings updated!')
+
+        elif section == 'social':
+            profile.linkedin_url = request.POST.get('linkedin_url', '')
+            profile.twitter_url = request.POST.get('twitter_url', '')
+            profile.github_url = request.POST.get('github_url', '')
+            profile.website_url = request.POST.get('website_url', '')
+            profile.save()
+            messages.success(request, 'Social links updated!')
+
+        else:
+            return super().post(request, *args, **kwargs)
+
+        ActivityLog.objects.create(
+            user=request.user,
+            action='mentor_facilitator_action',
+            description=f'Updated mentor profile ({section}): {self.object.get_full_name()}'
+        )
+        return redirect('dashboard:mf_mentor_edit', pk=self.object.pk)
 
 
 class MFAssignmentsView(LoginRequiredMixin, MentorFacilitatorRequiredMixin, ListView):
@@ -1645,6 +1868,65 @@ class MFBackupView(LoginRequiredMixin, MentorFacilitatorRequiredMixin, TemplateV
         return context
 
 
+@login_required
+def mf_approve_request(request, pk):
+    """Mentor Facilitator: approve a mentorship request for an assigned mentor"""
+    if not request.user.is_mentor_facilitator:
+        messages.error(request, 'Access denied.')
+        return redirect('dashboard:home')
+    from mentorship.models import MentorshipRequest, MentorFacilitatorAssignment
+    mentorship = get_object_or_404(MentorshipRequest, pk=pk, status='pending')
+    # Verify the mentor is assigned to this facilitator
+    try:
+        facilitator = request.user.mentor_facilitator_profile
+        if not MentorFacilitatorAssignment.objects.filter(
+            facilitator=facilitator, mentor=mentorship.mentor
+        ).exists():
+            messages.error(request, 'This mentor is not assigned to you.')
+            return redirect('dashboard:mentor_facilitator_dashboard')
+    except Exception:
+        messages.error(request, 'Facilitator profile not found.')
+        return redirect('dashboard:mentor_facilitator_dashboard')
+    response_text = request.POST.get('response', '')
+    mentorship.approve(response_text)
+    ActivityLog.objects.create(
+        user=request.user,
+        action='mentor_facilitator_action',
+        description=f'Approved request #{pk} for mentor {mentorship.mentor.get_full_name()}'
+    )
+    messages.success(request, f'Request approved for {mentorship.mentor.get_full_name()}!')
+    return redirect('dashboard:mentor_facilitator_dashboard')
+
+
+@login_required
+def mf_reject_request(request, pk):
+    """Mentor Facilitator: reject a mentorship request for an assigned mentor"""
+    if not request.user.is_mentor_facilitator:
+        messages.error(request, 'Access denied.')
+        return redirect('dashboard:home')
+    from mentorship.models import MentorshipRequest, MentorFacilitatorAssignment
+    mentorship = get_object_or_404(MentorshipRequest, pk=pk, status='pending')
+    try:
+        facilitator = request.user.mentor_facilitator_profile
+        if not MentorFacilitatorAssignment.objects.filter(
+            facilitator=facilitator, mentor=mentorship.mentor
+        ).exists():
+            messages.error(request, 'This mentor is not assigned to you.')
+            return redirect('dashboard:mentor_facilitator_dashboard')
+    except Exception:
+        messages.error(request, 'Facilitator profile not found.')
+        return redirect('dashboard:mentor_facilitator_dashboard')
+    response_text = request.POST.get('response', '')
+    mentorship.reject(response_text)
+    ActivityLog.objects.create(
+        user=request.user,
+        action='mentor_facilitator_action',
+        description=f'Rejected request #{pk} for mentor {mentorship.mentor.get_full_name()}'
+    )
+    messages.info(request, f'Request for {mentorship.mentor.get_full_name()} declined.')
+    return redirect('dashboard:mentor_facilitator_dashboard')
+
+
 # ==================== FINANCE OFFICER: PAYMENTS LIST, REPORTS, EXPORT ====================
 
 class FinancePaymentsView(LoginRequiredMixin, FinanceOfficerRequiredMixin, ListView):
@@ -1851,7 +2133,9 @@ class FinanceReportsView(LoginRequiredMixin, FinanceOfficerRequiredMixin, Templa
 class FinancePaymentSettingsView(LoginRequiredMixin, FinanceOfficerRequiredMixin, UpdateView):
     """Finance Officer: update subscription and application fees"""
     model = PaymentSettings
-    fields = ['student_payment_amount', 'application_fee', 'subscription_fee']
+    fields = ['student_payment_amount', 'application_fee', 'subscription_fee',
+              'payment_number', 'payment_code', 'payment_instructions',
+              'bank_name', 'account_number', 'account_name', 'mobile_money_number']
     template_name = 'dashboard/finance_payment_settings.html'
     success_url = reverse_lazy('dashboard:finance_dashboard')
 
@@ -2662,8 +2946,12 @@ def subscription_wizard(request, step=None):
                 'payment_type': wizard_data.get('payment_type', 'subscription'),
                 'amount': wizard_data.get('amount', subscription_fee),
             })
+        # Pass payment info for display
+        # Pass payment info for display
+        context['payment_settings'] = settings
     
     elif step == 3:
+        from payments.models import Subscription
         context['wizard_data'] = wizard_data
         context['plan_display'] = dict(Subscription.PLAN_CHOICES).get(wizard_data.get('plan', 'monthly'), 'Monthly')
     
@@ -2672,4 +2960,26 @@ def subscription_wizard(request, step=None):
         pass
     
     return render(request, 'dashboard/subscription_wizard_step.html', context)
+
+
+@login_required
+def download_subscription_receipt(request):
+    """Generate an HTML printable receipt for the student's active subscription."""
+    from payments.models import Subscription, PaymentProof
+    from django.utils import timezone
+
+    subscription = Subscription.objects.filter(
+        user=request.user, status='active'
+    ).select_related('payment_proof').first()
+
+    if not subscription:
+        messages.warning(request, 'You do not have an active subscription.')
+        return redirect('dashboard:student_dashboard')
+
+    context = {
+        'subscription': subscription,
+        'user': request.user,
+        'generated_at': timezone.now(),
+    }
+    return render(request, 'dashboard/subscription_receipt.html', context)
 

@@ -1,98 +1,542 @@
 {% extends 'dashboard/base_dashboard.html' %}
+{% load static %}
 
 {% block title %}Payment Settings - {{ SITE_NAME }}{% endblock %}
 
 {% block dashboard_content %}
-<div class="dashboard-header">
-    <div>
-        <h1>Payment Settings</h1>
-        <p class="text-muted">Configure subscription and application fees</p>
+<div class="container-fluid fade-in">
+    <!-- Header Section -->
+    <div class="d-flex justify-content-between align-items-center mb-4 dashboard-header-custom">
+        <div>
+            <h1 class="h3 fw-bold text-gray-900 mb-1">Payment Settings</h1>
+            <p class="text-muted small">Configure global fees and payment reception methods.</p>
+        </div>
+        <a href="{% url 'dashboard:finance_dashboard' %}"
+            class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-2 back-btn">
+            <i data-feather="arrow-left" class="icon-sm"></i> Back to Dashboard
+        </a>
     </div>
-    <a href="{% url 'dashboard:finance_dashboard' %}" class="btn btn-outline">
-        <i data-feather="arrow-left"></i> Back to Dashboard
-    </a>
-</div>
 
-<div class="card">
-    <div class="card-body">
-        <form method="post">
-            {% csrf_token %}
-            
-            {% if form.non_field_errors %}
-            <div class="alert alert-danger">
-                {{ form.non_field_errors }}
-            </div>
-            {% endif %}
-            
-            <div class="grid grid-2 gap-4">
-                <div>
-                    <label for="{{ form.student_payment_amount.id_for_label }}" class="form-label">
-                        Student Payment Amount (RWF)
-                    </label>
-                    {{ form.student_payment_amount }}
-                    {% if form.student_payment_amount.errors %}
-                    <div class="text-danger small mt-1">
-                        {{ form.student_payment_amount.errors }}
+    <form method="post" class="needs-validation" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="alert alert-danger d-flex align-items-center mb-4 shadow-sm border-0 rounded-3">
+            <i data-feather="alert-circle" class="me-2"></i>
+            <div>{{ form.non_field_errors }}</div>
+        </div>
+        {% endif %}
+
+        <div class="row g-4">
+            <!-- Left Column: Fee Configuration -->
+            <div class="col-lg-6">
+                <!-- Fee Card -->
+                <div class="card border-0 shadow-sm h-100 settings-card">
+                    <div class="card-header bg-transparent border-0 pt-4 pb-2 px-4">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="icon-box bg-purple-light text-purple rounded-circle p-2">
+                                <i data-feather="dollar-sign"></i>
+                            </div>
+                            <h5 class="card-title fw-bold mb-0 text-dark">Fee Configuration</h5>
+                        </div>
                     </div>
-                    {% endif %}
-                    <div class="form-text">
-                        Default payment amount for student applications.
+                    <div class="card-body px-4 pb-4 pt-2">
+                        <p class="text-muted small mb-4">Set the standard rates for students and mentorship
+                            applications.</p>
+
+                        <div class="form-group mb-4 group-hover">
+                            <label for="{{ form.student_payment_amount.id_for_label }}"
+                                class="form-label fw-semibold text-secondary small text-uppercase">
+                                Student Payment (RWF)
+                            </label>
+                            <div class="input-group input-group-merge">
+                                <span class="input-group-text bg-light border-end-0 text-muted">RWF</span>
+                                {{ form.student_payment_amount }}
+                            </div>
+                            {% if form.student_payment_amount.errors %}
+                            <div class="text-danger small mt-1 d-flex align-items-center">
+                                <i data-feather="alert-circle" class="icon-xs me-1"></i> {{
+                                form.student_payment_amount.errors.0 }}
+                            </div>
+                            {% endif %}
+                            <div class="form-text small">Default payment amount for new student registrations.</div>
+                        </div>
+
+                        <div class="form-group mb-4 group-hover">
+                            <label for="{{ form.application_fee.id_for_label }}"
+                                class="form-label fw-semibold text-secondary small text-uppercase">
+                                Application Fee (RWF)
+                            </label>
+                            <div class="input-group input-group-merge">
+                                <span class="input-group-text bg-light border-end-0 text-muted">RWF</span>
+                                {{ form.application_fee }}
+                            </div>
+                            {% if form.application_fee.errors %}
+                            <div class="text-danger small mt-1 d-flex align-items-center">
+                                <i data-feather="alert-circle" class="icon-xs me-1"></i> {{
+                                form.application_fee.errors.0 }}
+                            </div>
+                            {% endif %}
+                            <div class="form-text small">Fee charged per mentorship application submission.</div>
+                        </div>
+
+                        <div class="form-group mb-0 group-hover">
+                            <label for="{{ form.subscription_fee.id_for_label }}"
+                                class="form-label fw-semibold text-secondary small text-uppercase">
+                                Monthly Subscription (RWF)
+                            </label>
+                            <div class="input-group input-group-merge">
+                                <span class="input-group-text bg-light border-end-0 text-muted">RWF</span>
+                                {{ form.subscription_fee }}
+                            </div>
+                            {% if form.subscription_fee.errors %}
+                            <div class="text-danger small mt-1 d-flex align-items-center">
+                                <i data-feather="alert-circle" class="icon-xs me-1"></i> {{
+                                form.subscription_fee.errors.0 }}
+                            </div>
+                            {% endif %}
+                            <div class="form-text small">Recurring monthly fee for premium student access.</div>
+                        </div>
                     </div>
                 </div>
-                
-                <div>
-                    <label for="{{ form.application_fee.id_for_label }}" class="form-label">
-                        Application Fee (RWF)
-                    </label>
-                    {{ form.application_fee }}
-                    {% if form.application_fee.errors %}
-                    <div class="text-danger small mt-1">
-                        {{ form.application_fee.errors }}
+            </div>
+
+            <!-- Right Column: Payment Reception -->
+            <div class="col-lg-6">
+                <!-- Reception Details Card -->
+                <div class="card border-0 shadow-sm h-100 settings-card">
+                    <div class="card-header bg-transparent border-0 pt-4 pb-2 px-4">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="icon-box bg-green-light text-green rounded-circle p-2">
+                                <i data-feather="smartphone"></i>
+                            </div>
+                            <h5 class="card-title fw-bold mb-0 text-dark">Payment Reception</h5>
+                        </div>
                     </div>
-                    {% endif %}
-                    <div class="form-text">
-                        Fee charged per mentorship application.
-                    </div>
-                </div>
-                
-                <div>
-                    <label for="{{ form.subscription_fee.id_for_label }}" class="form-label">
-                        Monthly Subscription Fee (RWF)
-                    </label>
-                    {{ form.subscription_fee }}
-                    {% if form.subscription_fee.errors %}
-                    <div class="text-danger small mt-1">
-                        {{ form.subscription_fee.errors }}
-                    </div>
-                    {% endif %}
-                    <div class="form-text">
-                        Monthly subscription fee for premium features.
+                    <div class="card-body px-4 pb-4 pt-2">
+                        <p class="text-muted small mb-4">Details displayed to students during the payment process.</p>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6 form-group group-hover">
+                                <label for="{{ form.bank_name.id_for_label }}"
+                                    class="form-label fw-semibold text-secondary small text-uppercase">
+                                    Bank Name
+                                </label>
+                                {{ form.bank_name }}
+                                {% if form.bank_name.errors %}
+                                <div class="text-danger small mt-1 d-flex align-items-center">
+                                    <i data-feather="alert-circle" class="icon-xs me-1"></i> {{
+                                    form.bank_name.errors.0 }}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-6 form-group group-hover">
+                                <label for="{{ form.account_number.id_for_label }}"
+                                    class="form-label fw-semibold text-secondary small text-uppercase">
+                                    Account Number
+                                </label>
+                                {{ form.account_number }}
+                                {% if form.account_number.errors %}
+                                <div class="text-danger small mt-1 d-flex align-items-center">
+                                    <i data-feather="alert-circle" class="icon-xs me-1"></i> {{
+                                    form.account_number.errors.0 }}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-6 form-group group-hover">
+                                <label for="{{ form.account_name.id_for_label }}"
+                                    class="form-label fw-semibold text-secondary small text-uppercase">
+                                    Account Name
+                                </label>
+                                {{ form.account_name }}
+                                {% if form.account_name.errors %}
+                                <div class="text-danger small mt-1 d-flex align-items-center">
+                                    <i data-feather="alert-circle" class="icon-xs me-1"></i> {{
+                                    form.account_name.errors.0 }}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-6 form-group group-hover">
+                                <label for="{{ form.mobile_money_number.id_for_label }}"
+                                    class="form-label fw-semibold text-secondary small text-uppercase">
+                                    Mobile Money Code
+                                </label>
+                                {{ form.mobile_money_number }}
+                                {% if form.mobile_money_number.errors %}
+                                <div class="text-danger small mt-1 d-flex align-items-center">
+                                    <i data-feather="alert-circle" class="icon-xs me-1"></i> {{
+                                    form.mobile_money_number.errors.0 }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Legacy Payment Fields Toggle -->
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <div>
+                                <h6 class="fw-semibold mb-0 text-secondary">Legacy Payment Details</h6>
+                                <p class="text-muted small mb-0">Optional fields for older payment systems.</p>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" role="switch" id="legacyToggle" checked>
+                                <label class="form-check-label small fw-medium" for="legacyToggle">Show</label>
+                            </div>
+                        </div>
+
+                        <div id="legacyFields" class="row g-3 mb-4">
+                            <div class="col-md-6 form-group group-hover">
+                                <label for="{{ form.payment_number.id_for_label }}"
+                                    class="form-label fw-semibold text-secondary small text-uppercase">
+                                    Legacy Payment Number (Optional)
+                                </label>
+                                {{ form.payment_number }}
+                            </div>
+
+                            <div class="col-md-6 form-group group-hover">
+                                <label for="{{ form.payment_code.id_for_label }}"
+                                    class="form-label fw-semibold text-secondary small text-uppercase">
+                                    Legacy Payment Code (Optional)
+                                </label>
+                                {{ form.payment_code }}
+                            </div>
+                        </div>
+
+                        <div class="form-group mb-0 group-hover">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <label for="{{ form.payment_instructions.id_for_label }}"
+                                    class="form-label fw-semibold text-secondary small text-uppercase mb-0">
+                                    Instructions for Students
+                                </label>
+                                <button type="button" class="btn btn-outline-primary btn-sm d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#previewModal">
+                                    <i data-feather="eye" class="icon-xs"></i> Preview
+                                </button>
+                            </div>
+                            {{ form.payment_instructions }}
+                            {% if form.payment_instructions.errors %}
+                            <div class="text-danger small mt-1 d-flex align-items-center">
+                                <i data-feather="alert-circle" class="icon-xs me-1"></i> {{
+                                form.payment_instructions.errors.0 }}
+                            </div>
+                            {% endif %}
+                            <div class="form-text small mt-2">
+                                <i data-feather="info" class="icon-xs me-1"></i>
+                                displayed on the checkout page. Be clear about the steps.
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-            
-            <div class="mt-6 flex justify-end gap-3">
-                <a href="{% url 'dashboard:finance_dashboard' %}" class="btn btn-outline">Cancel</a>
-                <button type="submit" class="btn btn-primary">
-                    <i data-feather="save" class="mr-2"></i> Save Settings
-                </button>
+        </div>
+
+        <!-- Action Bar -->
+        <div class="d-flex justify-content-end align-items-center gap-3 mt-4 pt-3 border-top">
+            <a href="{% url 'dashboard:finance_dashboard' %}" class="btn btn-light text-muted px-4 fw-medium">Cancel</a>
+            <button type="submit" class="btn btn-primary px-4 py-2 d-flex align-items-center gap-2 shadow-sm btn-save">
+                <i data-feather="save" class="icon-sm"></i> Save Changes
+            </button>
+        </div>
+    </form>
+
+    <!-- Preview Modal -->
+    <div class="modal fade" id="previewModal" tabindex="-1" aria-labelledby="previewModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold text-gray-900" id="previewModalLabel">Payment Instructions Preview</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body pt-0">
+                    <p class="text-muted small mb-4">This is how the instructions will appear to students on the checkout page.</p>
+                    <div class="card border-0 bg-light">
+                        <div class="card-body p-4">
+                            <div class="d-flex align-items-center gap-3 mb-3">
+                                <div class="icon-box bg-primary text-white rounded-circle p-2">
+                                    <i data-feather="info"></i>
+                                </div>
+                                <h6 class="fw-bold mb-0">How to Pay</h6>
+                            </div>
+                            <div id="previewContent" class="text-muted">
+                                <!-- Preview will be inserted here -->
+                                {{ form.payment_instructions.value|default:"No instructions provided yet." }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <h6 class="fw-semibold mb-2">Payment Details</h6>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i data-feather="bank" class="text-primary icon-xs"></i>
+                                    <span class="small">Bank:</span>
+                                    <strong id="previewBankName">{{ form.bank_name.value|default:"Bank of Kigali (BK)" }}</strong>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i data-feather="credit-card" class="text-primary icon-xs"></i>
+                                    <span class="small">Account:</span>
+                                    <strong id="previewAccountNumber">{{ form.account_number.value|default:"00040-0065432-12" }}</strong>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i data-feather="user" class="text-primary icon-xs"></i>
+                                    <span class="small">Account Name:</span>
+                                    <strong id="previewAccountName">{{ form.account_name.value|default:"MentorConnect Ltd" }}</strong>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i data-feather="smartphone" class="text-primary icon-xs"></i>
+                                    <span class="small">Mobile Money:</span>
+                                    <strong id="previewMobileMoney">{{ form.mobile_money_number.value|default:"*182*8*1*556644#" }}</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Got it</button>
+                </div>
             </div>
-        </form>
+        </div>
     </div>
 </div>
 
 <style>
-    .form-control {
-        width: 100%;
-        padding: 0.75rem;
-        border: 1px solid #d1d5db;
-        border-radius: 0.5rem;
-        transition: border-color 0.2s;
+    /* Custom Styling for Premium Feel */
+    :root {
+        --purple-light: #f3e8ff;
+        --purple: #9333ea;
+        --green-light: #dcfce7;
+        --green: #16a34a;
+        --input-bg: #f9fafb;
+        --input-border: #e5e7eb;
+        --input-focus-ring: rgba(79, 70, 229, 0.15);
     }
-    .form-control:focus {
-        border-color: #8b5cf6;
+
+    .fade-in {
+        animation: fadeIn 0.4s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .text-gray-900 {
+        color: #111827;
+    }
+
+    .bg-purple-light {
+        background-color: var(--purple-light) !important;
+    }
+
+    .text-purple {
+        color: var(--purple) !important;
+    }
+
+    .bg-green-light {
+        background-color: var(--green-light) !important;
+    }
+
+    .text-green {
+        color: var(--green) !important;
+    }
+
+    .icon-sm {
+        width: 18px;
+        height: 18px;
+    }
+
+    .icon-xs {
+        width: 14px;
+        height: 14px;
+    }
+
+    .icon-box {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .settings-card {
+        border-radius: 16px;
+        transition: transform 0.2s, box-shadow 0.2s;
+        background: #ffffff;
+        border: 1px solid rgba(0, 0, 0, 0.02);
+    }
+
+    .settings-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.08) !important;
+    }
+
+    /* Premium Input Styling */
+    .form-control,
+    .form-select {
+        border-radius: 10px;
+        padding: 0.875rem 1rem;
+        border: 1px solid var(--input-border);
+        background-color: var(--input-bg);
+        font-size: 0.95rem;
+        font-weight: 500;
+        color: #1f2937;
+        transition: all 0.2s ease-in-out;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        background-color: #ffffff;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 4px var(--input-focus-ring);
         outline: none;
-        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
     }
+
+    /* Seamless Input Groups */
+    .input-group {
+        border-radius: 10px;
+        overflow: hidden;
+        border: 1px solid var(--input-border);
+        background-color: var(--input-bg);
+        transition: all 0.2s ease-in-out;
+    }
+
+    .input-group:focus-within {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 4px var(--input-focus-ring);
+        background-color: #ffffff;
+    }
+
+    .input-group .form-control {
+        border: none;
+        background-color: transparent;
+        box-shadow: none !important;
+        /* Remove individual input focus styles in groups */
+    }
+
+    .input-group-text {
+        background-color: transparent;
+        border: none;
+        color: #6b7280;
+        font-weight: 600;
+        font-size: 0.9rem;
+        padding-right: 0.5rem;
+    }
+
+    /* Labels */
+    .form-label {
+        margin-bottom: 0.5rem;
+        letter-spacing: 0.025em;
+        font-size: 0.75rem !important;
+    }
+
+    .group-hover:hover label {
+        color: var(--primary-color) !important;
+        transition: color 0.2s;
+    }
+
+    .back-btn:hover {
+        background-color: #f3f4f6;
+        color: #111827;
+        border-color: #d1d5db;
+    }
+
+    .btn-save {
+        transition: all 0.2s;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+    }
+
+    .btn-save:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+    }
+
+
 </style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        feather.replace();
+
+        // Legacy fields toggle
+        const legacyToggle = document.getElementById('legacyToggle');
+        const legacyFields = document.getElementById('legacyFields');
+        if (legacyToggle && legacyFields) {
+            legacyToggle.addEventListener('change', function() {
+                if (this.checked) {
+                    legacyFields.style.display = 'flex';
+                } else {
+                    legacyFields.style.display = 'none';
+                }
+            });
+            // Initialize visibility based on checkbox
+            if (!legacyToggle.checked) {
+                legacyFields.style.display = 'none';
+            }
+        }
+
+        // Live preview update
+        function updatePreview() {
+            const instructions = document.getElementById('{{ form.payment_instructions.id_for_label }}');
+            const bankName = document.getElementById('{{ form.bank_name.id_for_label }}');
+            const accountNumber = document.getElementById('{{ form.account_number.id_for_label }}');
+            const accountName = document.getElementById('{{ form.account_name.id_for_label }}');
+            const mobileMoney = document.getElementById('{{ form.mobile_money_number.id_for_label }}');
+
+            if (instructions) {
+                document.getElementById('previewContent').innerHTML = instructions.value || 'No instructions provided yet.';
+            }
+            if (bankName) {
+                document.getElementById('previewBankName').textContent = bankName.value || 'Bank of Kigali (BK)';
+            }
+            if (accountNumber) {
+                document.getElementById('previewAccountNumber').textContent = accountNumber.value || '00040-0065432-12';
+            }
+            if (accountName) {
+                document.getElementById('previewAccountName').textContent = accountName.value || 'MentorConnect Ltd';
+            }
+            if (mobileMoney) {
+                document.getElementById('previewMobileMoney').textContent = mobileMoney.value || '*182*8*1*556644#';
+            }
+        }
+
+        // Update preview on input
+        const inputs = ['{{ form.payment_instructions.id_for_label }}', 
+                        '{{ form.bank_name.id_for_label }}',
+                        '{{ form.account_number.id_for_label }}',
+                        '{{ form.account_name.id_for_label }}',
+                        '{{ form.mobile_money_number.id_for_label }}'];
+        inputs.forEach(id => {
+            const input = document.getElementById(id);
+            if (input) {
+                input.addEventListener('input', updatePreview);
+                input.addEventListener('change', updatePreview);
+            }
+        });
+
+        // Update preview when modal is shown
+        const previewModal = document.getElementById('previewModal');
+        if (previewModal) {
+            previewModal.addEventListener('show.bs.modal', updatePreview);
+        }
+
+        // Initial update
+        updatePreview();
+    });
+</script>
 {% endblock %}

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Subscription Receipt - {{ SITE_NAME }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f1f5f9;
+            padding: 2rem;
+            color: #1e293b;
+        }
+
+        .receipt {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+
+        .receipt-header {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .receipt-header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .receipt-header p {
+            opacity: 0.85;
+            font-size: 0.95rem;
+        }
+
+        .receipt-body {
+            padding: 2rem;
+        }
+
+        .receipt-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .receipt-row:last-child {
+            border-bottom: none;
+        }
+
+        .receipt-label {
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .receipt-value {
+            font-weight: 600;
+            color: #1e293b;
+            text-align: right;
+        }
+
+        .receipt-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .badge-active {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .receipt-footer {
+            background: #f8fafc;
+            padding: 1.5rem 2rem;
+            text-align: center;
+            color: #94a3b8;
+            font-size: 0.85rem;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .print-btn {
+            display: block;
+            max-width: 600px;
+            margin: 1.5rem auto 0;
+            padding: 0.875rem 2rem;
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .print-btn:hover {
+            opacity: 0.9;
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 1rem;
+            color: #8b5cf6;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .receipt {
+                box-shadow: none;
+            }
+
+            .print-btn,
+            .back-link {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="receipt">
+        <div class="receipt-header">
+            <h1>📄 Subscription Receipt</h1>
+            <p>MentorConnect Premium</p>
+        </div>
+        <div class="receipt-body">
+            <div class="receipt-row">
+                <span class="receipt-label">Student</span>
+                <span class="receipt-value">{{ user.get_full_name }}</span>
+            </div>
+            <div class="receipt-row">
+                <span class="receipt-label">Email</span>
+                <span class="receipt-value">{{ user.email }}</span>
+            </div>
+            <div class="receipt-row">
+                <span class="receipt-label">Plan</span>
+                <span class="receipt-value">{{ subscription.get_plan_display }}</span>
+            </div>
+            <div class="receipt-row">
+                <span class="receipt-label">Status</span>
+                <span class="receipt-value">
+                    <span
+                        class="receipt-badge {% if subscription.status == 'active' %}badge-active{% else %}badge-pending{% endif %}">
+                        {{ subscription.get_status_display }}
+                    </span>
+                </span>
+            </div>
+            <div class="receipt-row">
+                <span class="receipt-label">Start Date</span>
+                <span class="receipt-value">{{ subscription.start_date|date:"F d, Y"|default:"—" }}</span>
+            </div>
+            <div class="receipt-row">
+                <span class="receipt-label">End Date</span>
+                <span class="receipt-value">{{ subscription.end_date|date:"F d, Y"|default:"Lifetime" }}</span>
+            </div>
+            {% if subscription.payment_proof %}
+            <div class="receipt-row">
+                <span class="receipt-label">Amount Paid</span>
+                <span class="receipt-value">{{ subscription.payment_proof.amount|floatformat:0 }} RWF</span>
+            </div>
+            <div class="receipt-row">
+                <span class="receipt-label">Payment Method</span>
+                <span class="receipt-value">{{ subscription.payment_proof.get_payment_type_display }}</span>
+            </div>
+            {% endif %}
+            <div class="receipt-row">
+                <span class="receipt-label">Receipt Generated</span>
+                <span class="receipt-value">{{ generated_at|date:"F d, Y H:i" }}</span>
+            </div>
+        </div>
+        <div class="receipt-footer">
+            Receipt #SUB-{{ subscription.id }} &bull; MentorConnect &copy; {% now "Y" %}
+        </div>
+    </div>
+    <button class="print-btn" onclick="window.print();">🖨️ Print Receipt</button>
+    <a href="{% url 'dashboard:student_dashboard' %}" class="back-link">← Back to Dashboard</a>
+</body>
+
+</html>

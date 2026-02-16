@@ -4,9 +4,12 @@
     <div class="sidebar-header">
         <a href="{% url 'core:home' %}" class="sidebar-logo">
             {% if site_settings.site_logo %}
-                <img src="{{ site_settings.site_logo.url }}" alt="{{ SITE_NAME }}" style="height: 64px; max-width: 180px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); background: #fff; padding: 2px;">
+            <img src="{{ site_settings.site_logo.url }}" alt="{{ SITE_NAME }}"
+                style="height: 64px; max-width: 180px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); background: #fff; padding: 2px;">
             {% else %}
-                <span style="font-size: 1.5rem; font-weight: 800; background: linear-gradient(135deg, #1e3a5f 0%, #3b7fb8 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">{{ SITE_NAME }}</span>
+            <span
+                style="font-size: 1.5rem; font-weight: 800; background: linear-gradient(135deg, #1e3a5f 0%, #3b7fb8 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">{{
+                SITE_NAME }}</span>
             {% endif %}
         </a>
     </div>
@@ -14,132 +17,208 @@
     <nav class="sidebar-nav">
         {% if user.is_student %}
         <!-- Student Navigation -->
-        <a href="{% url 'dashboard:student_dashboard' %}" class="sidebar-link {% if request.resolver_match.url_name == 'student_dashboard' %}active{% endif %}">
+        <a href="{% url 'dashboard:student_dashboard' %}"
+            class="sidebar-link {% if request.resolver_match.url_name == 'student_dashboard' %}active{% endif %}">
             <i data-feather="grid"></i> <span>Dashboard</span>
         </a>
-        <a href="{% url 'profiles:student_edit' %}" class="sidebar-link {% if request.resolver_match.url_name == 'student_edit' %}active{% endif %}">
+        <a href="{% url 'profiles:student_edit' %}"
+            class="sidebar-link {% if request.resolver_match.url_name == 'student_edit' %}active{% endif %}">
             <i data-feather="user"></i> <span>My Profile</span>
         </a>
-        <a href="{% url 'core:mentors' %}" class="sidebar-link {% if request.resolver_match.url_name == 'mentors' %}active{% endif %}">
+        <a href="{% url 'core:mentors' %}"
+            class="sidebar-link {% if request.resolver_match.url_name == 'mentors' %}active{% endif %}">
             <i data-feather="search"></i> <span>Find Professionals</span>
         </a>
-        <a href="{% url 'mentorship:request_list' %}" class="sidebar-link {% if request.resolver_match.url_name == 'request_list' or request.resolver_match.url_name == 'requests' %}active{% endif %}">
+        <a href="{% url 'mentorship:request_list' %}"
+            class="sidebar-link {% if request.resolver_match.url_name == 'request_list' or request.resolver_match.url_name == 'requests' %}active{% endif %}">
             <i data-feather="file-text"></i> <span>My Requests</span>
         </a>
-        <a href="{% url 'applications:my_applications' %}" class="sidebar-link {% if 'my-applications' in request.path %}active{% endif %}">
+        <a href="{% url 'applications:my_applications' %}"
+            class="sidebar-link {% if 'my-applications' in request.path %}active{% endif %}">
             <i data-feather="edit-3"></i> <span>My Applications</span>
         </a>
-        <a href="{% url 'sessions_app:list' %}" class="sidebar-link {% if 'sessions' in request.path %}active{% endif %}">
+        <a href="{% url 'sessions_app:list' %}"
+            class="sidebar-link {% if 'sessions' in request.path %}active{% endif %}">
             <i data-feather="calendar"></i> <span>Sessions</span>
+        </a>
+        <div class="sidebar-divider"></div>
+        <a href="{% url 'dashboard:subscription_wizard' %}"
+            class="sidebar-link {% if 'subscription' in request.path %}active{% endif %}">
+            <i data-feather="star"></i>
+            <span>Premium {% if has_active_subscription %}<span class="sidebar-badge"
+                    style="background:#10b981;">Active</span>{% endif %}</span>
         </a>
 
         {% elif user.is_mentor %}
         <!-- Mentor Navigation -->
-        <a href="{% url 'dashboard:mentor_dashboard' %}" class="sidebar-link {% if request.resolver_match.url_name == 'mentor_dashboard' %}active{% endif %}">
+        <a href="{% url 'dashboard:mentor_dashboard' %}"
+            class="sidebar-link {% if request.resolver_match.url_name == 'mentor_dashboard' %}active{% endif %}">
             <i data-feather="grid"></i> <span>Dashboard</span>
         </a>
-        <a href="{% url 'profiles:mentor_edit' %}" class="sidebar-link {% if request.resolver_match.url_name == 'mentor_edit' %}active{% endif %}">
+        <a href="{% url 'profiles:mentor_edit' %}"
+            class="sidebar-link {% if request.resolver_match.url_name == 'mentor_edit' %}active{% endif %}">
             <i data-feather="user"></i> <span>My Profile</span>
         </a>
-        <a href="{% url 'mentorship:request_list' %}" class="sidebar-link {% if request.resolver_match.url_name == 'request_list' or request.resolver_match.url_name == 'requests' %}active{% endif %}">
+        <a href="{% url 'mentorship:request_list' %}"
+            class="sidebar-link {% if request.resolver_match.url_name == 'request_list' or request.resolver_match.url_name == 'requests' %}active{% endif %}">
             <i data-feather="file-text"></i> <span>Internship Requests</span>
             {% if pending_requests_count %}<span class="sidebar-badge">{{ pending_requests_count }}</span>{% endif %}
         </a>
-        <a href="{% url 'applications:mentor_applications' %}" class="sidebar-link {% if 'applications' in request.path %}active{% endif %}">
+        <a href="{% url 'applications:mentor_applications' %}"
+            class="sidebar-link {% if 'applications' in request.path %}active{% endif %}">
             <i data-feather="user-plus"></i> <span>Mentorship Applications</span>
-            {% if guest_applications_pending_count %}<span class="sidebar-badge">{{ guest_applications_pending_count }}</span>{% endif %}
+            {% if guest_applications_pending_count %}<span class="sidebar-badge">{{ guest_applications_pending_count
+                }}</span>{% endif %}
         </a>
-        <a href="{% url 'sessions_app:list' %}" class="sidebar-link {% if 'sessions' in request.path %}active{% endif %}">
+        <a href="{% url 'sessions_app:list' %}"
+            class="sidebar-link {% if 'sessions' in request.path %}active{% endif %}">
             <i data-feather="calendar"></i> <span>Sessions</span>
         </a>
-        <a href="{% url 'mentorship:availability' %}" class="sidebar-link {% if request.resolver_match.url_name == 'availability' %}active{% endif %}">
+        <a href="{% url 'mentorship:availability' %}"
+            class="sidebar-link {% if request.resolver_match.url_name == 'availability' %}active{% endif %}">
             <i data-feather="clock"></i> <span>Availability</span>
         </a>
-        <a href="{% url 'profiles:followers' %}" class="sidebar-link {% if request.resolver_match.url_name == 'followers' %}active{% endif %}">
+        <a href="{% url 'profiles:followers' %}"
+            class="sidebar-link {% if request.resolver_match.url_name == 'followers' %}active{% endif %}">
             <i data-feather="users"></i> <span>Followers</span>
         </a>
 
         {% elif user.is_mentor_facilitator %}
         <!-- Mentor Facilitator Navigation -->
-        <a href="{% url 'dashboard:mentor_facilitator_dashboard' %}" class="sidebar-link {% if request.resolver_match.url_name == 'mentor_facilitator_dashboard' %}active{% endif %}">
+        <a href="{% url 'dashboard:mentor_facilitator_dashboard' %}"
+            class="sidebar-link {% if request.resolver_match.url_name == 'mentor_facilitator_dashboard' %}active{% endif %}">
             <i data-feather="grid"></i> <span>Dashboard</span>
         </a>
-        <a href="{% url 'dashboard:mf_mentors' %}" class="sidebar-link {% if 'mf_mentor' in request.resolver_match.url_name %}active{% endif %}">
+        <a href="{% url 'dashboard:mf_mentors' %}"
+            class="sidebar-link {% if 'mf_mentor' in request.resolver_match.url_name %}active{% endif %}">
             <i data-feather="award"></i> <span>Mentors</span>
         </a>
-        <a href="{% url 'dashboard:mf_assignments' %}" class="sidebar-link {% if request.resolver_match.url_name == 'mf_assignments' %}active{% endif %}">
+        <a href="{% url 'dashboard:mf_assignments' %}"
+            class="sidebar-link {% if request.resolver_match.url_name == 'mf_assignments' %}active{% endif %}">
             <i data-feather="users"></i> <span>Assigned Mentors</span>
         </a>
-        <a href="{% url 'dashboard:mf_mentorships' %}" class="sidebar-link {% if request.resolver_match.url_name == 'mf_mentorships' %}active{% endif %}">
+        <a href="{% url 'dashboard:mf_mentorships' %}"
+            class="sidebar-link {% if request.resolver_match.url_name == 'mf_mentorships' %}active{% endif %}">
             <i data-feather="link"></i> <span>Active Mentorships</span>
         </a>
-        <a href="{% url 'dashboard:mf_disputes' %}" class="sidebar-link {% if request.resolver_match.url_name == 'mf_disputes' %}active{% endif %}">
+        <a href="{% url 'dashboard:mf_disputes' %}"
+            class="sidebar-link {% if request.resolver_match.url_name == 'mf_disputes' %}active{% endif %}">
             <i data-feather="alert-triangle"></i> <span>Disputes</span>
             {% if mf_open_disputes_count %}<span class="sidebar-badge">{{ mf_open_disputes_count }}</span>{% endif %}
         </a>
-        <a href="{% url 'dashboard:mf_session_reports' %}" class="sidebar-link {% if request.resolver_match.url_name == 'mf_session_reports' %}active{% endif %}">
+        <a href="{% url 'dashboard:mf_session_reports' %}"
+            class="sidebar-link {% if request.resolver_match.url_name == 'mf_session_reports' %}active{% endif %}">
             <i data-feather="file-text"></i> <span>Session Reports</span>
+        </a>
+        <a href="{% url 'dashboard:mf_sessions' %}"
+            class="sidebar-link {% if request.resolver_match.url_name == 'mf_sessions' or request.resolver_match.url_name == 'mf_create_session' %}active{% endif %}">
+            <i data-feather="calendar"></i> <span>Sessions</span>
+        </a>
+        <a href="{% url 'dashboard:mf_applications' %}"
+            class="sidebar-link {% if request.resolver_match.url_name == 'mf_applications' or request.resolver_match.url_name == 'mf_reassign_mentor' %}active{% endif %}">
+            <i data-feather="user-plus"></i> <span>Applications</span>
+        </a>
+        <a href="{% url 'dashboard:mf_inactive_mentorships' %}"
+            class="sidebar-link {% if request.resolver_match.url_name == 'mf_inactive_mentorships' %}active{% endif %}">
+            <i data-feather="alert-circle"></i> <span>Inactive Mentorships</span>
+        </a>
+
+        <div class="sidebar-divider"></div>
+        <div class="sidebar-label">Tools &amp; Resources</div>
+
+        <a href="{% url 'dashboard:mf_onboarding' %}"
+            class="sidebar-link {% if request.resolver_match.url_name == 'mf_onboarding' %}active{% endif %}">
+            <i data-feather="book-open"></i> <span>Onboarding</span>
+        </a>
+        <a href="{% url 'dashboard:mf_backup' %}"
+            class="sidebar-link {% if request.resolver_match.url_name == 'mf_backup' %}active{% endif %}">
+            <i data-feather="shield"></i> <span>Backup &amp; Cover</span>
         </a>
 
         {% elif user.is_finance_officer %}
         <!-- Finance Officer Navigation -->
-        <a href="{% url 'dashboard:finance_dashboard' %}" class="sidebar-link {% if request.resolver_match.url_name == 'finance_dashboard' %}active{% endif %}">
+        <a href="{% url 'dashboard:finance_dashboard' %}"
+            class="sidebar-link {% if request.resolver_match.url_name == 'finance_dashboard' %}active{% endif %}">
             <i data-feather="grid"></i> <span>Dashboard</span>
             {% if pending_finance_count %}<span class="sidebar-badge">{{ pending_finance_count }}</span>{% endif %}
         </a>
-        <a href="{% url 'dashboard:finance_payments' %}" class="sidebar-link {% if request.resolver_match.url_name == 'finance_payments' %}active{% endif %}">
+        <a href="{% url 'dashboard:finance_payments' %}"
+            class="sidebar-link {% if request.resolver_match.url_name == 'finance_payments' %}active{% endif %}">
             <i data-feather="credit-card"></i> <span>Payment Queue</span>
         </a>
-        <a href="{% url 'dashboard:finance_reports' %}" class="sidebar-link {% if request.resolver_match.url_name == 'finance_reports' %}active{% endif %}">
+        <a href="{% url 'dashboard:finance_reports' %}"
+            class="sidebar-link {% if request.resolver_match.url_name == 'finance_reports' %}active{% endif %}">
             <i data-feather="bar-chart-2"></i> <span>Revenue Reports</span>
+        </a>
+        <a href="{% url 'dashboard:finance_subscription_payments' %}"
+            class="sidebar-link {% if request.resolver_match.url_name == 'finance_subscription_payments' or request.resolver_match.url_name == 'finance_subscription_payment_review' %}active{% endif %}">
+            <i data-feather="dollar-sign"></i> <span>Subscription Payments</span>
+        </a>
+        <a href="{% url 'dashboard:finance_payment_settings' %}"
+            class="sidebar-link {% if request.resolver_match.url_name == 'finance_payment_settings' %}active{% endif %}">
+            <i data-feather="settings"></i> <span>Payment Settings</span>
         </a>
 
         {% elif user.is_admin_user %}
         <!-- Admin Navigation -->
-        <a href="{% url 'dashboard:admin_dashboard' %}" class="sidebar-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
+        <a href="{% url 'dashboard:admin_dashboard' %}"
+            class="sidebar-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
             <i data-feather="grid"></i> <span>Dashboard</span>
         </a>
-        <a href="{% url 'dashboard:admin_users' %}" class="sidebar-link {% if request.resolver_match.url_name == 'admin_users' %}active{% endif %}">
+        <a href="{% url 'dashboard:admin_users' %}"
+            class="sidebar-link {% if request.resolver_match.url_name == 'admin_users' %}active{% endif %}">
             <i data-feather="users"></i> <span>Users</span>
         </a>
-        <a href="{% url 'dashboard:admin_mentors' %}" class="sidebar-link {% if request.resolver_match.url_name == 'admin_mentors' or request.resolver_match.url_name == 'admin_mentor_create' or request.resolver_match.url_name == 'admin_mentor_detail' %}active{% endif %}">
+        <a href="{% url 'dashboard:admin_mentors' %}"
+            class="sidebar-link {% if request.resolver_match.url_name == 'admin_mentors' or request.resolver_match.url_name == 'admin_mentor_create' or request.resolver_match.url_name == 'admin_mentor_detail' %}active{% endif %}">
             <i data-feather="award"></i> <span>Mentors</span>
         </a>
-        <a href="{% url 'dashboard:admin_requests' %}" class="sidebar-link {% if request.resolver_match.url_name == 'admin_requests' or request.resolver_match.url_name == 'admin_request_detail' %}active{% endif %}">
+        <a href="{% url 'dashboard:admin_requests' %}"
+            class="sidebar-link {% if request.resolver_match.url_name == 'admin_requests' or request.resolver_match.url_name == 'admin_request_detail' %}active{% endif %}">
             <i data-feather="file-text"></i> <span>Requests</span>
         </a>
-        <a href="{% url 'dashboard:admin_applications' %}" class="sidebar-link {% if 'admin_application' in request.resolver_match.url_name %}active{% endif %}">
+        <a href="{% url 'dashboard:admin_applications' %}"
+            class="sidebar-link {% if 'admin_application' in request.resolver_match.url_name %}active{% endif %}">
             <i data-feather="user-plus"></i> <span>Applications</span>
         </a>
-        <a href="{% url 'dashboard:admin_sessions' %}" class="sidebar-link {% if request.resolver_match.url_name == 'admin_sessions' %}active{% endif %}">
+        <a href="{% url 'dashboard:admin_sessions' %}"
+            class="sidebar-link {% if request.resolver_match.url_name == 'admin_sessions' %}active{% endif %}">
             <i data-feather="calendar"></i> <span>Sessions</span>
         </a>
-        <a href="{% url 'dashboard:admin_posts' %}" class="sidebar-link {% if request.resolver_match.url_name == 'admin_posts' %}active{% endif %}">
+        <a href="{% url 'dashboard:admin_posts' %}"
+            class="sidebar-link {% if request.resolver_match.url_name == 'admin_posts' %}active{% endif %}">
             <i data-feather="layout"></i> <span>Posts</span>
         </a>
-        <a href="{% url 'dashboard:admin_reviews' %}" class="sidebar-link {% if request.resolver_match.url_name == 'admin_reviews' %}active{% endif %}">
+        <a href="{% url 'dashboard:admin_reviews' %}"
+            class="sidebar-link {% if request.resolver_match.url_name == 'admin_reviews' %}active{% endif %}">
             <i data-feather="star"></i> <span>Reviews</span>
         </a>
-        <a href="{% url 'dashboard:admin_notifications' %}" class="sidebar-link {% if request.resolver_match.url_name == 'admin_notifications' %}active{% endif %}">
+        <a href="{% url 'dashboard:admin_notifications' %}"
+            class="sidebar-link {% if request.resolver_match.url_name == 'admin_notifications' %}active{% endif %}">
             <i data-feather="bell"></i> <span>Notifications</span>
         </a>
 
         <div class="sidebar-divider"></div>
-        <div class="sidebar-label">Reports & Settings</div>
+        <div class="sidebar-label">Reports &amp; Settings</div>
 
-        <a href="{% url 'dashboard:admin_reports' %}" class="sidebar-link {% if request.resolver_match.url_name == 'admin_reports' %}active{% endif %}">
+        <a href="{% url 'dashboard:admin_reports' %}"
+            class="sidebar-link {% if request.resolver_match.url_name == 'admin_reports' %}active{% endif %}">
             <i data-feather="bar-chart-2"></i> <span>Reports</span>
         </a>
-        <a href="{% url 'dashboard:admin_theme' %}" class="sidebar-link {% if request.resolver_match.url_name == 'admin_theme' %}active{% endif %}">
+        <a href="{% url 'dashboard:admin_theme' %}"
+            class="sidebar-link {% if request.resolver_match.url_name == 'admin_theme' %}active{% endif %}">
             <i data-feather="palette"></i> <span>Theme</span>
         </a>
-        <a href="{% url 'dashboard:admin_settings' %}" class="sidebar-link {% if request.resolver_match.url_name == 'admin_settings' %}active{% endif %}">
+        <a href="{% url 'dashboard:admin_settings' %}"
+            class="sidebar-link {% if request.resolver_match.url_name == 'admin_settings' %}active{% endif %}">
             <i data-feather="settings"></i> <span>Site Settings</span>
         </a>
-        <a href="{% url 'dashboard:admin_activity_logs' %}" class="sidebar-link {% if request.resolver_match.url_name == 'admin_activity_logs' %}active{% endif %}">
+        <a href="{% url 'dashboard:admin_activity_logs' %}"
+            class="sidebar-link {% if request.resolver_match.url_name == 'admin_activity_logs' %}active{% endif %}">
             <i data-feather="activity"></i> <span>Activity Logs</span>
         </a>
-        <a href="{% url 'dashboard:admin_broadcast' %}" class="sidebar-link {% if request.resolver_match.url_name == 'admin_broadcast' %}active{% endif %}">
+        <a href="{% url 'dashboard:admin_broadcast' %}"
+            class="sidebar-link {% if request.resolver_match.url_name == 'admin_broadcast' %}active{% endif %}">
             <i data-feather="send"></i> <span>Broadcast</span>
         </a>
         <a href="{% url 'admin:index' %}" class="sidebar-link" target="_blank">
@@ -155,9 +234,10 @@
         <a href="{% url 'chat:list' %}" class="sidebar-link {% if 'chat' in request.path %}active{% endif %}">
             <i data-feather="message-circle"></i> <span>Messages</span>
         </a>
-        <a href="{% url 'notifications:list' %}" class="sidebar-link {% if 'notifications' in request.path %}active{% endif %}">
+        <a href="{% url 'notifications:list' %}"
+            class="sidebar-link {% if 'notifications' in request.path %}active{% endif %}">
             <i data-feather="bell"></i> <span>Notifications</span>
-            {% if unread_notifications_count %}<span class="sidebar-badge">{{ unread_notifications_count }}</span>{% endif %}
+            {% if unread_notifications_count %}<span class="sidebar-badge">{{ unread_notifications_count }}</span>{%endif %}
         </a>
     </nav>
 
